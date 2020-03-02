@@ -1,0 +1,45 @@
+Results of the regression analyses for MFAP4_WTVFQK_y4
+
+Summary for the unweighted linear model:
+------------------------------------------
+
+Call:
+lm(formula = dataSetDF[, colNumMeas] ~ dataSetDF[, colNumConc])
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-321231  -11989    6084   24674  246285 
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                 5776      20544   0.281    0.781    
+dataSetDF[, colNumConc]   129040       1964  65.705   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 95380 on 28 degrees of freedom
+Multiple R-squared:  0.9936,	Adjusted R-squared:  0.9933 
+F-statistic:  4317 on 1 and 28 DF,  p-value: < 2.2e-16
+
+Summary for the weighted linear model (Weighting method:1/x^2):
+------------------------------------------
+
+Call:
+lm(formula = dataSetDF[, colNumMeas] ~ dataSetDF[, colNumConc], 
+    weights = w)
+
+Weighted Residuals:
+   Min     1Q Median     3Q    Max 
+-43718 -18636  -8662  10324  74845 
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)    
+(Intercept)              10557.1      859.9   12.28 8.69e-13 ***
+dataSetDF[, colNumConc] 140658.3     7196.6   19.55  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 33410 on 28 degrees of freedom
+Multiple R-squared:  0.9317,	Adjusted R-squared:  0.9293 
+F-statistic:   382 on 1 and 28 DF,  p-value: < 2.2e-16
+

@@ -1,0 +1,49 @@
+Calculated concentration, CV values and percent bias for Apolipoprotein(a)_TPAYYPNAGLIK_y7
+Warning: More than one continuous level range exist with CVs < threshold. The range with the highest number of levels is selected for further data analysis. It is recommended to review the data in order to identify possible outliers. Another possibility is to apply the calcContinuousPrelimRanges setting to 'calcContinuousPrelimRanges = FALSE'. This extends the preliminary range from the lowest to the highest concentration level that pass the CV threshold criteria.
+
+Linear range is from 8.107 to 810.698[fmol/µl].
+
+CV values
+CV for concentration level 8.107[fmol/µl]: 11.49
+CV for concentration level 40.5349[fmol/µl]: 15.544
+CV for concentration level 81.0698[fmol/µl]: 14.063
+CV for concentration level 405.3488[fmol/µl]: 4.924
+CV for concentration level 810.6976[fmol/µl]: 8.738
+
+Calculated percent bias and response factor values:
+Protein	Peptide.Sequence	Conc.Level	SIS.Resp.	NAT.Resp.	Concentration	PAR	PerBias_no_weight	PerBias_weight	ResponseFactors
+"APOA"	"TPAYYPNAGLIK"	"L3"	"  336"	"1036"	"  8.107"	" 0.324"	" 2.015"	"20.082"	"0.0234"
+"APOA"	"TPAYYPNAGLIK"	"L3"	"  225"	" 565"	"  8.107"	" 0.398"	"27.825"	"11.004"	"0.0326"
+"APOA"	"TPAYYPNAGLIK"	"L3"	"  212"	" 531"	"  8.107"	" 0.399"	"28.235"	"11.432"	"0.0327"
+"APOA"	"TPAYYPNAGLIK"	"L4"	" 1042"	" 781"	" 40.535"	" 1.334"	" 1.143"	" 0.938"	"0.0296"
+"APOA"	"TPAYYPNAGLIK"	"L4"	"  803"	" 512"	" 40.535"	" 1.568"	"20.052"	"20.638"	"0.0354"
+"APOA"	"TPAYYPNAGLIK"	"L4"	"  700"	" 609"	" 40.535"	" 1.149"	"13.776"	"14.605"	"0.0250"
+"APOA"	"TPAYYPNAGLIK"	"L5"	" 1962"	" 790"	" 81.070"	" 2.484"	" 3.023"	" 1.186"	"0.0290"
+"APOA"	"TPAYYPNAGLIK"	"L5"	" 1097"	" 585"	" 81.070"	" 1.875"	"27.585"	"26.774"	"0.0215"
+"APOA"	"TPAYYPNAGLIK"	"L5"	" 1130"	" 527"	" 81.070"	" 2.144"	"16.724"	"15.459"	"0.0248"
+"APOA"	"TPAYYPNAGLIK"	"L6"	" 9101"	" 677"	"405.349"	"13.443"	" 7.894"	"11.960"	"0.0328"
+"APOA"	"TPAYYPNAGLIK"	"L6"	" 6203"	" 465"	"405.349"	"13.340"	" 7.059"	"11.091"	"0.0326"
+"APOA"	"TPAYYPNAGLIK"	"L6"	" 5442"	" 443"	"405.349"	"12.284"	" 1.463"	" 2.213"	"0.0300"
+"APOA"	"TPAYYPNAGLIK"	"L7"	"17311"	" 694"	"810.698"	"24.944"	" 0.381"	" 4.355"	"0.0306"
+"APOA"	"TPAYYPNAGLIK"	"L7"	"11378"	" 510"	"810.698"	"22.310"	"10.254"	" 6.724"	"0.0274"
+"APOA"	"TPAYYPNAGLIK"	"L7"	"11399"	" 429"	"810.698"	"26.571"	" 6.951"	"11.200"	"0.0326"
+
+Descriptive statistics for the percent bias values (based on the weighted linear model):
+expectedConc	avgPerBias	stdDevPerBias	CV_PerBias	warnings
+"8.107"	"14.173"	" 5.122"	"36.140"	""
+"40.5349"	"12.060"	"10.093"	"83.690"	""
+"81.0698"	"14.473"	"12.822"	"88.595"	""
+"405.3488"	" 8.421"	" 5.394"	"64.056"	""
+"810.6976"	" 7.426"	" 3.476"	"46.806"	""
+
+Descriptive statistics for the percent bias values (based on the unweighted linear model):
+expectedConc	avgPerBias	stdDevPerBias	CV_PerBias	warnings
+"8.107"	"19.358"	"15.021"	"77.597"	""
+"40.5349"	"11.657"	" 9.631"	"82.619"	""
+"81.0698"	"15.777"	"12.308"	"78.010"	""
+"405.3488"	" 5.472"	" 3.497"	"63.905"	""
+"810.6976"	" 5.862"	" 5.026"	"85.743"	""
+
+Mean response factors for the concentration levels of the final linear range
+Expected concentration	  8.107	 40.535	 81.070	405.349	810.698
+Mean response factor	0.0296	0.0300	0.0251	0.0318	0.0302

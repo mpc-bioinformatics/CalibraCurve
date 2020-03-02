@@ -1,0 +1,45 @@
+Results of the regression analyses for ALB_LVNEVTEFAK_y8
+
+Summary for the unweighted linear model:
+------------------------------------------
+
+Call:
+lm(formula = dataSetDF[, colNumMeas] ~ dataSetDF[, colNumConc])
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-2.438e-04 -9.121e-05 -8.615e-06  1.533e-04  2.303e-04 
+
+Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+(Intercept)             -1.784e-04  6.966e-05  -2.561   0.0283 *  
+dataSetDF[, colNumConc]  1.535e-06  1.636e-08  93.795 4.65e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.0001682 on 10 degrees of freedom
+Multiple R-squared:  0.9989,	Adjusted R-squared:  0.9988 
+F-statistic:  8798 on 1 and 10 DF,  p-value: 4.645e-16
+
+Summary for the weighted linear model (Weighting method:1/x^2):
+------------------------------------------
+
+Call:
+lm(formula = dataSetDF[, colNumMeas] ~ dataSetDF[, colNumConc], 
+    weights = w)
+
+Weighted Residuals:
+       Min         1Q     Median         3Q        Max 
+-1.859e-07 -1.078e-07  3.446e-08  8.823e-08  1.379e-07 
+
+Coefficients:
+                          Estimate Std. Error t value Pr(>|t|)    
+(Intercept)             -1.107e-05  6.463e-06  -1.713    0.118    
+dataSetDF[, colNumConc]  1.405e-06  4.282e-08  32.810 1.63e-11 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1.227e-07 on 10 degrees of freedom
+Multiple R-squared:  0.9908,	Adjusted R-squared:  0.9899 
+F-statistic:  1077 on 1 and 10 DF,  p-value: 1.632e-11
+

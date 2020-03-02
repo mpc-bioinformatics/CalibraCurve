@@ -1,0 +1,1 @@
+Please note that the display of the response factor plots (especially scaling) may vary due to the CalibraCurve display settings.

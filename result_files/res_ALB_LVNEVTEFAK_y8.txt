@@ -1,0 +1,45 @@
+Calculated concentration, CV values and percent bias for ALB_LVNEVTEFAK_y8
+
+Linear range is from 75.863 to 7586.345[fmol/µl].
+
+CV values
+CV for concentration level 75.863448[fmol/µl]: 7.352
+CV for concentration level 758.63448[fmol/µl]: 1.373
+CV for concentration level 3793.1724[fmol/µl]: 0.984
+CV for concentration level 7586.3448[fmol/µl]: 0.919
+CV for concentration level 37931.724[fmol/µl]: 3.307
+CV for concentration level 75863.448[fmol/µl]: 1.696
+
+Calculated percent bias and response factor values:
+Protein	Peptide.Sequence	Conc.Level	SIS.Resp.	NAT.Resp.	Concentration	PAR	PerBias_no_weight	PerBias_weight	ResponseFactors
+"ALB"	"LVNEVTEFAK"	"L2"	"  3497"	"34415531"	"  75.863"	"1.02e-04"	"140.547"	" 5.726"	"1.49e-06"
+"ALB"	"LVNEVTEFAK"	"L2"	"  1789"	"20219621"	"  75.863"	"8.85e-05"	"129.284"	" 6.576"	"1.31e-06"
+"ALB"	"LVNEVTEFAK"	"L2"	"  1738"	"17406861"	"  75.863"	"9.98e-05"	"138.991"	" 4.026"	"1.46e-06"
+"ALB"	"LVNEVTEFAK"	"L3"	" 27649"	"30261442"	" 758.634"	"9.14e-04"	"  6.188"	"13.233"	"1.22e-06"
+"ALB"	"LVNEVTEFAK"	"L3"	" 16129"	"17292671"	" 758.634"	"9.33e-04"	"  4.553"	"11.447"	"1.24e-06"
+"ALB"	"LVNEVTEFAK"	"L3"	" 14648"	"15618645"	" 758.634"	"9.38e-04"	"  4.111"	"10.964"	"1.25e-06"
+"ALB"	"LVNEVTEFAK"	"L4"	"147785"	"27349409"	"3793.172"	"5.40e-03"	"  4.100"	" 1.609"	"1.43e-06"
+"ALB"	"LVNEVTEFAK"	"L4"	" 90969"	"16559455"	"3793.172"	"5.49e-03"	"  2.555"	" 3.296"	"1.45e-06"
+"ALB"	"LVNEVTEFAK"	"L4"	" 78851"	"14606229"	"3793.172"	"5.40e-03"	"  4.188"	" 1.513"	"1.43e-06"
+"ALB"	"LVNEVTEFAK"	"L5"	"297396"	"25433389"	"7586.345"	"1.17e-02"	"  1.978"	" 9.818"	"1.54e-06"
+"ALB"	"LVNEVTEFAK"	"L5"	"176654"	"15321266"	"7586.345"	"1.15e-02"	"  0.577"	" 8.288"	"1.52e-06"
+"ALB"	"LVNEVTEFAK"	"L5"	"161072"	"14014233"	"7586.345"	"1.15e-02"	"  0.263"	" 7.945"	"1.52e-06"
+
+Descriptive statistics for the percent bias values (based on the weighted linear model):
+expectedConc	avgPerBias	stdDevPerBias	CV_PerBias	warnings
+"75.863448"	" 5.443"	"1.298"	"23.854"	""
+"758.63448"	"11.882"	"1.195"	"10.059"	""
+"3793.1724"	" 2.140"	"1.003"	"46.873"	""
+"7586.3448"	" 8.684"	"0.998"	"11.488"	""
+
+Descriptive statistics for the percent bias values (based on the unweighted linear model):
+Warning: Some intermediate concentration levels (between LLOQ and ULOQ) show average values that fail the percent bias threshold. Please find them highlighted in the table below.
+expectedConc	avgPerBias	stdDevPerBias	CV_PerBias	warnings
+"75.863448"	"136.274"	"6.103"	" 4.479"	"Warning: average percent bias is outside of the threshold"
+"758.63448"	"  4.951"	"1.094"	"22.103"	""
+"3793.1724"	"  3.614"	"0.918"	"25.404"	""
+"7586.3448"	"  0.939"	"0.913"	"97.217"	""
+
+Mean response factors for the concentration levels of the final linear range
+Expected concentration	  75.863	 758.634	3793.172	7586.345
+Mean response factor	1.42e-06	1.24e-06	1.43e-06	1.53e-06
