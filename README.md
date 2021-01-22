@@ -14,6 +14,6 @@ Kohl, M., Stepath, M., Bracht, T., Megger, D.A., Sitek, B., Marcus, K. and Eisen
 
 User survey
 
-Via the following link we would like to receive feedback in order to continuously improve ClalibraCurve in a user-oriented way in the future.
+Via the following link we would like to receive feedback in order to continuously improve CalibraCurve in a user-oriented way in the future.
 
 https://www.surveymonkey.de/r/denbi-service?sc=bioinfra-prot&tool=calibracurve
