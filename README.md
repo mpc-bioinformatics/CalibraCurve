@@ -9,3 +9,11 @@ The download also comprises a datailed manual and an example data set along with
 
 CalibraCurve was published in:
 Kohl, M., Stepath, M., Bracht, T., Megger, D.A., Sitek, B., Marcus, K. and Eisenacher, M. (2020), CalibraCurve: A Tool for Calibration of Targeted MS-based Measurements. Proteomics. Accepted Author Manuscript. doi:10.1002/pmic.201900143
+
+
+
+User survey
+
+Via the following link we would like to receive feedback in order to continuously improve ClalibraCurve in a user-oriented way in the future.
+
+https://www.surveymonkey.de/r/denbi-service?sc=bioinfra-prot&tool=calibracurve
