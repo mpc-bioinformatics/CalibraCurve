@@ -23,3 +23,17 @@ The stable version 2.0 can be downloaded as a release https://github.com/mpc-bio
 ## Publication:
 
 Kohl M, Stepath M, Bracht T, Megger DA, Sitek B, Marcus K, Eisenacher M. CalibraCurve: A Tool for Calibration of Targeted MS-Based Measurements. Proteomics. 2020 Jun;20(11):e1900143. doi: 10.1002/pmic.201900143. Epub 2020 Mar 6. PMID: 32086983.
+
+## Funding:
+
+The development and maintanence of CalibraCurve is funded by de.NBI (https://www.denbi.de/) and CUBiMed.RUB (https://www.cubimed.ruhr-uni-bochum.de/index.html.en).
+We offer also other cool tools and consulting for statistics, bioninformatics and machine learning!
+
+## Feedback:
+
+Please fill out the following survey to give feedback:
+
+https://de.surveymonkey.com/r/denbi-service?sc=bioinfra-prot&tool=calibracurve
+
+
+
