@@ -10,8 +10,8 @@
 #'
 #' @examples
 calcCV <- function(x){
-  actSD <-  sd(x$Measurement_1)
-  actMean <- mean(x$Measurement_1)
+  actSD <-  sd(x$Measurement)
+  actMean <- mean(x$Measurement)
   CV <- actSD/actMean*100
   names(CV) <- unique(x$Concentration)
   result <- CV
@@ -29,23 +29,23 @@ calcCV <- function(x){
 #' @export
 #'
 #' @examples
-calcContPrelimRanges  <- function(x){
+calcContPrelimRanges  <- function(x) {
   # Calculating the end points for all ranges
   y <- x
   z <- x
   y <- y[-1]
   z <- z[-length(z)]
-  differences <- y-z
+  differences <- y - z
   endPoints <- which(differences > 1)
   # Calculating the start points for all ranges
-  startPoints <- endPoints+1
+  startPoints <- endPoints + 1
   # Add special case:
   # the highest end point
   endPoints <- c(endPoints, length(x))
   # the lowest start point
   startPoints <- c(1, startPoints)
   # Calculating the extent of the ranges
-  extent <- endPoints - startPoints+1
+  extent <- endPoints - startPoints + 1
   startPoints <- x[startPoints]
   endPoints <- x[endPoints]
   rangeProperties <- as.data.frame(cbind(startPoints, endPoints, extent))
@@ -84,7 +84,7 @@ calculate_PLR <- function(dataValidated, cv_thres = 20, calcContinuousPrelimRang
   indexEnd <- max(propertiesOfRanges[,2])
   #### Dies berechnet den range zwischen der kleinsten Konzentration mit CV < 20% und der höchsten Konzentration mit CV < 20%
 
-  calcContinuousPrelimRanges = TRUE
+  #calcContinuousPrelimRanges = TRUE
   #### User kann einstellen ob "Lücken" mit höherem CV ok sind oder nicht.
   #### wenn nicht, wird der längere Abschnitt gewählt.
   #### Falls die Abschnitte gleich lang sein sollten????
@@ -99,7 +99,7 @@ calculate_PLR <- function(dataValidated, cv_thres = 20, calcContinuousPrelimRang
     } else {
       if (longestRange$extent == 0) {
         ### TODO: warning that no range with CV <20% was found
-        next # Calculation stops for this sample
+        #next # Calculation stops for this sample
       }
       dataPrelim <- dataValidated[longestRange$startPoints:longestRange$endPoints]
     }
@@ -111,7 +111,7 @@ calculate_PLR <- function(dataValidated, cv_thres = 20, calcContinuousPrelimRang
   # Cancel calculations if less than two remaining concentration levels exist, which pass the CV value threshold
   if (length(concLevelsCVSel) < 2) {
     ### TODO: error message (not enough concentration levels with CV < threshold to calculate further)
-    next # Calculation stops for this sample
+    #next # Calculation stops for this sample
   }
 
   return(list(dataPrelim = dataPrelim, concLevelsCV = concLevelsCV, prelimConcLevels = prelimConcLevels, concLevelsCVSel = concLevelsCVSel))
