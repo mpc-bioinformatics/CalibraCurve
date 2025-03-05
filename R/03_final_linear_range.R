@@ -43,9 +43,9 @@ calcLinearModel <- function(x, weights = NULL){
   dataSetDF <- do.call(rbind, x)
 
   if (is.null(weights)) {  # unweighted model
-    lmfit <- lm(dataSetDF$Measurement_1 ~ dataSetDF$Concentration)
+    lmfit <- lm(dataSetDF$Measurement ~ dataSetDF$Concentration)
   } else { # weighted model
-    lmfit <- lm(dataSetDF$Measurement_1 ~ dataSetDF$Concentration, weights = weights)
+    lmfit <- lm(dataSetDF$Measurement ~ dataSetDF$Concentration, weights = weights)
   }
   return(lmfit)
 }
@@ -88,7 +88,7 @@ calcPerBiasLevels <- function(x, LMfit){
   for (i in seq_along(x)) {
     currConcLevData <- x[[i]]
     expectConc <- concentrations[i]
-    currConcLevMeas <- currConcLevData$Measurement_1
+    currConcLevMeas <- currConcLevData$Measurement
     perBiasValuesList[i] <- list(sapply(currConcLevMeas, calcPerBias, LMfit = LMfit, expConc = expectConc))
   }
 
@@ -115,10 +115,10 @@ calcPerBiasAvgSDCV <- function(x, method = "mean") {
   for (i in seq_along(x)) {
     # Average percent bias value
     meanPerBias <- mean(x[[i]])
-    if (method == 'mean'){
+    if (method == 'mean') {
       currAvgPerBias <- meanPerBias
     }
-    if (method == 'median'){
+    if (method == 'median') {
       currAvgPerBias <- median(x[[i]])
     }
     # Standard deviation of the percent bias values
@@ -250,12 +250,12 @@ selctConcLevel <- function(x, consPerBiasCV, perBiasT, perBiasDistT) {
 #'
 #' @examples
 calculate_FLR <- function(dataPrelim,
-                                    weightingMethod = "1/x^2",
-                                    centralTendencyMeasure = "mean",
-                                    finalRangeCalculationMethod = "weighted_linear_model",
-                                    perBiasThres = 20,
-                                    considerPerBiasCV = TRUE,
-                                    perBiasDistThres = 10) {
+                          weightingMethod = "1/x^2",
+                          centralTendencyMeasure = "mean",
+                          finalRangeCalculationMethod = "weighted_linear_model",
+                          perBiasThres = 20,
+                          considerPerBiasCV = TRUE,
+                          perBiasDistThres = 10) {
 
   dataFinal <- dataPrelim
   finalRangeReached <- FALSE
@@ -288,10 +288,10 @@ calculate_FLR <- function(dataPrelim,
     perBiasAvgSDCVUnweighted <- calcPerBiasAvgSDCV(perBiasUnweighted, method = centralTendencyMeasure)
 
 
-    if (finalRangeCalculationMethod <- 'weighted_linear_model') {
+    if (finalRangeCalculationMethod == 'weighted_linear_model') {
       checkFR <- checkFinalRange(perBiasInfo = perBiasAvgSDCVWeighted, perBiasThres = perBiasThres)
     }
-    if (finalRangeCalculationMethod <- 'unweighted_linear_model') {
+    if (finalRangeCalculationMethod == 'unweighted_linear_model') {
       checkFR <- checkFinalRange(perBiasInfo = perBiasAvgSDCVUnweighted, perBiasThres = perBiasThres)
     }
 
@@ -313,8 +313,7 @@ calculate_FLR <- function(dataPrelim,
       }
     }
   }
-  return(dataFinal)
-
+  return(list(dataFinal = dataFinal, lmWeighted = lmWeighted, lmUnweighted = lmUnweighted))
 }
 
 
@@ -329,40 +328,6 @@ calculate_FLR <- function(dataPrelim,
 
 
 
-
-
-
-# Final linear range: Function, which calculates a response factor for a single data point
-# Formula obtained from:  Green, J. M., A practical guide to analytical method validation.
-#                         Analytical Chemistry 1996, 68, 305A-309A.
-calcResponseFactors <- function(x, intercept, expConc){
-  result <- (x-intercept)/expConc
-  return(result)
-}
-
-# Final linear range: Function, which returns a list with response factor values for a data set (given as list)
-calcRFLevels <- function(x, interc, colNumMeas){
-  concentrations <- as.numeric(names(x))
-  rfValuesList <- NULL
-  for(i in seq_along(x)){
-    currConcLevData <- x[[i]]
-    expectConc <- concentrations[i]
-    currConcLevMeas <- currConcLevData[, colNumMeas]
-    rfValuesList[i] <- list(sapply(currConcLevMeas, calcResponseFactors, intercept = interc, expConc=expectConc))
-  }
-  return(rfValuesList)
-}
-
-# Final linear range: The function returns mean response factor values
-calcRFMeans <- function(x){
-  avgRF <- NULL
-  for(i in seq_along(x)){
-    avgRFCurrLevel <- mean(x[[i]])
-    avgRF <- c(avgRF, avgRFCurrLevel)
-  }
-  #result <- data.frame(avgPerBias, stdDev, CV)
-  return(avgRF)
-}
 
 
 
