@@ -21,7 +21,7 @@
 readData <- function(path,
                      filetype,
                      conc_col,
-                     meas_cols,
+                     meas_col,
                      sep = ",",
                      dec = ";",
                      header = TRUE,
@@ -41,8 +41,8 @@ readData <- function(path,
 
 
   ### extract relevant columns:
-  rawData <- rawData[, c(conc_col, meas_cols)]
-  colnames(rawData) <- c("Concentration", paste("Measurement", 1:length(meas_cols), sep = "_"))
+  rawData <- rawData[, c(conc_col, meas_col)]
+  colnames(rawData) <- c("Concentration", "Measurement")
 
   return(rawData)
 }
@@ -98,25 +98,28 @@ checkNumberReplicates <- function(x, data, minNumber) {
 #'
 #' @examples
 cleanData <- function(rawData, min_replicates) {
-  ### TODO: make possible to keep more than one measurement column
-  ### TODO: remove 0 values (problems later with log-transformation?)
 
+  # Removing rows that contain unwanted 0 values (problems with log-transform later) or NA values in either
+  # the concentration or measurement column
+  dataValidated <- rawData[rawData$Concentration != 0 & !is.na(rawData$Concentration) & rawData$Measurement != 0 & !is.na(rawData$Measurement),]
+  #dataValidated <- dataValidated[dataValidated[colNumberMeasurements]!=0 | is.na(dataValidated[colNumberMeasurements]),]
   ### remove rows with unknown concentration
-  dataValidated <- rawData[!is.na(rawData$Concentration),]
-
+  #dataValidated <- rawData[!is.na(rawData$Concentration),]
   ### remove rows with unknown measurement
-  dataValidated <<- rawData[!is.na(rawData$Measurement_1),]
+  #dataValidated <- rawData[!is.na(rawData$Measurement),]
 
   # Determination of existing concentration levels in the validated data
   concLevels <- unique(dataValidated$Concentration)
   concLevels <- sort(concLevels, decreasing = FALSE)
 
   # Transforming a data set into a list with entries for each concentration level (and the related data)
-  dataValidated <- lapply(concLevels, FUN=selConcentrationLevels, rawData=dataValidated)
+  dataValidated <- lapply(concLevels, FUN = selConcentrationLevels, rawData = dataValidated)
 
   # Deleting concentration levels with insufficient number of replicates
   dataValidated <- dataValidated[sapply(1:length(dataValidated), FUN = checkNumberReplicates, data = dataValidated, minNumber = min_replicates)]
-  ### TODO: keep the data to show them in the plot, maybe as grey/faded data points
+
+  dataValConcLevels <- sapply(dataValidated, FUN = function(x) x$Concentration[1])
+  names(dataValidated) <- dataValConcLevels
 
   return(dataValidated)
 }
