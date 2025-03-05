@@ -8,7 +8,7 @@ readData(
   path,
   filetype,
   conc_col,
-  meas_cols,
+  meas_col,
   sep = ",",
   dec = ";",
   header = TRUE,
@@ -23,8 +23,6 @@ readData(
 
 \item{conc_col}{\strong{integer(1)} \cr column number of concentration levels}
 
-\item{meas_cols}{\strong{integer} \cr column number(s) of measurements}
-
 \item{sep}{\strong{character(1)} \cr separator}
 
 \item{dec}{\strong{character(1)} \cr decimal separator}
@@ -34,6 +32,8 @@ readData(
 \item{na.strings}{\strong{character} \cr character vector of strings which are to be interpreted as NA}
 
 \item{sheet}{number of the sheet (only needed for xlsx files, default is to use the first sheet)}
+
+\item{meas_cols}{\strong{integer} \cr column number(s) of measurements}
 }
 \description{
 Read in data in different input formats
