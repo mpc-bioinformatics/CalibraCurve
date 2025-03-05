@@ -43,9 +43,9 @@ calcLinearModel <- function(x, weights = NULL){
   dataSetDF <- do.call(rbind, x)
 
   if (is.null(weights)) {  # unweighted model
-    lmfit <- lm(dataSetDF$Measurement ~ dataSetDF$Concentration)
+    lmfit <- lm(Measurement ~ Concentration, data = dataSetDF)
   } else { # weighted model
-    lmfit <- lm(dataSetDF$Measurement ~ dataSetDF$Concentration, weights = weights)
+    lmfit <- lm(Measurement ~ Concentration, data = dataSetDF, weights = weights)
   }
   return(lmfit)
 }
@@ -238,9 +238,9 @@ selctConcLevel <- function(x, consPerBiasCV, perBiasT, perBiasDistT) {
 #' Calculate the final linear range
 #'
 #' @param dataPrelim data frame with concentration levels and corresponding response values (result from calculate_PLR)
-#' @param weightingMethod method for weighting (currently 1/x and 1/x^2 are supported, default is 1/x^2)
+#' @param weightingMethod method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is 1/x^2)
 #' @param centralTendencyMeasure "mean" or "median" (for calculating average percent bias), default is "mean"
-#' @param finalRangeCalculationMethod method for calculating the final linear range ("weighted_linear_model" or "unweighted_linear_model")
+# #@param finalRangeCalculationMethod method for calculating the final linear range ("weighted_linear_model" or "unweighted_linear_model")
 #' @param perBiasThres threshold for average percent bias, default is 20%
 #' @param considerPerBiasCV consider CV for the selection of the concentration level, default is TRUE
 #' @param perBiasDistThres threshold for the difference in average percent bias (for lower differences, CV will be considered), default is 10%
@@ -252,7 +252,7 @@ selctConcLevel <- function(x, consPerBiasCV, perBiasT, perBiasDistT) {
 calculate_FLR <- function(dataPrelim,
                           weightingMethod = "1/x^2",
                           centralTendencyMeasure = "mean",
-                          finalRangeCalculationMethod = "weighted_linear_model",
+                          #finalRangeCalculationMethod = "weighted_linear_model",
                           perBiasThres = 20,
                           considerPerBiasCV = TRUE,
                           perBiasDistThres = 10) {
@@ -266,46 +266,50 @@ calculate_FLR <- function(dataPrelim,
     }
 
     ## calculate the weights:
-    allWeights <- as.vector(sapply(dataFinal,
-                                   FUN = calcWeights,
-                                   weightMet = weightingMethod))
-
-    # Ensure that allWeights is a vector (bugfix: some data sets lead to creation of lists)
-    if (class(allWeights) == "list") {
-      allWeights <- unlist(allWeights)
+    if (weightingMethod != "None") {
+      allWeights <- as.vector(sapply(dataFinal,
+                                     FUN = calcWeights,
+                                     weightMet = weightingMethod))
+      # Ensure that allWeights is a vector (bugfix: some data sets lead to creation of lists)
+      if (class(allWeights) == "list") {
+        allWeights <- unlist(allWeights)
+      }
+    } else {
+      allWeights <- NULL
     }
+
 
     ## calculate weighted and unweighted linear model
-    lmWeighted <- calcLinearModel(dataFinal, weights = allWeights)
-    lmUnweighted <- calcLinearModel(dataFinal, weights = NULL)
+    mod <- calcLinearModel(dataFinal, weights = allWeights)
+    #lmUnweighted <- calcLinearModel(dataFinal, weights = NULL)
 
     ## calculate the percent bias for each data point
-    perBiasWeighted <- calcPerBiasLevels(dataFinal, LMfit = lmWeighted)
-    perBiasUnweighted <- calcPerBiasLevels(dataFinal, LMfit = lmUnweighted)
+    perBias <- calcPerBiasLevels(dataFinal, LMfit = mod)
+    #perBiasUnweighted <- calcPerBiasLevels(dataFinal, LMfit = lmUnweighted)
 
     ## calculate the average percent bias, standard deviation and CV for each concentration level
-    perBiasAvgSDCVWeighted <- calcPerBiasAvgSDCV(perBiasWeighted, method = centralTendencyMeasure)
-    perBiasAvgSDCVUnweighted <- calcPerBiasAvgSDCV(perBiasUnweighted, method = centralTendencyMeasure)
+    perBiasAvgSDCV <- calcPerBiasAvgSDCV(perBias, method = centralTendencyMeasure)
+    #perBiasAvgSDCVUnweighted <- calcPerBiasAvgSDCV(perBiasUnweighted, method = centralTendencyMeasure)
 
 
-    if (finalRangeCalculationMethod == 'weighted_linear_model') {
-      checkFR <- checkFinalRange(perBiasInfo = perBiasAvgSDCVWeighted, perBiasThres = perBiasThres)
-    }
-    if (finalRangeCalculationMethod == 'unweighted_linear_model') {
-      checkFR <- checkFinalRange(perBiasInfo = perBiasAvgSDCVUnweighted, perBiasThres = perBiasThres)
-    }
+    #if (finalRangeCalculationMethod == 'weighted_linear_model') {
+    checkFR <- checkFinalRange(perBiasInfo = perBiasAvgSDCV, perBiasThres = perBiasThres)
+    #}
+    #if (finalRangeCalculationMethod == 'unweighted_linear_model') {
+    #  checkFR <- checkFinalRange(perBiasInfo = perBiasAvgSDCVUnweighted, perBiasThres = perBiasThres)
+    #}
 
     if (checkFR) {
       finalRangeReached <- TRUE
     } else { # Removal of concentration levels from the data set
-      if (finalRangeCalculationMethod == 'weighted_linear_model') {
-        removeLow <- selctConcLevel(perBiasAvgSDCVWeighted, perBiasT = perBiasThres,
-                                    consPerBiasCV = considerPerBiasCV, perBiasDistT = perBiasDistThres)
-      }
-      if (finalRangeCalculationMethod == 'unweighted_linear_model') {
-        removeLow <- selctConcLevel(perBiasAvgSDCVUnweighted, perBiasT = perBiasThres,
-                                    consPerBiasCV = considerPerBiasCV, perBiasDistT = perBiasDistThres)
-      }
+      #if (finalRangeCalculationMethod == 'weighted_linear_model') {
+      removeLow <- selctConcLevel(perBiasAvgSDCV, perBiasT = perBiasThres,
+                                  consPerBiasCV = considerPerBiasCV, perBiasDistT = perBiasDistThres)
+      #}
+      #if (finalRangeCalculationMethod == 'unweighted_linear_model') {
+      #  removeLow <- selctConcLevel(perBiasAvgSDCVUnweighted, perBiasT = perBiasThres,
+      #                              consPerBiasCV = considerPerBiasCV, perBiasDistT = perBiasDistThres)
+      #}
       if (removeLow) {
         dataFinal[[1]] <- NULL
       } else {
@@ -313,7 +317,7 @@ calculate_FLR <- function(dataPrelim,
       }
     }
   }
-  return(list(dataFinal = dataFinal, lmWeighted = lmWeighted, lmUnweighted = lmUnweighted))
+  return(list(dataFinal = dataFinal, mod = mod, perBiasAvgSDCV = perBiasAvgSDCV))
 }
 
 

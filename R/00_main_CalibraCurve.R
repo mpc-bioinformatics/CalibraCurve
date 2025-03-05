@@ -44,7 +44,6 @@ CalibraCurve <- function(path,
 
   ## read in data
   X <- CalibraCurve::readData(path = path,
-                              filetype = filetype,
                               conc_col = conc_col,
                               meas_col = meas_col,
                               filetype = filetype,
@@ -68,21 +67,36 @@ CalibraCurve <- function(path,
   FLR <- calculate_FLR(PLR_res$dataPrelim,
                        weightingMethod = "1/x^2",
                        centralTendencyMeasure = "mean",
-                       finalRangeCalculationMethod = "weighted_linear_model",
+                       #finalRangeCalculationMethod = "weighted_linear_model",
                        perBiasThres = 20,
                        considerPerBiasCV = TRUE,
                        perBiasDistThres = 10)
 
   dataFinal <- FLR$dataFinal
-  lmWeighted <- FLR$lmWeighted
+  mod <- FLR$mod
 
 
   ### calculate response factors
   #resFacDataF <- calcRFLevels(dataFinal, mod = lmWeighted) ### TODO: wird das überhaupt gebraucht?
-  resFacDataV <- calcRFLevels(dataValidated, mod = lmWeighted)
+  resFacDataV <- calcRFLevels(dataValidated, mod = mod)
 
   # Calculation of mean response factor values
   #avgResFacDataF <- calcRFMeans(resFacDataF) ### TODO: wird das überhaupt gebraucht?
   avgResFacDataV <- calcRFMeans(resFacDataV)
+
+
+  #### generate result tables
+
+
+  return(list(mod = mod,
+              final_linear_range = as.numerci(names(dataFinal)),
+              dataValidated = dataValidated
+  )
+  )
+  ## TODO:
+  # final linear range
+  # dataValidated
+  # Tabelle mit CV und anderen Ergebnissen pro concentration level
+  # Tabelle mit percentage bias, response factors und anderen Ergebnissen pro Beobachtung
 
 }
