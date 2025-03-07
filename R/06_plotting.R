@@ -1,4 +1,4 @@
-# Plotting
+
 generatePlots <- function(x, titlePart1, sampleName, titlePart2, LLOQ, ULOQ, unit,
                           x_lab, y_lab, lmW, lmNoW, plotOpt, scale,
                           colNumConc, colNumMeas){

@@ -21,7 +21,10 @@ CalibraCurve(
   centralTendencyMeasure = "mean",
   perBiasThres = 20,
   considerPerBiasCV = TRUE,
-  perBiasDistThres = 10
+  perBiasDistThres = 10,
+  RfThresL = 80,
+  RfThresU = 120,
+  substance = "substance1"
 )
 }
 \arguments{

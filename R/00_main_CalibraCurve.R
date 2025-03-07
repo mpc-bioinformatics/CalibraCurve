@@ -39,7 +39,12 @@ CalibraCurve <- function(path,
                          #finalRangeCalculationMethod = "weighted_linear_model",
                          perBiasThres = 20,
                          considerPerBiasCV = TRUE,
-                         perBiasDistThres = 10
+                         perBiasDistThres = 10,
+
+                         RfThresL = 80,
+                         RfThresU = 120,
+
+                         substance = "substance1"
                          ) {
 
   ## read in data
@@ -55,7 +60,7 @@ CalibraCurve <- function(path,
 
   ## clean data
   dataValidated <- CalibraCurve::cleanData(X,
-                                           min_replicates = 3)
+                                           min_replicates = min_replicates)
 
   ## calculate preliminary linear range
   PLR_res <- CalibraCurve::calculate_PLR(dataValidated = dataValidated,
@@ -64,16 +69,16 @@ CalibraCurve <- function(path,
 
 
   ## calculate final linear range
-  FLR <- calculate_FLR(PLR_res$dataPrelim,
-                       weightingMethod = "1/x^2",
-                       centralTendencyMeasure = "mean",
+  FLR_res <- calculate_FLR(PLR_res$dataPrelim,
+                       weightingMethod = weightingMethod,
+                       centralTendencyMeasure = centralTendencyMeasure,
                        #finalRangeCalculationMethod = "weighted_linear_model",
-                       perBiasThres = 20,
-                       considerPerBiasCV = TRUE,
-                       perBiasDistThres = 10)
+                       perBiasThres = perBiasThres,
+                       considerPerBiasCV = considerPerBiasCV,
+                       perBiasDistThres = perBiasDistThres)
 
-  dataFinal <- FLR$dataFinal
-  mod <- FLR$mod
+  dataFinal <- FLR_res$dataFinal
+  mod <- FLR_res$mod
 
 
   ### calculate response factors
@@ -86,17 +91,28 @@ CalibraCurve <- function(path,
 
 
   #### generate result tables
+  tables <- assemble_results(X = X,
+                             dataValidated = dataValidated,
+                             cv_thres = cv_thres,
+                             PLR_res = PLR_res,
+                             resFacDataV = resFacDataV,
+                             avgResFacDataV = avgResFacDataV,
+                             FLR_res = FLR_res,
+                             mod = mod,
+                             RfThresL = RfThresL,
+                             RfThresU = RfThresU
+  )
+
 
 
   return(list(mod = mod,
-              final_linear_range = as.numerci(names(dataFinal)),
-              dataValidated = dataValidated
-  )
-  )
-  ## TODO:
-  # final linear range
-  # dataValidated
-  # Tabelle mit CV und anderen Ergebnissen pro concentration level
-  # Tabelle mit percentage bias, response factors und anderen Ergebnissen pro Beobachtung
+              final_linear_range = as.numeric(names(dataFinal)),
+              dataValidated = dataValidated,
+              weightingMethod = weightingMethod,
+              result_table_conc_levels = tables$result_table_conc_levels,
+              result_table_obs = tables$result_table_obs
+  ))
 
 }
+
+

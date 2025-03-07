@@ -317,7 +317,7 @@ calculate_FLR <- function(dataPrelim,
       }
     }
   }
-  return(list(dataFinal = dataFinal, mod = mod, perBiasAvgSDCV = perBiasAvgSDCV))
+  return(list(dataFinal = dataFinal, mod = mod, perBias = perBias, perBiasAvgSDCV = perBiasAvgSDCV))
 }
 
 

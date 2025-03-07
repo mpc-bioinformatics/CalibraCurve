@@ -1,89 +1,113 @@
-# Writing result files: Preparation of result files
-preparationResultFiles <- function(x, resF, resRegF){
-  write(paste(resFHeader, x, sep = ""),
-        file = resF, append = FALSE)
-  sink(resRegF, append = FALSE)
-  write(paste(resRegFHeader, x, sep = ""),
-        file = resRegF, append = FALSE)
-  sink()
-}
 
-# Writing result files: CV values for the preliminar linear range
-writeCV_forPreliminaryLinearRange  <- function(x, resF, cUnit){
-  conc <- names(x)
-  write("", resF, append=TRUE)
-  write(resFCVHeader, resF, append=TRUE)
-  for(i in seq_along(x)){
-    textCV <- paste(resFCVPrefix,
-                    conc[i], cUnit, ": ",round(x[i], digits = numberDecimals),sep="")
-    write(textCV, resF, append=TRUE)
+
+#' Title
+#'
+#' @param X
+#' @param dataValidated
+#' @param cv_thres
+#' @param PLR_res
+#' @param avgResFacDataV
+#' @param FLR_res
+#' @param mod
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+assemble_results <- function(X,
+                             dataValidated,
+                             cv_thres = 20,
+                             PLR_res,
+                             resFacDataV,
+                             avgResFacDataV,
+                             FLR_res,
+                             mod,
+                             RfThresL = 80,
+                             RfThresU = 120,
+                             substance = "substance1"
+                             ) {
+
+
+  concentrations <- as.numeric(names(dataValidated))
+  mean_measurement <- sapply(dataValidated, function(x) mean(x$Measurement))
+  estimated_measurement <- predict(object = mod, newdata = data.frame(Concentration = concentrations))
+
+  ### thresholds for response factor
+  RfThresUFactor <- RfThresU/100
+  RfThresLFactor <- RfThresL/100
+  concentrations_FLR <- as.numeric(rownames(FLR_res$perBiasAvgSDCV))
+
+  mean_RF <- mean(unlist(resFacDataV[concentrations %in% concentrations_FLR])) # mean RF (only for final linear range)
+  hLineLow <- mean_RF * RfThresLFactor
+  hLineUpper <- mean_RF * RfThresUFactor
+
+  result_table_conc_levels <- data.frame(
+    substance = substance,
+    concentration = concentrations,
+    mean_measurement = mean_measurement,
+    estimated_measurement = estimated_measurement,
+    CV = PLR_res$concLevelsCV,
+    CV_within_thres = PLR_res$concLevelsCV < cv_thres,
+    preliminary_linear_range = concentrations %in% PLR_res$prelimConcLevels,
+    mean_percentage_bias = NA,
+    SD_percentage_bias = NA,
+    CV_percentage_bias = NA,
+    mean_response_factor = avgResFacDataV,
+    RF_within_thres = avgResFacDataV <= hLineUpper & avgResFacDataV >= hLineLow,
+    final_linear_range = NA
+  )
+
+  for (i in seq_along(concentrations)) {
+
+    ind <- which(concentrations[i] == concentrations_FLR)
+
+    if (length(ind) >= 1) {
+      result_table_conc_levels$mean_percentage_bias[i] <- FLR_res$perBiasAvgSDCV$avgPerBias[ind]
+      result_table_conc_levels$SD_percentage_bias[i] <- FLR_res$perBiasAvgSDCV$stdDevPerBias[ind]
+      result_table_conc_levels$CV_percentage_bias[i] <- FLR_res$perBiasAvgSDCV$CV_PerBias[ind]
+      result_table_conc_levels$final_linear_range[i] <- TRUE
+    } else {
+      result_table_conc_levels$final_linear_range[i] <- FALSE
+    }
   }
-}
 
-# Writing result files: Function, which writes percent bias and response factor values for the final linear range
-# or for writing of intermediate percent bias calculations into the logging file (CalibraCurve verbose mode)
-writePerBiasRfFinalLinearRange <- function(x, perBiasWeighted, perBiasUnweighted, Rf, resF, colDelim, noDec){
-  for(i in seq_along(dataFinal)){
-    PerBias_no_weight<- perBiasUnweighted[[i]]
-    PerBias_weight <- perBiasWeighted[[i]]
-    ResponseFactors <- Rf[[i]]
-    x[[i]] <- cbind(x[[i]], PerBias_no_weight, PerBias_weight, ResponseFactors)
+
+  ##############################################
+
+  result_table_obs <- data.frame(
+    substance = substance,
+    concentration = X$Concentration,
+    measurement = X$Measurement,
+    percentage_bias = NA,
+    response_factor = unlist(resFacDataV),
+    RF_within_thres = unlist(resFacDataV) <= hLineUpper & unlist(resFacDataV) >= hLineLow,
+    final_linear_range = X$Concentration %in% concentrations_FLR
+  )
+  rownames(result_table_obs) <- NULL
+
+  perBias <- FLR_res$perBias
+  for (i in 1:length(concentrations)) {
+    if (concentrations[i] %in% concentrations_FLR) {
+      print(i)
+      ind1 <- which(concentrations_FLR == concentrations[i])
+      ind2 <- which(result_table_obs$concentration == concentrations[i])
+      result_table_obs$percentage_bias[ind2] <- perBias[[ind1]]
+
+      print(ind1)
+      print(ind2)
+    }
   }
-  xDF <- do.call(rbind, x)
-  header <- paste(colnames(xDF), collapse = colDelim)
-  write(header, resF, append=TRUE)
-  xDF <- format(xDF, digits = noDec, nsmall = noDec)
-  write.table(xDF, resF, append=TRUE, row.names=FALSE, col.names=FALSE, sep=colDelim)
+
+
+
+  return(list(result_table_conc_levels = result_table_conc_levels,
+         result_table_obs = result_table_obs))
+
 }
 
-# Writing result files: Function, which writes overview information (central tendency and dispersion
-# measures) for the percent bias values of each concentration level
-writePerBiasOverviewFinalLinearRange  <- function(x, resF, colDelim, message, noDec, perBiasT){
-  indices <- unique(sort(which(x$avgPerBias >= perBiasT), decreasing = FALSE))
-  warnings <- NULL
-  for(i in seq_along(x$avgPerBias)){
-    warnings <- c(warnings, "")
-  }
-  warnings[indices] <- message
-  x <- cbind(x, warnings)
-  header <- paste(colnames(x), collapse = colDelim)
-  header <- paste("expectedConc",header, sep = colDelim)
-  if(length(indices)>0){
-    mess <- paste("Input data file ",currFileNameNoExt[1],": ",genericWarningOnShell2, sep="")
-    print(mess)
-    write(mess, logFile, append=TRUE)
-    write(warnMessAcc, resF, append=TRUE)
-  }
-  write(header, resF, append=TRUE)
-  x <- format(x, digits = noDec, nsmall = noDec)
-  write.table(x, resF, append=TRUE, row.names=TRUE, col.names=FALSE, sep=colDelim)
-}
 
-# Writing result files: Function, which writes mean response factor values for the
-# concentration levels of the final data range
-writeMeanRFvalues <- function(x, resF, colDelim, noDec){
-  c <- paste(format (as.numeric(names(x)), digits = noDec, nsmall = noDec), collapse = colDelim)
-  c <- paste("Expected concentration", c, sep = colDelim)
-  write(c, resF, append=TRUE)
-  x <- format(x, digits = noDec, nsmall = noDec)
-  rf <- paste(x, collapse = colDelim)
-  rf <- paste("Mean response factor", rf, sep = colDelim)
-  write(rf, resF, append=TRUE)
-}
 
-# Writing result files: Function, which writes summary information for the fitted linear model into the second result file
-writeLMSummary  <- function(x, weightedLM, resRegF, weightMet){
-  # unweighted model
-  write("Summary for the unweighted linear model:", resRegF, append = TRUE)
-  write("------------------------------------------", resRegF, append = TRUE)
-  sink(resRegF, append = TRUE)
-  print(summary(x))
-  sink()
-  # Weighted model
-  header <- paste("Summary for the weighted linear model (Weighting method:",weightMet,"):", sep = "")
-  write(header, resRegF, append = TRUE)
-  write("------------------------------------------", resRegF, append = TRUE)
-  sink(resRegF, append = TRUE)
-  print(summary(weightedLM))
-  sink()
-}
+
+
+
+
