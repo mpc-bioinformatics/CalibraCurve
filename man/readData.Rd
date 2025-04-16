@@ -5,7 +5,7 @@
 \title{Read in data in different input formats}
 \usage{
 readData(
-  path,
+  data_path,
   filetype,
   conc_col,
   meas_col,
@@ -17,23 +17,23 @@ readData(
 )
 }
 \arguments{
-\item{path}{\strong{character(1)} \cr path to the file}
+\item{data_path}{\strong{character(1)} \cr Path to the data file (.csv, .txt or .xlsx file).}
 
-\item{filetype}{\strong{character(1)} \cr csv or txt or xlsx}
+\item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
 
-\item{conc_col}{\strong{integer(1)} \cr column number of concentration levels}
+\item{conc_col}{\strong{integer(1)} \cr Column number of the concentration values.}
 
-\item{sep}{\strong{character(1)} \cr separator}
+\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\t" for tab.}
 
-\item{dec}{\strong{character(1)} \cr decimal separator}
+\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot.}
 
-\item{header}{\strong{logical(1)} \cr if TRUE, first line is counted as a heading}
+\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names.}
 
-\item{na.strings}{\strong{character} \cr character vector of strings which are to be interpreted as NA}
+\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA.}
 
-\item{sheet}{number of the sheet (only needed for xlsx files, default is to use the first sheet)}
+\item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
 
-\item{meas_cols}{\strong{integer} \cr column number(s) of measurements}
+\item{meas_cols}{\strong{integer} \cr Column number of the concentration values.}
 }
 \description{
 Read in data in different input formats

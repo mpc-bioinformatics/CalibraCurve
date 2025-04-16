@@ -9,9 +9,9 @@ checkNumberReplicates(x, data, minNumber)
 \arguments{
 \item{x}{concentration level to check}
 
-\item{data}{data set to be filtered}
+\item{data}{\strong{data.frame} \cr data set to be filtered}
 
-\item{minNumber}{minimal number of data points per concentration level}
+\item{minNumber}{\strong{integer(1)} \cr minimal number of data points per concentration level}
 }
 \description{
 Data preprocessing: Check for sufficient number of replicates

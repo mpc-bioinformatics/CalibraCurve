@@ -2,11 +2,13 @@
 
 #' CalibraCurve
 #'
-#' @param path
-#' @param conc_col
-#' @param meas_col
-#' @param filetype
-#' @param min_replicates
+#' @param data_path **character(1)** \cr Path to the data file (.csv, .txt or .xlsx file).
+#' @param output_path **character(1)** \cr Folder to save results (table and plots).
+#' @param conc_col **integer(1)** \cr Column number of the concentration values.
+#' @param meas_col **integer(1)** \cr Column number of the concentration values.
+#' @param filetype **character(1)** \cr Type of input file: "csv" or "txt" or "xlsx".
+#' @param min_replicates **integer(1)** \cr Minimal number of replicates/data points per concentration level.
+#'                                          Concentration levels with too few data points will be removed.
 #' @param weightingMethod
 #' @param centralTendencyMeasure
 #' @param perBiasThres
@@ -17,7 +19,8 @@
 #' @export
 #'
 #' @examples
-CalibraCurve <- function(path,
+CalibraCurve <- function(data_path,
+                         output_path = NULL,
                          conc_col,
                          meas_col,
 
@@ -48,7 +51,7 @@ CalibraCurve <- function(path,
                          ) {
 
   ## read in data
-  X <- CalibraCurve::readData(path = path,
+  X <- CalibraCurve::readData(data_path = data_path,
                               conc_col = conc_col,
                               meas_col = meas_col,
                               filetype = filetype,
@@ -100,7 +103,8 @@ CalibraCurve <- function(path,
                              FLR_res = FLR_res,
                              mod = mod,
                              RfThresL = RfThresL,
-                             RfThresU = RfThresU
+                             RfThresU = RfThresU,
+                             substance = substance
   )
 
 

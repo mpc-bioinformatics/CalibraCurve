@@ -5,7 +5,8 @@
 \title{CalibraCurve}
 \usage{
 CalibraCurve(
-  path,
+  data_path,
+  output_path = NULL,
   conc_col,
   meas_col,
   filetype = "xlsx",
@@ -28,6 +29,19 @@ CalibraCurve(
 )
 }
 \arguments{
+\item{data_path}{\strong{character(1)} \cr Path to the data file (.csv, .txt or .xlsx file).}
+
+\item{output_path}{\strong{character(1)} \cr Folder to save results (table and plots).}
+
+\item{conc_col}{\strong{integer(1)} \cr Column number of the concentration values.}
+
+\item{meas_col}{\strong{integer(1)} \cr Column number of the concentration values.}
+
+\item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
+
+\item{min_replicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
+Concentration levels with too few data points will be removed.}
+
 \item{perBiasDistThres}{}
 }
 \description{

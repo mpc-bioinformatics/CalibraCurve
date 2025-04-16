@@ -9,7 +9,7 @@ selConcentrationLevels(x, rawData)
 \arguments{
 \item{x}{concentration level to check}
 
-\item{rawData}{data set to be filtered}
+\item{rawData}{\strong{data.frame} \cr data set to be filtered}
 }
 \description{
 Data preprocessing: Select all rows with identical concentrations

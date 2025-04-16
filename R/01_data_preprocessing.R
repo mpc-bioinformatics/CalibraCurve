@@ -1,24 +1,21 @@
 
-
-
-
 #' Read in data in different input formats
 #'
-#' @param path \strong{character(1)} \cr path to the file
-#' @param filetype \strong{character(1)} \cr csv or txt or xlsx
-#' @param conc_col \strong{integer(1)} \cr column number of concentration levels
-#' @param meas_cols \strong{integer} \cr column number(s) of measurements
-#' @param sep \strong{character(1)} \cr separator
-#' @param dec \strong{character(1)} \cr decimal separator
-#' @param header \strong{logical(1)} \cr if TRUE, first line is counted as a heading
-#' @param na.strings \strong{character} \cr character vector of strings which are to be interpreted as NA
-#' @param sheet number of the sheet (only needed for xlsx files, default is to use the first sheet)
+#' @param data_path **character(1)** \cr Path to the data file (.csv, .txt or .xlsx file).
+#' @param filetype **character(1)** \cr Type of input file: "csv" or "txt" or "xlsx".
+#' @param conc_col **integer(1)** \cr Column number of the concentration values.
+#' @param meas_cols **integer** \cr Column number of the concentration values.
+#' @param sep **character(1)** \cr The field separator, e.g. " " for blanks, "," for comma or "\t" for tab.
+#' @param dec **character(1)** \cr Decimal separator, e.g. "," for comma or "." for dot.
+#' @param header **logical(1)** \cr If TRUE, first line is counted as column names.
+#' @param na.strings **character** \cr Character vector of strings which are to be interpreted as NA.
+#' @param sheet **integer(1)** \cr Sheet number (only needed for xlsx files, default is to use the first sheet).
 #'
 #' @returns
 #' @export
 #'
 #' @examples
-readData <- function(path,
+readData <- function(data_path,
                      filetype,
                      conc_col,
                      meas_col,
@@ -27,22 +24,50 @@ readData <- function(path,
                      header = TRUE,
                      na.strings = c("NA", "NaN", "Filtered", "#NV"),
                      sheet = 1) {
-  ### TODO: error messages if data doesn't fit to the expected format
+
+  ### check input arguments
+  checkmate::assert_character(data_path, len = 1)
+  checkmate::assert_choice(filetype, c("csv", "txt", "xlsx"))
+  checkmate::assert_int(conc_col)
+  checkmate::assert_int(meas_col)
+  checkmate::assert_character(sep, len = 1)
+  checkmate::assert_character(dec, len = 1)
+  checkmate::assert_flag(header)
+  checkmate::assert_character(na.strings)
+  checkmate::assert_int(sheet)
+  if (conc_col == meas_col) stop("Concentration and measurement columns cannot be identical.")
+
+
 
   if (filetype == "csv" | filetype == "txt") {
-    rawData <- read.table(path,
+    rawData <- read.table(data_path,
                           sep = sep,
                           header = header,
                           dec = dec)
   }
   if (filetype == "xlsx") {
-    rawData <- openxlsx::read.xlsx(path, colNames = header, sheet = sheet)
+    rawData <- openxlsx::read.xlsx(data_path, colNames = header, sheet = sheet)
   }
 
+  ### check if column numbers are valid
+  if (meas_col > ncol(rawData)) {
+    stop("Number of measurement column cannot be larger than number of columns in data set.")
+  }
+  if (conc_col > ncol(rawData)) {
+    stop("Number of concentration column cannot be larger than number of columns in data set.")
+  }
 
   ### extract relevant columns:
   rawData <- rawData[, c(conc_col, meas_col)]
   colnames(rawData) <- c("Concentration", "Measurement")
+
+  ### check if relevant columns are numeric:
+  if (!is.numeric(rawData[["Concentration"]])) {
+    stop("Concentration column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
+  }
+  if (!is.numeric(rawData[["Measurement"]])) {
+    stop("Measurement column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
+  }
 
   return(rawData)
 }
@@ -53,7 +78,7 @@ readData <- function(path,
 #' Data preprocessing: Select all rows with identical concentrations
 #'
 #' @param x concentration level to check
-#' @param rawData data set to be filtered
+#' @param rawData **data.frame** \cr data set to be filtered
 #'
 #' @returns
 #' @export
@@ -69,8 +94,8 @@ selConcentrationLevels <- function(x, rawData) {
 #' Data preprocessing: Check for sufficient number of replicates
 #'
 #' @param x concentration level to check
-#' @param data data set to be filtered
-#' @param minNumber minimal number of data points per concentration level
+#' @param data **data.frame** \cr data set to be filtered
+#' @param minNumber **integer(1)** \cr minimal number of data points per concentration level
 #'
 #' @returns
 #' @export
