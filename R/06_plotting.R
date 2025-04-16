@@ -1,195 +1,225 @@
 
-generatePlots <- function(x, titlePart1, sampleName, titlePart2, LLOQ, ULOQ, unit,
-                          x_lab, y_lab, lmW, lmNoW, plotOpt, scale,
-                          colNumConc, colNumMeas){
-  tiff(paste(sampleName, ".tif", sep = ""), width = plotWidth, height = plotHeight, units = "cm", res = plotResolution)
-  par(cex.axis = magnificAxis, cex.lab = magnificLabels, cex.main = magnificTitle)
-  if(showLegend){
-    par(xpd=T, mar=par()$mar+c(6,0,0,0))
-  }
-  title <- paste(titlePart1, sampleName, '\n',
-                 titlePart2, format(as.numeric(LLOQ), digits=numberDecimals, nsmall =numberDecimals),"-",
-                 format(as.numeric(ULOQ), digits=numberDecimals, nsmall =numberDecimals), " ",unit, sep = "")
-  if(scale == 'log'){
-    plot(x[,colNumConc], x[,colNumMeas], main = title,
-         xlab = x_lab, ylab = y_lab, log = "xy")
-  }else{
-    plot(x[,colNumConc], x[,colNumMeas], main = title,
-         xlab = x_lab, ylab = y_lab)
+
+
+
+
+plotCalibraCurve <- function(RES,
+                           ylab = "Peak area",
+                           xlab = "Concentration[mg/L]",
+                           show_regression_info = FALSE,
+                           show_linear_range = TRUE,
+                           show_data_points = TRUE) {
+
+
+  range_dat <- RES$result_table_obs
+  final_mod <- RES$mod
+  # weight_m <- RES$weightingMethod
+
+  ### extract model coefficients and r2 per substance
+  ### TODO: each substance may have a separate model, how to deal with that?
+  ### TODO: there may be multiple models per substance (due to different weighting methods), how to deal with that?
+  range_dat2 <- range_dat %>%
+    dplyr::filter(final_linear_range) %>%
+    dplyr::group_by(substance) %>%
+    dplyr::reframe(predd = list(final_mod$coefficients),
+            r2 = summary(final_mod)$r.squared)
+
+  range_dat2 <- range_dat2 %>%
+    tidyr::unnest(predd) %>%
+    dplyr::mutate(partype = rep(c("intercept", "coeff"), dplyr::n() / 2)) %>%
+    tidyr::pivot_wider(names_from = partype, values_from = predd)
+
+  ### extract minimum and maximum concentration per substance (independent from linear range)
+  subst_range <- range_dat %>%
+    dplyr::group_by(substance) %>%
+    dplyr::summarise(mincon = min(concentration),
+              maxcon = max(concentration))
+
+  ### generate equation text (model formula and R squared)
+  eq_dat <- range_dat2 %>%
+    dplyr::mutate(
+      eq = paste0(
+        "y = ",
+        format(intercept, scientific = TRUE, digits = 2),
+        " + ",
+        format(coeff, scientific = TRUE, digits = 2),
+        " * x",
+        " (R² = ",
+        round(r2, 3),
+        ")"
+      ),
+      r2_eq = paste0("R^2 = ", round(r2, 4))
+    )
+
+
+  ### generate predicted values for the calibration curve and add them to range_dat
+  range_dat3 <- dplyr::left_join(range_dat, range_dat2) %>%
+    dplyr::mutate(predicted = intercept + coeff * concentration)
+
+  ### data frame with lower and upper limits of quantification for each substance
+  an_dat <- range_dat3 %>% dplyr::group_by(substance) %>%
+    dplyr::summarise(LLOQ = min(concentration[final_linear_range]),
+              ULOQ = max(concentration[final_linear_range]))
+
+
+  ### generate grid for predicting values of the calibration curve from the model formula
+  ### xo are the values on the x-axis, predicted are on the y-axis
+  range_dat4 <- dplyr::left_join(range_dat2, subst_range) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(xo = list(10^(seq(
+      log10(mincon), log10(maxcon), length.out = 1000
+    )))) %>%
+    dplyr::ungroup() %>%
+    tidyr::unnest(xo) %>%
+    dplyr::mutate(predicted = intercept + coeff * xo)
+
+
+
+  ### initialize plot
+  pl <- ggplot2::ggplot(range_dat3, ggplot2::aes(x = log10(concentration), log10(measurement)))
+
+  ### add calibration curve
+  pl <- pl +
+    ggplot2::geom_line(
+      color = "red",
+      data = range_dat4,
+      ggplot2::aes(x = log10(xo), y = log10(predicted)),
+      inherit.aes = FALSE
+    )
+
+  ### add data points
+  pl <- pl +
+    ggplot2::geom_point(size = 1.7, ggplot2::aes(alpha = final_linear_range))
+
+  ### add shading for linear range
+  pl <- pl +
+    ggplot2::geom_rect(
+      data = an_dat,
+      ggplot2::aes(
+        xmin = log10(LLOQ),
+        xmax = log10(ULOQ),
+        ymin = -Inf,
+        ymax = Inf
+      ),
+      alpha = 0.1,
+      inherit.aes = FALSE
+    )
+
+
+  ## theme and labels
+  pl <- pl +
+    ggplot2::theme_bw() +
+    ggplot2::ylab(ylab) +
+    ggplot2::xlab(xlab)
+
+
+
+
+  pl <- pl +
+    #theme(legend.position = "none") +
+    ggplot2::facet_wrap(substance ~ ., scales = "free") +
+    ggplot2::scale_x_continuous(
+      labels = function(x)
+        sub(
+          "\\.?0+$",
+          "",
+          format(10^x, scientific = FALSE, zero.print = FALSE)
+        )
+    ) +
+    ggplot2::scale_y_continuous(
+      labels = function(y)
+        paste0(round(10^y, 5))
+    ) +
+    ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.1))
+
+
+  if (reg_eq) {
+    pl <- pl + ggplot2::geom_text(
+      data = eq_dat,
+      ggplot2::aes(-Inf, Inf, label = eq),
+      vjust = 3,
+      hjust = -0.1
+    )
   }
 
-  r2NOW=summary(lmNoW)$r.squared
-  r2W=summary(lmW)$r.squared
-  # Unweighted regression equation
-  if (lmNoW$coefficients[1]>0){
-    eq <- paste("y=", format(lmNoW$coefficients[2], digits=2, scientific=TRUE),"*x+",
-                format(lmNoW$coefficients[1], digits=2, scientific=TRUE),",",
-                " R^2=",format(r2NOW, digits=3), sep="")
-  }else{
-    eq <- paste("y=", format(lmNoW$coefficients[2], digits=2, scientific=TRUE),"*x",
-                format(lmNoW$coefficients[1], digits=2, scientific=TRUE),",",
-                " R^2=",format(r2NOW, digits=3), sep="")
-  }
-  # Weighted regression equation
-  if (lmW$coefficients[1]>0){
-    eq_w <- paste("y=", format(lmW$coefficients[2], digits=2, scientific=TRUE),"*x+",
-                  format(lmW$coefficients[1], digits=2, scientific=TRUE),",",
-                  " R^2=",format(r2W, digits=3), sep="")
-  }else{
-    eq_w <- paste("y=", format(lmW$coefficients[2], digits=2, scientific=TRUE),"*x",
-                  format(lmW$coefficients[1], digits=2, scientific=TRUE),",",
-                  " R^2=",format(r2W, digits=3), sep="")
-  }
-  if(plotOpt == "both"){ # including both weighted and unweighted regression lines and corresponding equations into the plot
-    # Regression lines
-    abline(lmNoW, col="blue", untf=TRUE, xpd=FALSE)
-    abline(lmW, col="red", untf=TRUE, xpd=FALSE)
-    # Equations
-    # Unweighted equation: top left
-    text(min(x[,colNumConc]), max(x[,colNumMeas]), eq, adj = c( 0, 1 ), col = "blue", cex = magnificEquation)
-    if (scale == 'log'){
-      # Weighted equation: below the unweighted equation
-      text(min(x[,colNumConc]), max(x[,colNumMeas])/2, eq_w, adj = c( 0, 1 ), col = "red", cex = magnificEquation)
-    }else{
-      text(max(x[,colNumConc])/2, max(x[,colNumMeas]), eq_w, adj = c( 0, 1 ), col = "red", cex = magnificEquation)
-    }
-    # Legend
-    if(showLegend){
-      legend("bottom", # location 1: centered at the bottom
-             legend=c(legend_weighted, legend_unweighted),
-             inset=c(0,-0.45), # location 2: vertical position
-             col=c("red","blue"),
-             lty = c(1,1))
-    }
-
-  }
-  if(plotOpt == "regW"){ # including only the weighted regression line into the plot
-    abline(lmW, col="red", untf=TRUE, xpd=FALSE)
-    # Weighted equation: top left
-    text(min(x[,colNumConc]), max(x[,colNumMeas]), eq_w, adj = c( 0, 1 ), col = "red", cex = magnificEquation )
-    if(showLegend){
-      legend("bottom", # location 1: centered at the bottom
-             legend=c(legend_weighted),
-             inset=c(0,-0.45), # location 2: vertical position
-             col=c("red"),
-             lty = c(1))
-    }
-  }
-  if(plotOpt == "regUW"){ # including only unweighted regression line into the plot
-    abline(lmNoW, col="blue", untf=TRUE, xpd=FALSE)
-    # Unweighted equation: top left
-    text(min(x[,colNumConc]), max(x[,colNumMeas]), eq, adj = c( 0, 1 ), col = "blue", cex = magnificEquation )
-    if(showLegend){
-      legend("bottom", # location 1: centered at the bottom
-             legend=c(legend_unweighted),
-             inset=c(0,-0.45), # location 2: vertical position
-             col=c("blue"),
-             lty = c(1))
-    }
-  }
-  dev.off()
+  return(pl)
 }
+#plotCalibCurve()
 
-# Plotting: The function generates a response factor plot (Response factors vs. concentration) and presents
-# both response factors for each measurement and mean response factors for each concentration level
-# The plot also shows lines indicating user defined thresholds for percent deviation from the mean
-# response factor that is calculated from the data of the final linear range.
-generateRfPlot <- function(x, RfDataValid,  RfTLowF, RfTUpperF, avgRFDataF, avgRFDataV, restrictRF,
-                           adaptYlim, minYlim, maxYlim,
-                           scaleRFX, magnAxisRF, magnLabelsRF,
-                           magnTitleRF, plotResRF, plotHRF, plotWRF,
-                           titleOpenRF, filename, xLRF, yLRF){
-  # Calculation of the mean RF from the RF of data final
-  allRf <- NULL
-  for (i in seq_along(x)){
-    currRf <- x[[i]]
-    allRf <- c(allRf, currRf)
-  }
-  meanRfDF <- mean(allRf)
-  # Calculating values for the horizontal threshold lines
-  hLineLow <- meanRfDF*RfTLowF
-  hLineUpper <- meanRfDF*RfTUpperF
-  # Prepare data for plotting from the validated data
-  plotReadyDataValid <- NULL
-  for (i in seq_along(RfDataValid)){
-    plotReadyDataValid <- rbind(plotReadyDataValid, calculateRfDf(RfDataValid[i]))
-  }
-  # Prepare data for plotting from the final data
-  plotReadyDataFinal <- NULL
-  for (i in seq_along(x)){
-    plotReadyDataFinal <- rbind(plotReadyDataFinal, calculateRfDf(x[i]))
-  }
-  # Calculation of ylim properties
-  if(restrictRF == TRUE){
-    ylimMin <- min(plotReadyDataFinal$RF)
-    ylimMax <- max(plotReadyDataFinal$RF)
-  }else{
-    ylimMin <- min(plotReadyDataValid$RF, plotReadyDataFinal$RF)
-    ylimMax <- max(plotReadyDataValid$RF, plotReadyDataFinal$RF)
-  }
-  if(hLineLow < ylimMin){
-    ylimMin = hLineLow
-  }
-  if(hLineUpper > ylimMax){
-    ylimMax = hLineUpper
-  }
-  if(adaptYlim){# Enables user defined adaption of the y axis
-    ylimMin <- minYlim
-    ylimMax <- maxYlim
-  }
-  rfPlotName <- paste("RFplot_", filename, ".tif", sep="")
-  tiff(rfPlotName, width = plotWRF, height = plotHRF, units = 'cm', res = plotResRF)
-  par(cex.axis = magnAxisRF, cex.lab = magnLabelsRF, cex.main = magnTitleRF)
-  if(showLegendRF){
-    par(xpd=T, mar=par()$mar+c(6,0,0,0))
-  }
-  # Case: Plot response factors for the complete input data
-  title <- paste(titleOpenRF, filename, sep="")
-  if (restrictRF == FALSE){
-    if (scaleRFX == "log"){
-      plot(plotReadyDataValid, log = "x", col = 'blue', ylim = c(ylimMin, ylimMax),
-           main = title, xlab = xLRF, ylab = yLRF)
-    }else{
-      plot(plotReadyDataValid, col = 'blue', ylim = c(ylimMin, ylimMax),
-           main = title, xlab = xLRF, ylab = yLRF)
-    }
-  }else{
-    # Recalculation of ylim
-    if (scaleRFX == "log"){
-      plot(plotReadyDataFinal, log = "x", col = 'red', ylim = c(ylimMin, ylimMax),
-           main = title, xlab = xLRF, ylab = yLRF)
-    }else{
-      plot(plotReadyDataFinal, col = 'red', ylim = c(ylimMin, ylimMax),
-           main = title, xlab = xLRF, ylab = yLRF)
-    }
-  }
-  if (restrictRF == FALSE){
-    points(plotReadyDataFinal$Concentration, plotReadyDataFinal$RF, col="red")
-    lines(names(avgRFDataV), avgRFDataV, col="blue",lty=1, type = "o", pch = 19)
-  }
-  lines(names(avgRFDataF), avgRFDataF, col="red",lty=1, type = "o", pch = 19)
-  abline(h = hLineLow, col = 'green', lty = 2, xpd=FALSE)
-  abline(h = hLineUpper, col = 'green', lty = 2, xpd=FALSE)
-  if(showLegendRF){
-    legend("bottom", # location 1: centered at the bottom
-           legend=c(legend_RF),
-           inset=c(0,-0.45), # location 2: vertical position
-           col=c("blue", "red"),
-           lty = c(1,1))
-  }
-  dev.off()
-}
 
-# Auxillary function used for response factor plotting:
-# The function generates a data frame with a concentration column and a response factor column
-calculateRfDf <- function(x){
-  Concentration <- NULL
-  RF <- NULL
-  conc <- as.numeric(names(x))
-  for (i in x){
-    Concentration <- c(Concentration, conc)
-    RF <- c(RF, i)
-  }
-  mDF <- data.frame(Concentration, RF)
-  return(mDF)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+plotRespFactor <- function(calib_list = calibres,
+                           ylab = "Response Factor",
+                           xlab = "Concentration[mg/L]") {
+  range_dat <- calib_list$result_table_obs
+  sum_dat <- calib_list$result_table_conc_levels
+
+  all_rf_mean <- mean(range_dat$response_factor[range_dat$final_linear_range])
+
+  ggplot(
+    range_dat,
+    aes(
+      x = log10(concentration),
+      y = response_factor,
+      color = final_linear_range,
+      fill = final_linear_range,
+      alpha = final_linear_range,
+      group = 1
+    )
+  ) +
+    geom_point(size = 1.7, shape = 21) +
+    geom_point(
+      data = sum_dat,
+      aes(x = log10(concentration), y = mean_response_factor),
+      color = "black",
+      shape = 21,
+      size = 2.5
+    ) +
+    geom_line(data = sum_dat, aes(x = log10(concentration), y = mean_response_factor)) +
+    scale_x_continuous(
+      labels = function(x)
+        sub(
+          "\\.?0+$",
+          "",
+          format(10^x, scientific = FALSE, zero.print = FALSE)
+        )
+    ) +
+    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.3)) +
+    facet_wrap(substance ~ ., scales = "free") +
+    geom_hline(
+      yintercept = all_rf_mean * 1.2,
+      linetype = "dashed",
+      color = "orange"
+    ) +
+    geom_hline(
+      yintercept = all_rf_mean * 0.8,
+      linetype = "dashed",
+      color = "orange"
+    ) +
+    theme_bw() +
+    theme(legend.position = "none") +
+    ylab(ylab) +
+    xlab(xlab)
 }
+#plotRespFactor()
+
