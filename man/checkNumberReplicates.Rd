@@ -2,17 +2,20 @@
 % Please edit documentation in R/01_data_preprocessing.R
 \name{checkNumberReplicates}
 \alias{checkNumberReplicates}
-\title{Data preprocessing: Check for sufficient number of replicates}
+\title{Data preprocessing: Helper function to check for sufficient number of replicates for a specific concentration level}
 \usage{
 checkNumberReplicates(x, data, minNumber)
 }
 \arguments{
-\item{x}{concentration level to check}
+\item{x}{\strong{numeric(1)} \cr concentration level to check}
 
-\item{data}{\strong{data.frame} \cr data set to be filtered}
+\item{data}{\strong{list of data.frames} \cr list of data.frames (each dataframe contains data for a specific concentration level)}
 
 \item{minNumber}{\strong{integer(1)} \cr minimal number of data points per concentration level}
 }
+\value{
+\strong{locgical(1)} \cr TRUE if there are enough replicates or FALSE if not
+}
 \description{
-Data preprocessing: Check for sufficient number of replicates
+Data preprocessing: Helper function to check for sufficient number of replicates for a specific concentration level
 }

@@ -3,7 +3,7 @@
 #' Title
 #'
 #' @param X
-#' @param dataValidated
+#' @param dataCleaned
 #' @param cv_thres
 #' @param PLR_res
 #' @param avgResFacDataV
@@ -15,7 +15,7 @@
 #'
 #' @examples
 assemble_results <- function(X,
-                             dataValidated,
+                             dataCleaned,
                              cv_thres = 20,
                              PLR_res,
                              resFacDataV,
@@ -27,9 +27,8 @@ assemble_results <- function(X,
                              substance = "substance1"
                              ) {
 
-
-  concentrations <- as.numeric(names(dataValidated))
-  mean_measurement <- sapply(dataValidated, function(x) mean(x$Measurement))
+  concentrations <- as.numeric(names(dataCleaned))
+  mean_measurement <- sapply(dataCleaned, function(x) mean(x$Measurement))
   estimated_measurement <- predict(object = mod, newdata = data.frame(Concentration = concentrations))
 
   ### thresholds for response factor

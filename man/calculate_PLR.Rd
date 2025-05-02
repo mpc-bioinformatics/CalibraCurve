@@ -2,20 +2,24 @@
 % Please edit documentation in R/02_preliminary_linear_range.R
 \name{calculate_PLR}
 \alias{calculate_PLR}
-\title{Calulate preliminary linear range (PLR)}
+\title{Calculate preliminary linear range (PLR)}
 \usage{
-calculate_PLR(dataValidated, cv_thres = 20, calcContinuousPrelimRanges = TRUE)
+calculate_PLR(dataCleaned, cv_thres = 20, calcContinuousPrelimRanges = TRUE)
 }
 \arguments{
-\item{dataValidated}{data frame cleaned by cleanData()}
+\item{dataCleaned}{\strong{data.frame} \cr Data cleaned by \code{\link{cleadData}}.}
 
-\item{cv_thres}{threshold for CV per concentration level (default is 20)}
+\item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
 
-\item{calcContinuousPrelimRanges}{}
+\item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest continuous range is selected (default is TRUE).
+If FALSE, gaps with CVs larger than the threshold may be included.}
 }
 \value{
-list
+List with the following elements:
+\itemize{
+\item \code{dataPrelim}: Data frame with the data for the preliminary linear range.
+}
 }
 \description{
-Calulate preliminary linear range (PLR)
+Calculate preliminary linear range (PLR)
 }

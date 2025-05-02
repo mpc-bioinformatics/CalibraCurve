@@ -35,6 +35,9 @@ readData(
 
 \item{meas_cols}{\strong{integer} \cr Column number of the concentration values.}
 }
+\value{
+data.frame with two numeric columns: Concentration and Measurement
+}
 \description{
 Read in data in different input formats
 }

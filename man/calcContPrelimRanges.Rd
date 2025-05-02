@@ -4,10 +4,13 @@
 \alias{calcContPrelimRanges}
 \title{PLR: Calculate key features for the existing continuous preliminary ranges}
 \usage{
-calcContPrelimRanges(x)
+calcContPrelimRanges(index)
 }
 \arguments{
-\item{x}{data frame}
+\item{index}{\strong{integer} \cr Integer vector containing indices of concentration levels with CV < threshold.}
+}
+\value{
+Data.frame with one range in each row. Contains the columns "startPoints", "endPoints", and "extent".
 }
 \description{
 PLR: Calculate key features for the existing continuous preliminary ranges

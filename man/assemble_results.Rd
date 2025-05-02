@@ -6,7 +6,7 @@
 \usage{
 assemble_results(
   X,
-  dataValidated,
+  dataCleaned,
   cv_thres = 20,
   PLR_res,
   resFacDataV,

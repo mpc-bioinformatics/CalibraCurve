@@ -39,10 +39,20 @@ CalibraCurve(
 
 \item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
 
+\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\t" for tab.}
+
+\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot.}
+
+\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names.}
+
+\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA.}
+
+\item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
+
 \item{min_replicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
 Concentration levels with too few data points will be removed.}
 
-\item{perBiasDistThres}{}
+\item{substance}{}
 }
 \description{
 CalibraCurve

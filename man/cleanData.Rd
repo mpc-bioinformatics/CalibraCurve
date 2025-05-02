@@ -2,15 +2,19 @@
 % Please edit documentation in R/01_data_preprocessing.R
 \name{cleanData}
 \alias{cleanData}
-\title{Clean data}
+\title{Clean data (remove 0s and NAs, remove concentration levels with insufficient number of replicates)}
 \usage{
 cleanData(rawData, min_replicates)
 }
 \arguments{
-\item{rawData}{data set to be cleaned, result of readData.}
+\item{rawData}{\strong{data.frame} \cr data set to be cleaned, result of readData.}
 
-\item{min_replicates}{minimal number of data points per concentration level}
+\item{min_replicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
+Concentration levels with too few data points will be removed.}
+}
+\value{
+list of data.frames, each data.frame contains data for a specific concentration level
 }
 \description{
-Clean data
+Clean data (remove 0s and NAs, remove concentration levels with insufficient number of replicates)
 }

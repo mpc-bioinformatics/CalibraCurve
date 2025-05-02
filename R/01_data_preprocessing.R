@@ -11,7 +11,7 @@
 #' @param na.strings **character** \cr Character vector of strings which are to be interpreted as NA.
 #' @param sheet **integer(1)** \cr Sheet number (only needed for xlsx files, default is to use the first sheet).
 #'
-#' @returns
+#' @returns data.frame with two numeric columns: Concentration and Measurement
 #' @export
 #'
 #' @examples
@@ -75,30 +75,29 @@ readData <- function(data_path,
 
 
 
-#' Data preprocessing: Select all rows with identical concentrations
+#' Data preprocessing: Helper function to select all rows from a specific concentration level
 #'
-#' @param x concentration level to check
-#' @param rawData **data.frame** \cr data set to be filtered
+#' @param x **numeric(1)** \cr concentration level to select
+#' @param rawData **data.frame** \cr data set to be filtered (e.g. result of \code{\link{readData}})
 #'
-#' @returns
-#' @export
+#' @returns data.frame
 #'
 #' @examples
-selConcentrationLevels <- function(x, rawData) {
+filterConcentrationLevel <- function(x,
+                                     rawData) {
   result <- rawData[rawData$Concentration == x, ]
   return(result)
 }
 
 
 
-#' Data preprocessing: Check for sufficient number of replicates
+#' Data preprocessing: Helper function to check for sufficient number of replicates for a specific concentration level
 #'
-#' @param x concentration level to check
-#' @param data **data.frame** \cr data set to be filtered
+#' @param x **numeric(1)** \cr concentration level to check
+#' @param data **list of data.frames** \cr list of data.frames (each dataframe contains data for a specific concentration level)
 #' @param minNumber **integer(1)** \cr minimal number of data points per concentration level
 #'
-#' @returns
-#' @export
+#' @returns **locgical(1)** \cr TRUE if there are enough replicates or FALSE if not
 #'
 #' @examples
 checkNumberReplicates <- function(x, data, minNumber) {
@@ -113,32 +112,31 @@ checkNumberReplicates <- function(x, data, minNumber) {
 
 
 
-#' Clean data
+#' Clean data (remove 0s and NAs, remove concentration levels with insufficient number of replicates)
 #'
-#' @param rawData data set to be cleaned, result of readData.
-#' @param min_replicates minimal number of data points per concentration level
+#' @param rawData **data.frame** \cr data set to be cleaned, result of readData.
+#' @param min_replicates **integer(1)** \cr Minimal number of replicates/data points per concentration level.
+#'                                          Concentration levels with too few data points will be removed.
 #'
-#' @returns
+#' @returns list of data.frames, each data.frame contains data for a specific concentration level
 #' @export
 #'
 #' @examples
 cleanData <- function(rawData, min_replicates) {
 
+  ### check input arguments
+  checkmate::assert_int(min_replicates)
+
   # Removing rows that contain unwanted 0 values (problems with log-transform later) or NA values in either
   # the concentration or measurement column
   dataValidated <- rawData[rawData$Concentration != 0 & !is.na(rawData$Concentration) & rawData$Measurement != 0 & !is.na(rawData$Measurement),]
-  #dataValidated <- dataValidated[dataValidated[colNumberMeasurements]!=0 | is.na(dataValidated[colNumberMeasurements]),]
-  ### remove rows with unknown concentration
-  #dataValidated <- rawData[!is.na(rawData$Concentration),]
-  ### remove rows with unknown measurement
-  #dataValidated <- rawData[!is.na(rawData$Measurement),]
 
   # Determination of existing concentration levels in the validated data
   concLevels <- unique(dataValidated$Concentration)
   concLevels <- sort(concLevels, decreasing = FALSE)
 
   # Transforming a data set into a list with entries for each concentration level (and the related data)
-  dataValidated <- lapply(concLevels, FUN = selConcentrationLevels, rawData = dataValidated)
+  dataValidated <- lapply(concLevels, FUN = filterConcentrationLevel, rawData = dataValidated)
 
   # Deleting concentration levels with insufficient number of replicates
   dataValidated <- dataValidated[sapply(1:length(dataValidated), FUN = checkNumberReplicates, data = dataValidated, minNumber = min_replicates)]
