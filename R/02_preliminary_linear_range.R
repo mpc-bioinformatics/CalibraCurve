@@ -63,7 +63,9 @@ calcContPrelimRanges  <- function(index) {
 #'                                                      If FALSE, gaps with CVs larger than the threshold may be included.
 #'
 #' @returns List with the following elements:
-#' - \code{dataPrelim}: Data frame with the data for the preliminary linear range.
+#' - \code{dataPrelim}: List of data.frames containing data only within the preliminary linear range.
+#' - \code{concLevelsCV}: Vector with the calculated CV for each concentration level.
+#' - \code{prelimConcLevels}: Vector with the concentration levels within the preliminary linear range.
 #'
 #' @export
 #'
@@ -121,7 +123,7 @@ calculate_PLR <- function(dataCleaned,
 
   return(list(dataPrelim = dataPrelim,
               concLevelsCV = concLevelsCV,
-              prelimConcLevels = prelimConcLevels))
+              prelimConcLevels = prelimConcLevels)) ### TODO: could be extracted from dataPrelim. Is this needed?
               ##concLevelsCVSel = concLevelsCVSel))
 }
 

@@ -14,16 +14,15 @@
 #' @param sheet **integer(1)** \cr Sheet number (only needed for xlsx files, default is to use the first sheet).
 #' @param min_replicates **integer(1)** \cr Minimal number of replicates/data points per concentration level.
 #'                                          Concentration levels with too few data points will be removed.
-#' @param cv_thres
-#' @param calcContinuousPrelimRanges
-#' @param weightingMethod
-#' @param centralTendencyMeasure
-#' @param perBiasThres
-#' @param considerPerBiasCV
-#' @param perBiasDistThres
-
-
-
+#' @param cv_thres **numeric(1)** \cr Threshold for CV per concentration level in percent (default is 20).
+#' @param calcContinuousPrelimRanges **logical(1)** \cr If TRUE, the longest continuous range is selected (default is TRUE).
+#'                                                      If FALSE, gaps with CVs larger than the threshold may be included.
+#' @param weightingMethod **character(1)** \cr Method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is 1/x^2).
+#' @param centralTendencyMeasure **character(1)** \cr Method for calculating average percent bias, "mean" (default) or "median".
+#' @param perBiasThres **numeric(1)** \cr Threshold for average percent bias in percent, default is 20.
+#' @param considerPerBiasCV **logical(1)** \cr If TRUE, CV is considered for the elimination of the concentration level (default). CV will only be considered if the difference in
+#'                                             percent bias values is lower than perBiasDistThres.
+#' @param perBiasDistThres **numeric(1)** \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10.
 #' @param RfThresL
 #' @param RfThresU
 #' @param substance
