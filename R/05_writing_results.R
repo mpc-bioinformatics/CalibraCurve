@@ -1,16 +1,22 @@
 
 
-#' Title
+#' Assemle result tables
 #'
-#' @param X
-#' @param dataCleaned
-#' @param cv_thres
-#' @param PLR_res
-#' @param avgResFacDataV
-#' @param FLR_res
-#' @param mod
+#' @param X **data.frame** \cr Original data set, result of \code{\link{readData}}.
+#' @param dataCleaned **list of data.frames** \cr Cleaned data, result of \code{\link{cleanData}}.
+#' @param cv_thres **numeric(1)** \cr Threshold for CV per concentration level in percent (default is 20).
+#' @param PLR_res **list** \cr Result object of \code{\link{calculate_PLR}}.
+#' @param resFacDataV  **list** \cr Result of \code{\link{calcRFLevels}}. List of response factor values for each
+#' @param avgResFacDataV **numeric** \cr Result of \code{\link{calcRFMeans}}. Vector of mean response factor values for the different concentration levels.
+#' @param FLR_res **list** Result object of \code{\link{calculate_FLR}}.
+#' @param mod **lm object** \cr Final linear model fit (object "mod" from results of \code{\link{calculate_FLR}}).
+#' @param RfThresL **numeric(1)** \cr Lower threshold for response factor in percent (default is 80).
+#' @param RfThresU **numeric(1)** \cr Upper threshold for response factor in percent (default is 120).
+#' @param substance **character(1)** \cr Name of the substance (default is "substance1").
 #'
-#' @returns
+#' @returns List with the following elements:
+#' - \code{result_table_conc_levels}: Result table with one line for each concentration level.
+#' - \code{result_table_obs}: Result table with one line per observation (e.g. individual response factors for each data point).
 #' @export
 #'
 #' @examples
@@ -28,7 +34,11 @@ assemble_results <- function(X,
                              ) {
 
   concentrations <- as.numeric(names(dataCleaned))
+
+  # mean measurement for each concentration value
   mean_measurement <- sapply(dataCleaned, function(x) mean(x$Measurement))
+
+  #precdict measurements for each concentration using the final linear model
   estimated_measurement <- predict(object = mod, newdata = data.frame(Concentration = concentrations))
 
   ### thresholds for response factor
@@ -36,10 +46,13 @@ assemble_results <- function(X,
   RfThresLFactor <- RfThresL/100
   concentrations_FLR <- as.numeric(rownames(FLR_res$perBiasAvgSDCV))
 
-  mean_RF <- mean(unlist(resFacDataV[concentrations %in% concentrations_FLR])) # mean RF (only for final linear range)
+  # mean response factor for each concentration value (only within final linear range)
+  mean_RF <- mean(unlist(resFacDataV[concentrations %in% concentrations_FLR]))
   hLineLow <- mean_RF * RfThresLFactor
   hLineUpper <- mean_RF * RfThresUFactor
 
+
+  # initialize the first result table (one line per concentration level)
   result_table_conc_levels <- data.frame(
     substance = substance,
     concentration = concentrations,
@@ -56,10 +69,10 @@ assemble_results <- function(X,
     final_linear_range = NA
   )
 
+  # fill table with percent bias information (only within final linear range) and
+  # if the concentration level is within the final linear range
   for (i in seq_along(concentrations)) {
-
     ind <- which(concentrations[i] == concentrations_FLR)
-
     if (length(ind) >= 1) {
       result_table_conc_levels$mean_percentage_bias[i] <- FLR_res$perBiasAvgSDCV$avgPerBias[ind]
       result_table_conc_levels$SD_percentage_bias[i] <- FLR_res$perBiasAvgSDCV$stdDevPerBias[ind]
@@ -71,8 +84,8 @@ assemble_results <- function(X,
   }
 
 
-  ##############################################
 
+  # initialize second result table (one line per observation)
   result_table_obs <- data.frame(
     substance = substance,
     concentration = X$Concentration,
@@ -84,6 +97,7 @@ assemble_results <- function(X,
   )
   rownames(result_table_obs) <- NULL
 
+  # fill table with percent bias information (only within final linear range)
   perBias <- FLR_res$perBias
   for (i in 1:length(concentrations)) {
     if (concentrations[i] %in% concentrations_FLR) {

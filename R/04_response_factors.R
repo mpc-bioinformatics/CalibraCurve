@@ -11,12 +11,11 @@
 #                         Analytical Chemistry 1996, 68, 305A-309A.
 #'
 #'
-#' @param x
-#' @param intercept Intercept of the linear model
-#' @param expConc
+#' @param x *data.frame** \cr Data.frame containing data for a specific concentration level.
+#' @param intercept  **numeric(1)** \cr Intercept of the linear model.
+#' @param expConc **numeric(1)** \cr  Expected concentration (known concentration value).
 #'
-#' @returns
-#' @export
+#' @returns vector of response factors for this specific concentration level
 #'
 #' @examples
 calcResponseFactors <- function(x, intercept, expConc) {
@@ -30,10 +29,10 @@ calcResponseFactors <- function(x, intercept, expConc) {
 #' @description
 #' Final linear range: Function, which returns a list with response factor values for a data set (given as list)
 #'
-#' @param x
-#' @param mod linear model object
+#' @param x **list of data.frames** \cr List of data.frames containing data for eacht concentration level (result from \code{\link{cleanData}}).
+#' @param mod **lm object** \cr Final linear model fit (object "mod" from results of \code{\link{calculate_FLR}}).
 #'
-#' @returns
+#' @returns List of response factor values for each concentration level.
 #' @export
 #'
 #' @examples
@@ -59,9 +58,9 @@ calcRFLevels <- function(x, mod) {
 #'
 #' @description The function returns mean response factor values
 #'
-#' @param x
+#' @param x **list** \cr Result of \code{\link{calcRFLevels}} \cr List of response factor values for each concentration level.
 #'
-#' @returns
+#' @returns vector of mean response factor values for the different concentration levels.
 #' @export
 #'
 #' @examples
