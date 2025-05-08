@@ -7,11 +7,14 @@
 calcPerBias(x, LMfit, expConc)
 }
 \arguments{
-\item{x}{data frame for a specific concentration level}
+\item{x}{\strong{data.frame} \cr Data.frame containing data for a specific concentration level.}
 
-\item{LMfit}{linear model fit}
+\item{LMfit}{\strong{lm object} \cr Linear model fit as calculated by \code{\link{calcLinearModel}}.}
 
-\item{expConc}{expected (known) concentration level}
+\item{expConc}{\strong{numeric(1)} \cr Expected (known) concentration level.}
+}
+\value{
+Vector of percent bias values for each data point in this concentration level.
 }
 \description{
 FLR: calculate percent bias for a specific concentration level

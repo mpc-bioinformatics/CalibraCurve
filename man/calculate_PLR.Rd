@@ -7,7 +7,7 @@
 calculate_PLR(dataCleaned, cv_thres = 20, calcContinuousPrelimRanges = TRUE)
 }
 \arguments{
-\item{dataCleaned}{\strong{data.frame} \cr Data cleaned by \code{\link{cleadData}}.}
+\item{dataCleaned}{\strong{data.frame} \cr Data cleaned by \code{\link{cleanData}}.}
 
 \item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
 
@@ -17,7 +17,9 @@ If FALSE, gaps with CVs larger than the threshold may be included.}
 \value{
 List with the following elements:
 \itemize{
-\item \code{dataPrelim}: Data frame with the data for the preliminary linear range.
+\item \code{dataPrelim}: List of data.frames containing data only within the preliminary linear range.
+\item \code{concLevelsCV}: Vector with the calculated CV for each concentration level.
+\item \code{prelimConcLevels}: Vector with the concentration levels within the preliminary linear range.
 }
 }
 \description{

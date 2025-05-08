@@ -7,9 +7,14 @@
 calcResponseFactors(x, intercept, expConc)
 }
 \arguments{
-\item{intercept}{Intercept of the linear model}
+\item{x}{\emph{data.frame}* \cr Data.frame containing data for a specific concentration level.}
 
-\item{expConc}{}
+\item{intercept}{\strong{numeric(1)} \cr Intercept of the linear model.}
+
+\item{expConc}{\strong{numeric(1)} \cr  Expected concentration (known concentration value).}
+}
+\value{
+vector of response factors for this specific concentration level
 }
 \description{
 Function, which calculates a response factor for a single data point

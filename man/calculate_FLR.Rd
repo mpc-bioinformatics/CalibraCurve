@@ -14,17 +14,27 @@ calculate_FLR(
 )
 }
 \arguments{
-\item{dataPrelim}{data frame with concentration levels and corresponding response values (result from calculate_PLR)}
+\item{dataPrelim}{\strong{list of data.frames} \cr List of data.frames containing data only within the preliminary linear range (result from \code{\link{calculate_PLR}}).}
 
-\item{weightingMethod}{method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is 1/x^2)}
+\item{weightingMethod}{\strong{character(1)} \cr Method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is 1/x^2).}
 
-\item{centralTendencyMeasure}{"mean" or "median" (for calculating average percent bias), default is "mean"}
+\item{centralTendencyMeasure}{\strong{character(1)} \cr Method for calculating average percent bias, "mean" (default) or "median".}
 
-\item{perBiasThres}{threshold for average percent bias, default is 20\%}
+\item{perBiasThres}{\strong{numeric(1)} \cr Threshold for average percent bias in percent, default is 20.}
 
-\item{considerPerBiasCV}{consider CV for the selection of the concentration level, default is TRUE}
+\item{considerPerBiasCV}{\strong{logical(1)} \cr If TRUE, CV is considered for the elimination of the concentration level (default). CV will only be considered if the difference in
+percent bias values is lower than perBiasDistThres.}
 
-\item{perBiasDistThres}{threshold for the difference in average percent bias (for lower differences, CV will be considered), default is 10\%}
+\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10.}
+}
+\value{
+List with the following elements:
+\itemize{
+\item \code{dataFinal}: List of data.frames containing data only within the final linear range.
+\item \code{mod}: lm-object containing the final linear model (weighted or unweighted, depending on weightingMethod).
+\item \code{perBias}: result list of \code{\link{calcPerBiasLevels}}.
+\item \code{perBiasAvgSDCV}: result data.frame of \code{\link{calcPerBiasAvgSDCV}}.
+}
 }
 \description{
 Calculate the final linear range

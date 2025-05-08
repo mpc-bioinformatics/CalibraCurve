@@ -7,7 +7,12 @@
 calcRFLevels(x, mod)
 }
 \arguments{
-\item{mod}{linear model object}
+\item{x}{\strong{list of data.frames} \cr List of data.frames containing data for eacht concentration level (result from \code{\link{cleanData}}).}
+
+\item{mod}{\strong{lm object} \cr Final linear model fit (object "mod" from results of \code{\link{calculate_FLR}}).}
+}
+\value{
+List of response factor values for each concentration level.
 }
 \description{
 Final linear range: Function, which returns a list with response factor values for a data set (given as list)

@@ -4,12 +4,15 @@
 \alias{calcWeights}
 \title{FLR: calculate weights for linear model for a specific concentration level}
 \usage{
-calcWeights(x, weightMet = "1/x^2")
+calcWeights(x, weightingMethod = "1/x^2")
 }
 \arguments{
-\item{x}{data frame}
+\item{x}{\strong{data.frame} \cr Data.frame containing data for a specific concentration level.}
 
-\item{weightMet}{method for weighting (currently 1/x and 1/x^2 are supported, default is 1/x^2)}
+\item{weightingMethod}{\strong{character(1)} \cr Method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is "1/x^2").}
+}
+\value{
+Vector of a constant weights for each measurement in this concentration level.
 }
 \description{
 FLR: calculate weights for linear model for a specific concentration level

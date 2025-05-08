@@ -4,8 +4,8 @@
 #' @param data_path **character(1)** \cr Path to the data file (.csv, .txt or .xlsx file).
 #' @param filetype **character(1)** \cr Type of input file: "csv" or "txt" or "xlsx".
 #' @param conc_col **integer(1)** \cr Column number of the concentration values.
-#' @param meas_cols **integer** \cr Column number of the concentration values.
-#' @param sep **character(1)** \cr The field separator, e.g. " " for blanks, "," for comma or "\t" for tab.
+#' @param meas_col **integer** \cr Column number of the concentration values.
+#' @param sep **character(1)** \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab.
 #' @param dec **character(1)** \cr Decimal separator, e.g. "," for comma or "." for dot.
 #' @param header **logical(1)** \cr If TRUE, first line is counted as column names.
 #' @param na.strings **character** \cr Character vector of strings which are to be interpreted as NA.
@@ -40,7 +40,7 @@ readData <- function(data_path,
 
 
   if (filetype == "csv" | filetype == "txt") {
-    rawData <- read.table(data_path,
+    rawData <- utils::read.table(data_path,
                           sep = sep,
                           header = header,
                           dec = dec)

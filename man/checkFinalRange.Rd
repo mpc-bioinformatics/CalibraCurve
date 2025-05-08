@@ -4,15 +4,15 @@
 \alias{checkFinalRange}
 \title{FLR: checks if final linear range has been reached (compare average percent bias with threshold)}
 \usage{
-checkFinalRange(perBiasInfo, perBiasThres = 10)
+checkFinalRange(perBiasInfo, perBiasThres = 20)
 }
 \arguments{
-\item{perBiasInfo}{result of calcPerBiasAvgSDCV()}
+\item{perBiasInfo}{\strong{data.frame} Result of \code{\link{calcPerBiasAvgSDCV}}.}
 
-\item{perBiasThres}{threshold for average percent bias}
+\item{perBiasThres}{\strong{numeric(1)} \strong{numeric(1)} \cr Threshold for average percent bias in percent, default is 20.}
 }
 \value{
-logical(1) TRUE if bost lowest and highest concentration level passed the check
+TRUE if both lowest and highest concentration level passed the check
 (and the final linear range is reached), FALSE otherwise
 }
 \description{

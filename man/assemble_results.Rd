@@ -2,7 +2,7 @@
 % Please edit documentation in R/05_writing_results.R
 \name{assemble_results}
 \alias{assemble_results}
-\title{Title}
+\title{Assemle result tables}
 \usage{
 assemble_results(
   X,
@@ -19,8 +19,35 @@ assemble_results(
 )
 }
 \arguments{
-\item{mod}{}
+\item{X}{\strong{data.frame} \cr Original data set, result of \code{\link{readData}}.}
+
+\item{dataCleaned}{\strong{list of data.frames} \cr Cleaned data, result of \code{\link{cleanData}}.}
+
+\item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
+
+\item{PLR_res}{\strong{list} \cr Result object of \code{\link{calculate_PLR}}.}
+
+\item{resFacDataV}{\strong{list} \cr Result of \code{\link{calcRFLevels}}. List of response factor values for each}
+
+\item{avgResFacDataV}{\strong{numeric} \cr Result of \code{\link{calcRFMeans}}. Vector of mean response factor values for the different concentration levels.}
+
+\item{FLR_res}{\strong{list} Result object of \code{\link{calculate_FLR}}.}
+
+\item{mod}{\strong{lm object} \cr Final linear model fit (object "mod" from results of \code{\link{calculate_FLR}}).}
+
+\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in percent (default is 80).}
+
+\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in percent (default is 120).}
+
+\item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1").}
+}
+\value{
+List with the following elements:
+\itemize{
+\item \code{result_table_conc_levels}: Result table with one line for each concentration level.
+\item \code{result_table_obs}: Result table with one line per observation (e.g. individual response factors for each data point).
+}
 }
 \description{
-Title
+Assemle result tables
 }

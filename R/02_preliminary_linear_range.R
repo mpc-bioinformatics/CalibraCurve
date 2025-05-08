@@ -8,7 +8,7 @@
 #'
 #' @examples
 calcCV <- function(x) {
-  SD <-  sd(x$Measurement)
+  SD <-  stats::sd(x$Measurement)
   Mean <- mean(x$Measurement)
   CV <- SD / Mean * 100
   names(CV) <- x$Concentration[1]
@@ -57,7 +57,7 @@ calcContPrelimRanges  <- function(index) {
 
 #' Calculate preliminary linear range (PLR)
 #'
-#' @param dataCleaned **data.frame** \cr Data cleaned by \code{\link{cleadData}}.
+#' @param dataCleaned **data.frame** \cr Data cleaned by \code{\link{cleanData}}.
 #' @param cv_thres **numeric(1)** \cr Threshold for CV per concentration level in percent (default is 20).
 #' @param calcContinuousPrelimRanges **logical(1)** \cr If TRUE, the longest continuous range is selected (default is TRUE).
 #'                                                      If FALSE, gaps with CVs larger than the threshold may be included.
@@ -79,7 +79,7 @@ calculate_PLR <- function(dataCleaned,
   checkmate::assert_flag(calcContinuousPrelimRanges)
 
   ### calculate CV for each concentration level
-  concLevelsCV <- sapply(dataValidated, calcCV)
+  concLevelsCV <- sapply(dataCleaned, calcCV)
   ## which concentration levels have a CV lower than the threshold?
   index <- which(concLevelsCV <= cv_thres)
 
@@ -93,19 +93,18 @@ calculate_PLR <- function(dataCleaned,
 
 
   if (!calcContinuousPrelimRanges) {# FALSE: Selecting all levels between the lowest and highest concentration level, where CV < threshold
-    dataPrelim <- dataValidated[indexStart:indexEnd]
+    dataPrelim <- dataCleaned[indexStart:indexEnd]
   } else { # TRUE: Computing the longest continuous preliminary range
     longestRange <- rangeProperties[which(rangeProperties$extent == max(rangeProperties$extent)),]
 
     if (nrow(longestRange) > 1) {# Special case: more than one range with the same number of concentration levels that pass the CV threshold exist
       warning("More than one preliminary linear range with the same number of concentration levels passing the CV threshold exist. \n The first one will be selected. Set calcContinuousPrelimRanges to TRUE if you want to allow gaps with CV > threshold.")
-      dataPrelim <- dataValidated[longestRange$startPoints[1]:longestRange$endPoints[1]]
-      ### TODO: does that make any sense?
+      dataPrelim <- dataCleaned[longestRange$startPoints[1]:longestRange$endPoints[1]]
     } else {
       if (longestRange$extent == 0) {
         stop("No preliminary linear range with (CV < threshold) could be calculated. Please check your data or increase the CV threshold.")
       }
-      dataPrelim <- dataValidated[longestRange$startPoints:longestRange$endPoints]  # if nrow(longestRange) == 1
+      dataPrelim <- dataCleaned[longestRange$startPoints:longestRange$endPoints]  # if nrow(longestRange) == 1
     }
   }
 

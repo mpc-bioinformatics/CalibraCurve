@@ -7,12 +7,12 @@
 calcPerBiasLevels(x, LMfit)
 }
 \arguments{
-\item{x}{list of data frames (one list entry for each concentration level)}
+\item{x}{\strong{list of data.frames} \cr List of data frames (one entry for each concentration level), e.g. output "dataPrelim" from \code{\link{calculate_PLR}}.}
 
-\item{LMfit}{linear model fit}
+\item{LMfit}{\strong{lm object} \cr Linear model fit as calculated by \code{\link{calcLinearModel}}.}
 }
 \value{
-list of vectors with percent bias values for each data point per concentration level
+List of vectors with percent bias values for each data point per concentration level
 }
 \description{
 FLR: calculate list of percent bias values for all concentration levels

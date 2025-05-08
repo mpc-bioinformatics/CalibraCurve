@@ -23,7 +23,9 @@ readData(
 
 \item{conc_col}{\strong{integer(1)} \cr Column number of the concentration values.}
 
-\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\t" for tab.}
+\item{meas_col}{\strong{integer} \cr Column number of the concentration values.}
+
+\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab.}
 
 \item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot.}
 
@@ -32,8 +34,6 @@ readData(
 \item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA.}
 
 \item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
-
-\item{meas_cols}{\strong{integer} \cr Column number of the concentration values.}
 }
 \value{
 data.frame with two numeric columns: Concentration and Measurement

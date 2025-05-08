@@ -39,7 +39,7 @@ assemble_results <- function(X,
   mean_measurement <- sapply(dataCleaned, function(x) mean(x$Measurement))
 
   #precdict measurements for each concentration using the final linear model
-  estimated_measurement <- predict(object = mod, newdata = data.frame(Concentration = concentrations))
+  estimated_measurement <- stats::predict(object = mod, newdata = data.frame(Concentration = concentrations))
 
   ### thresholds for response factor
   RfThresUFactor <- RfThresU/100
@@ -101,13 +101,9 @@ assemble_results <- function(X,
   perBias <- FLR_res$perBias
   for (i in 1:length(concentrations)) {
     if (concentrations[i] %in% concentrations_FLR) {
-      print(i)
       ind1 <- which(concentrations_FLR == concentrations[i])
       ind2 <- which(result_table_obs$concentration == concentrations[i])
       result_table_obs$percentage_bias[ind2] <- perBias[[ind1]]
-
-      print(ind1)
-      print(ind2)
     }
   }
 
@@ -117,6 +113,36 @@ assemble_results <- function(X,
          result_table_obs = result_table_obs))
 
 }
+
+
+
+
+
+#' Save results of CalibraCurve
+#'
+#' @param CC_res **list** Result object of \code{\link{CalibraCurve}}.
+#' @param output_path **character(1)** \cr Path to the output directory.
+#' @param suffix **character(1)** \cr Suffix for the output files, ideally starting with "_" (default is "").
+#'
+#' @returns Returns nothing, but the function saves the results to the specified output path.
+#' @export
+#'
+#' @examples
+saveCCResult <- function(CC_res, output_path, suffix = "") {
+  # save result tables
+  openxlsx::write.xlsx(CC_res$result_table_conc_levels,
+            file = paste0(output_path, "/result_table_conc_levels", suffix, ".xlsx"),
+            row.names = FALSE)
+  openxlsx::write.xlsx(CC_res$result_table_obs,
+            file = paste0(output_path, "/result_table_obs", suffix, ".xlsx"),
+            row.names = FALSE)
+
+  # save whole result object
+  saveRDS(CC_res, file = paste0(output_path, "/CC_res", suffix, ".rds"))
+  return(invisible(NULL))
+}
+
+
 
 
 

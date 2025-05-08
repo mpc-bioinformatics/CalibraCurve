@@ -7,9 +7,12 @@
 calcLinearModel(x, weights = NULL)
 }
 \arguments{
-\item{x}{list of data frames (one entry for each concentration level)}
+\item{x}{\strong{list of data.frames} \cr List of data frames (one entry for each concentration level), e.g. output "dataPrelim" from \code{\link{calculate_PLR}}.}
 
-\item{weights}{vector of weights (default is NULL and will result in an unweighted model)}
+\item{weights}{\strong{numeric} \cr Vector of weights as calculated by applying \code{\link{calcWeights}} (default is NULL and will result in an unweighted model).}
+}
+\value{
+Fit of the linear model as an object of class "lm".
 }
 \description{
 FLR: calculate weighted or unweighted linear model

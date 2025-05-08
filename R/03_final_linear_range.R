@@ -36,9 +36,9 @@ calcLinearModel <- function(x, weights = NULL){
   dataSetDF <- do.call(rbind, x)
 
   if (is.null(weights)) {  # unweighted model
-    lmfit <- lm(Measurement ~ Concentration, data = dataSetDF)
+    lmfit <- stats::lm(Measurement ~ Concentration, data = dataSetDF)
   } else { # weighted model
-    lmfit <- lm(Measurement ~ Concentration, data = dataSetDF, weights = weights)
+    lmfit <- stats::lm(Measurement ~ Concentration, data = dataSetDF, weights = weights)
   }
   return(lmfit)
 }
@@ -107,10 +107,10 @@ calcPerBiasAvgSDCV <- function(x, method = "mean") {
       currAvgPerBias <- meanPerBias
     }
     if (method == 'median') {
-      currAvgPerBias <- median(x[[i]])
+      currAvgPerBias <- stats::median(x[[i]])
     }
     # Standard deviation of the percent bias values
-    currStdDev <- sd(x[[i]])
+    currStdDev <- stats::sd(x[[i]])
     currCV <- currStdDev/meanPerBias*100
     avgPerBias <- c(avgPerBias, currAvgPerBias)
     stdDevPerBias <- c(stdDevPerBias, currStdDev)
@@ -251,9 +251,9 @@ calculate_FLR <- function(dataPrelim,
                                      FUN = calcWeights,
                                      weightingMethod = weightingMethod))
       # Ensure that allWeights is a vector (some data sets lead to creation of lists)
-      if (class(allWeights) == "list") {
-        allWeights <- unlist(allWeights)
-      }
+      #if (class(allWeights) == "list") {
+      #  allWeights <- unlist(allWeights)
+      #}
     } else {
       allWeights <- NULL # if weightingMethod == "None"
     }

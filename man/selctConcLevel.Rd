@@ -2,22 +2,23 @@
 % Please edit documentation in R/03_final_linear_range.R
 \name{selctConcLevel}
 \alias{selctConcLevel}
-\title{FLR: selects a concentration level for subsequent removal}
+\title{FLR: selects the highest or lowest concentration level for removal}
 \usage{
-selctConcLevel(x, consPerBiasCV, perBiasT, perBiasDistT)
+selctConcLevel(x, perBiasT = 20, consPerBiasCV = TRUE, perBiasDistT = 10)
 }
 \arguments{
-\item{x}{result of calcPerBiasAvgSDCV()}
+\item{x}{\strong{data.frame} Result of \code{\link{calcPerBiasAvgSDCV}}.}
 
-\item{consPerBiasCV}{consider CV?}
+\item{perBiasT}{\strong{numeric(1)} \cr Threshold for average percent bias in percent, default is 20.}
 
-\item{perBiasT}{threshold for average percent bias}
+\item{consPerBiasCV}{consider CV? default is TRUE}
 
-\item{perBiasDistT}{threshold for the difference in average percent bias (for lower differences, CV will be considered)}
+\item{perBiasDistT}{\strong{numeric(1)} \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10.
+Only used if consPerBiasCV is TRUE.}
 }
 \value{
-logical(1): TRUE, if lowest concentration will be removed, FALSE if highest will be removed
+TRUE, if lowest concentration will be removed, FALSE if highest will be removed
 }
 \description{
-FLR: selects a concentration level for subsequent removal
+FLR: selects the highest or lowest concentration level for removal
 }

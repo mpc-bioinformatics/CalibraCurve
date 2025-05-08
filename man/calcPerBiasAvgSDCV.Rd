@@ -7,13 +7,13 @@
 calcPerBiasAvgSDCV(x, method = "mean")
 }
 \arguments{
-\item{x}{result of calcPerBiasLevels()}
+\item{x}{\strong{list of numeric vectors} \cr Result of \code{\link{calcPerBiasLevels}}.}
 
-\item{method}{method: "mean" or "median", default is "mean"}
+\item{method}{\strong{character(1)} \cr Method for calculating the average percent bias: "mean" (default) or "median".}
 }
 \value{
 data frame with 3 columns: avgPerBias, stdDevPerBias, CV_PerBias
-each row is one concentration level
+\cr each row is one concentration level
 }
 \description{
 FLR: calculate average, SD and CV percent bias for each concentration level

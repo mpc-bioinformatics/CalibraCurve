@@ -7,7 +7,10 @@
 calcRFMeans(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{\strong{list} \cr Result of \code{\link{calcRFLevels}} \cr List of response factor values for each concentration level.}
+}
+\value{
+vector of mean response factor values for the different concentration levels.
 }
 \description{
 The function returns mean response factor values
