@@ -132,10 +132,10 @@ saveCCResult <- function(CC_res, output_path, suffix = "") {
   # save result tables
   openxlsx::write.xlsx(CC_res$result_table_conc_levels,
             file = paste0(output_path, "/result_table_conc_levels", suffix, ".xlsx"),
-            row.names = FALSE)
+            rowNames = FALSE, keepNA = TRUE)
   openxlsx::write.xlsx(CC_res$result_table_obs,
             file = paste0(output_path, "/result_table_obs", suffix, ".xlsx"),
-            row.names = FALSE)
+            rowNames = FALSE, keepNA = TRUE)
 
   # save whole result object
   saveRDS(CC_res, file = paste0(output_path, "/CC_res", suffix, ".rds"))

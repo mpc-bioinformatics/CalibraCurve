@@ -2,10 +2,11 @@
 #' CalibraCurve
 #'
 #' @param data_path **character(1)** \cr Path to the data file (.csv, .txt or .xlsx file).
-#' @param output_path **character(1)** \cr Folder to save results (table and plots).
+#' @param output_path **character(1)** \cr Folder to save results (table and plots). If NULL (default), results are not saved.
+#' @param suffix **character(1)** \cr Suffix for the output files, ideally starting with "_" (default is "").
 #' @param conc_col **integer(1)** \cr Column number of the concentration values.
 #' @param meas_col **integer(1)** \cr Column number of the concentration values.
-#' @param filetype **character(1)** \cr Type of input file: "csv" or "txt" or "xlsx".
+#' @param substance **character(1)** \cr Name of the substance (default is "substance1").
 #' @param sep **character(1)** \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab.
 #' @param dec **character(1)** \cr Decimal separator, e.g. "," for comma or "." for dot.
 #' @param header **logical(1)** \cr If TRUE, first line is counted as column names.
@@ -24,7 +25,15 @@
 #' @param perBiasDistThres **numeric(1)** \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10.
 #' @param RfThresL **numeric(1)** \cr Lower threshold for response factor in percent (default is 80).
 #' @param RfThresU **numeric(1)** \cr Upper threshold for response factor in percent (default is 120).
-#' @param substance **character(1)** \cr Name of the substance (default is "substance1").
+#' @param ylab **character(1)** \cr y-axis label.
+#' @param xlab **character(1)** \cr x-axis label.
+#' @param show_regression_info **logical(1)** \cr If TRUE, show regression information (R2, slope, intercept) on the plot.
+#' @param show_linear_range **logical(1)** \cr If TRUE, show the linear range of the calibration curve.
+#' @param show_data_points **logical(1)** \cr If TRUE, show the data points on the plot.
+#' @param device **character(1)** \cr Device for saving the plot (default is "png"). Other options include "pdf", "jpeg", "tiff", "svg" etc. For details see \code{\link[ggplot2]{ggsave}}.
+#' @param plot_width **numeric(1)** \cr Plot width in cm (default is 10).
+#' @param plot_height **numeric(1)** \cr Plot height in cm (default is 10).
+#' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
 #'
 #' @returns List with the following elements:
 #' - \code{mod}: lm-object containing the final linear model.
@@ -38,8 +47,10 @@
 #' @examples
 CalibraCurve <- function(data_path,
                          output_path = NULL,
+                         suffix = "",
                          conc_col,
                          meas_col,
+                         substance = "substance1",
 
                          filetype = "xlsx",
                          sep = ",",
@@ -63,7 +74,16 @@ CalibraCurve <- function(data_path,
                          RfThresL = 80,
                          RfThresU = 120,
 
-                         substance = "substance1"
+                         ### paramaters for plotting
+                         ylab = "Intensity",
+                         xlab = "Concentration",
+                         show_regression_info = FALSE,
+                         show_linear_range = TRUE,
+                         show_data_points = TRUE,
+                         device = "png",
+                         plot_width = 12,
+                         plot_height = 10,
+                         plot_dpi = 300
                          ) {
 
   ## read in data
@@ -120,14 +140,41 @@ CalibraCurve <- function(data_path,
                              substance = substance
   )
 
-
-  return(list(mod = mod,
+  RES <- list(mod = mod,
               final_linear_range = as.numeric(names(dataFinal)),
               dataCleaned = dataCleaned,
               weightingMethod = weightingMethod,
               result_table_conc_levels = tables$result_table_conc_levels,
-              result_table_obs = tables$result_table_obs
-  ))
+              result_table_obs = tables$result_table_obs)
+
+  if (!is.null(output_path)) {
+  CalibraCurve::saveCCResult(CC_res = RES,
+                             output_path = output_path,
+                             suffix = suffix)
+  }
+
+
+  pl_CC <- CalibraCurve::plotCalibraCurve(RES,
+                                          ylab = ylab,
+                                          xlab = xlab,
+                                          show_regression_info = show_regression_info,
+                                          show_linear_range = show_linear_range,
+                                          show_data_points = show_data_points)
+
+  ## save the plot
+  ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve", suffix, ".", device),
+                 plot = pl_CC,
+                 device = device,
+                 width = plot_width,
+                 height = plot_height,
+                 units = "cm",
+                 dpi = plot_dpi)
+
+
+  RES$plot_CC < pl_CC
+
+
+  return(RES)
 
 }
 

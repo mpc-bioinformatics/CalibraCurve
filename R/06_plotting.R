@@ -1,14 +1,25 @@
 
-
-
-
-
+#' Plot the calibration curve
+#'
+#' @param RES **list** \cr Results of \code{\link{CalibraCurve}}.
+#' @param ylab **character(1)** \cr y-axis label.
+#' @param xlab **character(1)** \cr x-axis label.
+#' @param show_regression_info **logical(1)** \cr If TRUE, show regression information (R2, slope, intercept) on the plot.
+#' @param show_linear_range **logical(1)** \cr If TRUE, show the linear range of the calibration curve.
+#' @param show_data_points **logical(1)** \cr If TRUE, show the data points on the plot.
+#'
+#' @importFrom magrittr %>%
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 plotCalibraCurve <- function(RES,
-                           ylab = "Peak area",
-                           xlab = "Concentration[mg/L]",
-                           show_regression_info = FALSE,
-                           show_linear_range = TRUE,
-                           show_data_points = TRUE) {
+                             ylab = "Intensity",
+                             xlab = "Concentration",
+                             show_regression_info = FALSE,
+                             show_linear_range = TRUE,
+                             show_data_points = TRUE) {
 
 
   range_dat <- RES$result_table_obs
@@ -22,7 +33,7 @@ plotCalibraCurve <- function(RES,
     dplyr::filter(final_linear_range) %>%
     dplyr::group_by(substance) %>%
     dplyr::reframe(predd = list(final_mod$coefficients),
-            r2 = summary(final_mod)$r.squared)
+                   r2 = summary(final_mod)$r.squared)
 
   range_dat2 <- range_dat2 %>%
     tidyr::unnest(predd) %>%
@@ -76,14 +87,14 @@ plotCalibraCurve <- function(RES,
 
 
   ### initialize plot
-  pl <- ggplot2::ggplot(range_dat3, ggplot2::aes(x = log10(concentration), log10(measurement)))
+  pl <- ggplot2::ggplot(range_dat3, ggplot2::aes(x = concentration, y = measurement))
 
   ### add calibration curve
   pl <- pl +
     ggplot2::geom_line(
       color = "red",
       data = range_dat4,
-      ggplot2::aes(x = log10(xo), y = log10(predicted)),
+      ggplot2::aes(x = xo, y = predicted),  #log10
       inherit.aes = FALSE
     )
 
@@ -92,48 +103,54 @@ plotCalibraCurve <- function(RES,
     ggplot2::geom_point(size = 1.7, ggplot2::aes(alpha = final_linear_range))
 
   ### add shading for linear range
-  pl <- pl +
-    ggplot2::geom_rect(
-      data = an_dat,
-      ggplot2::aes(
-        xmin = log10(LLOQ),
-        xmax = log10(ULOQ),
-        ymin = -Inf,
-        ymax = Inf
-      ),
-      alpha = 0.1,
-      inherit.aes = FALSE
-    )
-
+  if (show_linear_range) {
+    pl <- pl +
+      ggplot2::geom_rect(
+        data = an_dat,
+        ggplot2::aes(
+          xmin = LLOQ,
+          xmax = ULOQ,
+          ymin = 0,
+          ymax = Inf
+        ),
+        alpha = 0.1,
+        inherit.aes = FALSE
+      )
+  }
 
   ## theme and labels
   pl <- pl +
     ggplot2::theme_bw() +
     ggplot2::ylab(ylab) +
-    ggplot2::xlab(xlab)
-
-
+    ggplot2::xlab(xlab) +
+    ggplot2::theme(legend.position = "bottom",
+                   plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm") )
 
 
   pl <- pl +
     #theme(legend.position = "none") +
     ggplot2::facet_wrap(substance ~ ., scales = "free") +
-    ggplot2::scale_x_continuous(
-      labels = function(x)
-        sub(
-          "\\.?0+$",
-          "",
-          format(10^x, scientific = FALSE, zero.print = FALSE)
-        )
-    ) +
-    ggplot2::scale_y_continuous(
-      labels = function(y)
-        paste0(round(10^y, 5))
-    ) +
+    ggplot2::scale_x_continuous(trans = "log10", labels = scales::comma) +
+    ggplot2::scale_y_continuous(trans = "log10") +
+
+    # ggplot2::scale_x_continuous(
+    #   labels = function(x)
+    #     sub(
+    #       "\\.?0+$",
+    #       "",
+    #       format(10^x, scientific = FALSE, zero.print = FALSE)
+    #     )
+    # ) +
+    # ggplot2::scale_y_continuous(
+    #   labels = function(y)
+    #     paste0(round(10^y, 5))
+    # ) +
     ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.1))
 
 
-  if (reg_eq) {
+
+
+  if (show_regression_info) {
     pl <- pl + ggplot2::geom_text(
       data = eq_dat,
       ggplot2::aes(-Inf, Inf, label = eq),

@@ -7,8 +7,10 @@
 CalibraCurve(
   data_path,
   output_path = NULL,
+  suffix = "",
   conc_col,
   meas_col,
+  substance = "substance1",
   filetype = "xlsx",
   sep = ",",
   dec = ";",
@@ -25,19 +27,29 @@ CalibraCurve(
   perBiasDistThres = 10,
   RfThresL = 80,
   RfThresU = 120,
-  substance = "substance1"
+  ylab = "Intensity",
+  xlab = "Concentration",
+  show_regression_info = FALSE,
+  show_linear_range = TRUE,
+  show_data_points = TRUE,
+  device = "png",
+  plot_width = 12,
+  plot_height = 10,
+  plot_dpi = 300
 )
 }
 \arguments{
 \item{data_path}{\strong{character(1)} \cr Path to the data file (.csv, .txt or .xlsx file).}
 
-\item{output_path}{\strong{character(1)} \cr Folder to save results (table and plots).}
+\item{output_path}{\strong{character(1)} \cr Folder to save results (table and plots). If NULL (default), results are not saved.}
+
+\item{suffix}{\strong{character(1)} \cr Suffix for the output files, ideally starting with "_" (default is "").}
 
 \item{conc_col}{\strong{integer(1)} \cr Column number of the concentration values.}
 
 \item{meas_col}{\strong{integer(1)} \cr Column number of the concentration values.}
 
-\item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
+\item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1").}
 
 \item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab.}
 
@@ -72,7 +84,23 @@ percent bias values is lower than perBiasDistThres.}
 
 \item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in percent (default is 120).}
 
-\item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1").}
+\item{ylab}{\strong{character(1)} \cr y-axis label.}
+
+\item{xlab}{\strong{character(1)} \cr x-axis label.}
+
+\item{show_regression_info}{\strong{logical(1)} \cr If TRUE, show regression information (R2, slope, intercept) on the plot.}
+
+\item{show_linear_range}{\strong{logical(1)} \cr If TRUE, show the linear range of the calibration curve.}
+
+\item{show_data_points}{\strong{logical(1)} \cr If TRUE, show the data points on the plot.}
+
+\item{device}{\strong{character(1)} \cr Device for saving the plot (default is "png"). Other options include "pdf", "jpeg", "tiff", "svg" etc. For details see \code{\link[ggplot2]{ggsave}}.}
+
+\item{plot_width}{\strong{numeric(1)} \cr Plot width in cm (default is 10).}
+
+\item{plot_height}{\strong{numeric(1)} \cr Plot height in cm (default is 10).}
+
+\item{plot_dpi}{\strong{numeric(1)} \cr Plot resolution in dpi (default is 300).}
 }
 \value{
 List with the following elements:
