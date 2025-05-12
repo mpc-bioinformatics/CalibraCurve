@@ -7,8 +7,9 @@
 #' @param conc_col **integer(1)** \cr Column number of the concentration values.
 #' @param meas_col **integer(1)** \cr Column number of the concentration values.
 #' @param substance **character(1)** \cr Name of the substance (default is "substance1").
-#' @param sep **character(1)** \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab.
-#' @param dec **character(1)** \cr Decimal separator, e.g. "," for comma or "." for dot.
+#' @param filetype **character(1)** \cr Type of input file: "csv" or "txt" or "xlsx".
+#' @param sep **character(1)** \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. Default is ",".
+#' @param dec **character(1)** \cr Decimal separator, e.g. "," for comma or "." for dot. Default is ".".
 #' @param header **logical(1)** \cr If TRUE, first line is counted as column names.
 #' @param na.strings **character** \cr Character vector of strings which are to be interpreted as NA.
 #' @param sheet **integer(1)** \cr Sheet number (only needed for xlsx files, default is to use the first sheet).
@@ -54,7 +55,7 @@ CalibraCurve <- function(data_path,
 
                          filetype = "xlsx",
                          sep = ",",
-                         dec = ";",
+                         dec = ".",
                          header = TRUE,
                          na.strings = c("NA", "NaN", "Filtered", "#NV"),
                          sheet = 1,
