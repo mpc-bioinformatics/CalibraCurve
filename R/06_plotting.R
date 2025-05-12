@@ -64,7 +64,7 @@ plotCalibraCurve <- function(RES,
 
 
   ### generate predicted values for the calibration curve and add them to range_dat
-  range_dat3 <- dplyr::left_join(range_dat, range_dat2) %>%
+  range_dat3 <- dplyr::left_join(range_dat, range_dat2, by = "substance") %>%
     dplyr::mutate(predicted = intercept + coeff * concentration)
 
   ### data frame with lower and upper limits of quantification for each substance
@@ -75,7 +75,7 @@ plotCalibraCurve <- function(RES,
 
   ### generate grid for predicting values of the calibration curve from the model formula
   ### xo are the values on the x-axis, predicted are on the y-axis
-  range_dat4 <- dplyr::left_join(range_dat2, subst_range) %>%
+  range_dat4 <- dplyr::left_join(range_dat2, subst_range, by = "substance") %>%
     dplyr::rowwise() %>%
     dplyr::mutate(xo = list(10^(seq(
       log10(mincon), log10(maxcon), length.out = 1000
