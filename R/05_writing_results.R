@@ -33,6 +33,11 @@ assemble_results <- function(X,
                              substance = "substance1"
                              ) {
 
+  checkmate::assertNumeric(RfThresL, lower = 0, upper = 100, finite = TRUE)
+  checkmate::assertNumeric(RfThresU, lower = 100)
+  checkmate::assertCharacter(substance, len = 1)
+
+
   concentrations <- as.numeric(names(dataCleaned))
 
   # mean measurement for each concentration value
