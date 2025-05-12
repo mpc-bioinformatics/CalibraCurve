@@ -6,8 +6,6 @@
 #' @param weightingMethod **character(1)** \cr Method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is "1/x^2").
 #'
 #' @returns Vector of a constant weights for each measurement in this concentration level.
-#'
-#' @examples
 calcWeights <- function(x, weightingMethod = "1/x^2") {
   currConcLevData <- x
   if (weightingMethod == '1/x^2') {
@@ -28,8 +26,6 @@ calcWeights <- function(x, weightingMethod = "1/x^2") {
 #' @param weights **numeric** \cr Vector of weights as calculated by applying \code{\link{calcWeights}} (default is NULL and will result in an unweighted model).
 #'
 #' @returns Fit of the linear model as an object of class "lm".
-#'
-#' @examples
 calcLinearModel <- function(x, weights = NULL){
 
   ## combine list elements to a data set
@@ -51,8 +47,6 @@ calcLinearModel <- function(x, weights = NULL){
 #' @param expConc **numeric(1)** \cr Expected (known) concentration level.
 #'
 #' @returns Vector of percent bias values for each data point in this concentration level.
-#'
-#' @examples
 calcPerBias <- function(x, LMfit, expConc){
   coeff <- LMfit$coefficients
   calculatedConc <- (x - coeff[1])/coeff[2]
@@ -69,8 +63,6 @@ calcPerBias <- function(x, LMfit, expConc){
 #' @param LMfit **lm object** \cr Linear model fit as calculated by \code{\link{calcLinearModel}}.
 #'
 #' @returns List of vectors with percent bias values for each data point per concentration level
-#'
-#' @examples
 calcPerBiasLevels <- function(x, LMfit){
   concentrations <- as.numeric(names(x))
   perBiasValuesList <- NULL
@@ -93,8 +85,6 @@ calcPerBiasLevels <- function(x, LMfit){
 #'
 #' @returns data frame with 3 columns: avgPerBias, stdDevPerBias, CV_PerBias
 #'          \cr each row is one concentration level
-#'
-#' @examples
 calcPerBiasAvgSDCV <- function(x, method = "mean") {
   avgPerBias <- NULL
   stdDevPerBias <- NULL
@@ -129,9 +119,6 @@ calcPerBiasAvgSDCV <- function(x, method = "mean") {
 #'
 #' @returns  TRUE if both lowest and highest concentration level passed the check
 #'          (and the final linear range is reached), FALSE otherwise
-#' @export
-#'
-#' @examples
 checkFinalRange <- function(perBiasInfo, perBiasThres = 20){
 
   bothLevelsPassed <- FALSE
@@ -162,8 +149,6 @@ checkFinalRange <- function(perBiasInfo, perBiasThres = 20){
 #'                                        Only used if consPerBiasCV is TRUE.
 #'
 #' @returns TRUE, if lowest concentration will be removed, FALSE if highest will be removed
-#'
-#' @examples
 selctConcLevel <- function(x, perBiasT = 20, consPerBiasCV = TRUE, perBiasDistT = 10) {
   removeLow <- NULL
   featuresLowestLevel <- x[1,]
@@ -223,6 +208,12 @@ selctConcLevel <- function(x, perBiasT = 20, consPerBiasCV = TRUE, perBiasDistT 
 #' @export
 #'
 #' @examples
+#' data(D_MFAP4)
+#' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+#' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
+#'               cv_thres = 10,
+#'               calcContinuousPrelimRanges = TRUE)
+#' calculate_FLR(RES_PLR)
 calculate_FLR <- function(dataPrelim,
                           weightingMethod = "1/x^2",
                           centralTendencyMeasure = "mean",
@@ -247,13 +238,10 @@ calculate_FLR <- function(dataPrelim,
 
     ## calculate the weights for each concentration:
     if (weightingMethod != "None") {
+
       allWeights <- as.vector(sapply(dataFinal,
                                      FUN = calcWeights,
                                      weightingMethod = weightingMethod))
-      # Ensure that allWeights is a vector (some data sets lead to creation of lists)
-      #if (class(allWeights) == "list") {
-      #  allWeights <- unlist(allWeights)
-      #}
     } else {
       allWeights <- NULL # if weightingMethod == "None"
     }
@@ -289,20 +277,5 @@ calculate_FLR <- function(dataPrelim,
   }
   return(list(dataFinal = dataFinal, mod = mod, perBias = perBias, perBiasAvgSDCV = perBiasAvgSDCV))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

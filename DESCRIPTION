@@ -5,7 +5,7 @@ Authors@R: c(
     person("Karin", "Schork", , "karin.schork@rub.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-3756-4347")),
     person("Martin", "Eisenacher", , "martin.eisenacher@rub.de", role = c("aut", "fnd")))
-Description: What the package does (one paragraph).
+Description: Calibration curves for targeted proteomics, lipidomics and metabolomics data.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
@@ -19,7 +19,8 @@ Imports:
     openxlsx,
     tidyr
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    vdiffr
 URL: https://github.com/mpc-bioinformatics/CalibraCurve
 BugReports: https://github.com/mpc-bioinformatics/CalibraCurve/issues
 Depends: 

@@ -39,3 +39,11 @@ List with the following elements:
 \description{
 Calculate the final linear range
 }
+\examples{
+data(D_MFAP4)
+D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
+              cv_thres = 10,
+              calcContinuousPrelimRanges = TRUE)
+calculate_FLR(RES_PLR)
+}
