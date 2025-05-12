@@ -4,7 +4,7 @@
 \alias{cleanData}
 \title{Clean data (remove 0s and NAs, remove concentration levels with insufficient number of replicates)}
 \usage{
-cleanData(rawData, min_replicates)
+cleanData(rawData, min_replicates = 3)
 }
 \arguments{
 \item{rawData}{\strong{data.frame} \cr data set to be cleaned, result of readData.}
@@ -17,4 +17,17 @@ list of data.frames, each data.frame contains data for a specific concentration 
 }
 \description{
 Clean data (remove 0s and NAs, remove concentration levels with insufficient number of replicates)
+}
+\examples{
+data(D_ALB)
+
+cleanData(D_ALB, min_replicates = 3)
+## Returns original data because it doesn't contain 0s or NAs and it has enough replicates.
+## Data is now given as a list, each element containing the data of one specific concentration level.
+
+\dontrun{
+cleanData(D_ALB, min_replicates = 5)
+}
+## returns error message as no concentration level has 5 replicates:
+
 }

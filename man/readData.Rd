@@ -10,7 +10,7 @@ readData(
   conc_col,
   meas_col,
   sep = ",",
-  dec = ";",
+  dec = ".",
   header = TRUE,
   na.strings = c("NA", "NaN", "Filtered", "#NV"),
   sheet = 1
@@ -36,8 +36,24 @@ readData(
 \item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
 }
 \value{
-data.frame with two numeric columns: Concentration and Measurement
+Data.frame with two numeric columns: Concentration and Measurement
 }
 \description{
 Read in data in different input formats
+}
+\examples{
+file <- system.file("extdata", "MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
+D <- readData(file,
+             filetype = "xlsx",
+             conc_col = 6,
+             meas_col = 7)
+
+
+file2 <- system.file("extdata", "ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
+D <- readData(file2,
+             filetype = "csv",
+             conc_col = 6,
+             meas_col = 7,
+             dec = ".",
+             sep = ",")
 }

@@ -11,16 +11,30 @@
 #' @param na.strings **character** \cr Character vector of strings which are to be interpreted as NA.
 #' @param sheet **integer(1)** \cr Sheet number (only needed for xlsx files, default is to use the first sheet).
 #'
-#' @returns data.frame with two numeric columns: Concentration and Measurement
+#' @returns Data.frame with two numeric columns: Concentration and Measurement
 #' @export
 #'
 #' @examples
+#' file <- system.file("extdata", "MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
+#' D <- readData(file,
+#'              filetype = "xlsx",
+#'              conc_col = 6,
+#'              meas_col = 7)
+#'
+#'
+#' file2 <- system.file("extdata", "ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
+#' D <- readData(file2,
+#'              filetype = "csv",
+#'              conc_col = 6,
+#'              meas_col = 7,
+#'              dec = ".",
+#'              sep = ",")
 readData <- function(data_path,
                      filetype,
                      conc_col,
                      meas_col,
                      sep = ",",
-                     dec = ";",
+                     dec = ".",
                      header = TRUE,
                      na.strings = c("NA", "NaN", "Filtered", "#NV"),
                      sheet = 1) {
@@ -81,8 +95,6 @@ readData <- function(data_path,
 #' @param rawData **data.frame** \cr data set to be filtered (e.g. result of \code{\link{readData}})
 #'
 #' @returns data.frame
-#'
-#' @examples
 filterConcentrationLevel <- function(x,
                                      rawData) {
   result <- rawData[rawData$Concentration == x, ]
@@ -98,8 +110,6 @@ filterConcentrationLevel <- function(x,
 #' @param minNumber **integer(1)** \cr minimal number of data points per concentration level
 #'
 #' @returns **locgical(1)** \cr TRUE if there are enough replicates or FALSE if not
-#'
-#' @examples
 checkNumberReplicates <- function(x, data, minNumber) {
   if (nrow(data[[x]]) < minNumber) {
     result <- FALSE
@@ -122,10 +132,22 @@ checkNumberReplicates <- function(x, data, minNumber) {
 #' @export
 #'
 #' @examples
-cleanData <- function(rawData, min_replicates) {
+#' data(D_ALB)
+#'
+#' cleanData(D_ALB, min_replicates = 3)
+#' ## Returns original data because it doesn't contain 0s or NAs and it has enough replicates.
+#' ## Data is now given as a list, each element containing the data of one specific concentration level.
+#'
+#'\dontrun{
+#' cleanData(D_ALB, min_replicates = 5)
+#'}
+#' ## returns error message as no concentration level has 5 replicates:
+#'
+cleanData <- function(rawData,
+                      min_replicates = 3) {
 
   ### check input arguments
-  checkmate::assert_int(min_replicates)
+  checkmate::assert_int(min_replicates, lower = 1)
 
   # Removing rows that contain unwanted 0 values (problems with log-transform later) or NA values in either
   # the concentration or measurement column
@@ -140,6 +162,13 @@ cleanData <- function(rawData, min_replicates) {
 
   # Deleting concentration levels with insufficient number of replicates
   dataValidated <- dataValidated[sapply(1:length(dataValidated), FUN = checkNumberReplicates, data = dataValidated, minNumber = min_replicates)]
+
+  if (length(dataValidated) == 0) {
+    stop(paste0("No concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates."))
+  }
+  if (length(dataValidated) == 1) {
+    stop(paste0("Only one concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates."))
+  }
 
   dataValConcLevels <- sapply(dataValidated, FUN = function(x) x$Concentration[1])
   names(dataValidated) <- dataValConcLevels

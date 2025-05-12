@@ -1,10 +1,10 @@
 Package: CalibraCurve
-Title: What the Package Does (One Line, Title Case)
+Title: Calibration curves for targeted proteomics, lipidomics and metabolomics data.
 Version: 0.0.0.9000
 Authors@R: c(
     person("Karin", "Schork", , "karin.schork@rub.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-3756-4347")),
-    person("Martin", "Eisenacher", , "martin.eisenacher@rub.de", role=c("aut", "fnd")))
+    person("Martin", "Eisenacher", , "martin.eisenacher@rub.de", role = c("aut", "fnd")))
 Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
@@ -15,9 +15,14 @@ Imports:
     checkmate,
     dplyr,
     ggplot2,
+    magrittr,
     openxlsx,
     tidyr
 Suggests: 
-    testthat
+    testthat (>= 3.0.0)
 URL: https://github.com/mpc-bioinformatics/CalibraCurve
 BugReports: https://github.com/mpc-bioinformatics/CalibraCurve/issues
+Depends: 
+    R (>= 3.5)
+LazyData: true
+Config/testthat/edition: 3
