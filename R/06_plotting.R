@@ -55,7 +55,7 @@ plotCalibraCurve <- function(RES,
         " + ",
         format(coeff, scientific = TRUE, digits = 2),
         " * x",
-        " (R² = ",
+        " (R2 = ",
         round(r2, 3),
         ")"
       ),
