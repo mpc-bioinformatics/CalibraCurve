@@ -13,7 +13,7 @@ CalibraCurve(
   substance = "substance1",
   filetype = "xlsx",
   sep = ",",
-  dec = ";",
+  dec = ".",
   header = TRUE,
   na.strings = c("NA", "NaN", "Filtered", "#NV"),
   sheet = 1,
@@ -51,9 +51,11 @@ CalibraCurve(
 
 \item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1").}
 
-\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab.}
+\item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
 
-\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot.}
+\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. Default is ",".}
+
+\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot. Default is ".".}
 
 \item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names.}
 
