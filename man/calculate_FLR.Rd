@@ -45,5 +45,5 @@ D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
 RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
               cv_thres = 10,
               calcContinuousPrelimRanges = TRUE)
-calculate_FLR(RES_PLR)
+calculate_FLR(RES_PLR$dataPrelim)
 }

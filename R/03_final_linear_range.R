@@ -213,7 +213,7 @@ selctConcLevel <- function(x, perBiasT = 20, consPerBiasCV = TRUE, perBiasDistT 
 #' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
 #'               cv_thres = 10,
 #'               calcContinuousPrelimRanges = TRUE)
-#' calculate_FLR(RES_PLR)
+#' calculate_FLR(RES_PLR$dataPrelim)
 calculate_FLR <- function(dataPrelim,
                           weightingMethod = "1/x^2",
                           centralTendencyMeasure = "mean",

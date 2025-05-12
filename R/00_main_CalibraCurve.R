@@ -172,7 +172,7 @@ CalibraCurve <- function(data_path,
                  dpi = plot_dpi)
 
 
-  RES$plot_CC < pl_CC
+  RES$plot_CC <- pl_CC
 
 
   return(RES)
