@@ -11,6 +11,7 @@
 #' @importFrom magrittr %>%
 #'
 #' @returns
+#' A ggplot2 object containing the calibration curve plot.
 #' @export
 #'
 #' @examples
@@ -30,7 +31,7 @@ plotCalibraCurve <- function(RES,
 
   ## generate data for the calibration curve
   grid <- seq(log10(min(D$concentration)), log10(max(D$concentration)), length.out = 1000)
-  pred <- predict(mod, newdata = data.frame(Concentration = 10^grid))
+  pred <- stats::predict(mod, newdata = data.frame(Concentration = 10^grid))
   CC_dat <- data.frame(Concentration = 10^grid, predicted = pred)
   CC_dat <- CC_dat[CC_dat$predicted > 0, ] # remove negative values in prediction (causes problems in log10-transformation later)
 
@@ -107,18 +108,31 @@ plotCalibraCurve <- function(RES,
 
 
 
+#' Plot response factors
+#'
+#' @param RES **list** \cr Results of \code{\link{CalibraCurve}}.
+#' @param ylab **character(1)** \cr y-axis label.
+#' @param xlab **character(1)** \cr x-axis label.
+#'
+#' @returns
+#' A ggplot2 object containing the response factor plot.
+#' @export
+#'
+#' @examples
 plotResponseFactors <- function(RES,
                                 ylab = "Response Factor",
                                 xlab = "Concentration") {
 
-  range_dat <- calib_list$result_table_obs
-  sum_dat <- calib_list$result_table_conc_levels
+  range_dat <- RES$result_table_obs
+  range_dat <- range_dat[!is.na(range_dat$response_factor), ]
+  sum_dat <- RES$result_table_conc_levels
+  sum_dat <- sum_dat[!is.na(sum_dat$mean_response_factor), ]
 
   all_rf_mean <- mean(range_dat$response_factor[range_dat$final_linear_range])
 
-  ggplot(
+  ggplot2::ggplot(
     range_dat,
-    aes(
+    ggplot2::aes(
       x = log10(concentration),
       y = response_factor,
       color = final_linear_range,
@@ -127,16 +141,16 @@ plotResponseFactors <- function(RES,
       group = 1
     )
   ) +
-    geom_point(size = 1.7, shape = 21) +
-    geom_point(
+    ggplot2::geom_point(size = 1.7, shape = 21) +
+    ggplot2::geom_point(
       data = sum_dat,
-      aes(x = log10(concentration), y = mean_response_factor),
+      ggplot2::aes(x = log10(concentration), y = mean_response_factor),
       color = "black",
       shape = 21,
       size = 2.5
     ) +
-    geom_line(data = sum_dat, aes(x = log10(concentration), y = mean_response_factor)) +
-    scale_x_continuous(
+    ggplot2::geom_line(data = sum_dat, ggplot2::aes(x = log10(concentration), y = mean_response_factor)) +
+    ggplot2::scale_x_continuous(
       labels = function(x)
         sub(
           "\\.?0+$",
@@ -144,22 +158,22 @@ plotResponseFactors <- function(RES,
           format(10^x, scientific = FALSE, zero.print = FALSE)
         )
     ) +
-    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.3)) +
-    facet_wrap(substance ~ ., scales = "free") +
-    geom_hline(
+    ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.3)) +
+    #ggplot2::facet_wrap(substance ~ ., scales = "free") +
+    ggplot2::geom_hline(
       yintercept = all_rf_mean * 1.2,
       linetype = "dashed",
       color = "orange"
     ) +
-    geom_hline(
+    ggplot2::geom_hline(
       yintercept = all_rf_mean * 0.8,
       linetype = "dashed",
       color = "orange"
     ) +
-    theme_bw() +
-    theme(legend.position = "none") +
-    ylab(ylab) +
-    xlab(xlab)
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::ylab(ylab) +
+    ggplot2::xlab(xlab)
 }
 
 

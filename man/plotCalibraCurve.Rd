@@ -26,6 +26,9 @@ plotCalibraCurve(
 
 \item{show_data_points}{\strong{logical(1)} \cr If TRUE, show the data points on the plot.}
 }
+\value{
+A ggplot2 object containing the calibration curve plot.
+}
 \description{
 Plot the calibration curve
 }

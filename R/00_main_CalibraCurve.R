@@ -155,13 +155,13 @@ CalibraCurve <- function(data_path,
   }
 
 
+  ## calibration curve plot
   pl_CC <- CalibraCurve::plotCalibraCurve(RES,
                                           ylab = ylab,
                                           xlab = xlab,
                                           show_regression_info = show_regression_info,
                                           show_linear_range = show_linear_range,
                                           show_data_points = show_data_points)
-
   ## save the plot
   ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve", suffix, ".", device),
                  plot = pl_CC,
@@ -170,9 +170,23 @@ CalibraCurve <- function(data_path,
                  height = plot_height,
                  units = "cm",
                  dpi = plot_dpi)
-
-
   RES$plot_CC <- pl_CC
+
+
+  ## response factor plot
+  pl_RF <- CalibraCurve::plotResponseFactors(RES)
+
+  ## save the plot
+  ggplot2::ggsave(filename = paste0(output_path, "/ResponseFactors", suffix, ".", device),
+                  plot = pl_RF,
+                  device = device,
+                  width = plot_width,
+                  height = plot_height,
+                  units = "cm",
+                  dpi = plot_dpi)
+
+
+  RES$plot_RF <- pl_RF
 
 
   return(RES)
