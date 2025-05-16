@@ -24,6 +24,9 @@ plotCalibraCurve <- function(RES,
 
   mod <- RES$mod
   D <- RES$result_table_obs
+  D$measurement <- D$measurement + 1 # add 1 to avoid log10(0) in the plot
+
+
 
   ## generate data for the calibration curve
   grid <- seq(log10(min(D$concentration)), log10(max(D$concentration)), length.out = 1000)

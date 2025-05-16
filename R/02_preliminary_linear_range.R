@@ -91,7 +91,7 @@ calculate_PLR <- function(dataCleaned,
   index <- which(concLevelsCV <= cv_thres)
 
   if (length(index) <= 1) {
-    stop(paste0("No preliminary linear range with (CV < ", cv_thres, " threshold) could be calculated. Please check your data or increase the CV threshold."))
+    stop(paste0("No preliminary linear range with (CV <= ", cv_thres, " threshold) could be calculated. Please check your data or increase the CV threshold."))
   }
 
   ### calculate candidates for the PLR (parts where CV < threshold)

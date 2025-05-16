@@ -38,12 +38,13 @@ assemble_results <- function(X,
   checkmate::assertCharacter(substance, len = 1)
 
 
-  concentrations <- as.numeric(names(dataCleaned))
+  concentrations <- as.numeric(sort(unique(X$Concentration)))
+  concentrations_after_cleaning <- as.numeric(names(dataCleaned))
 
   # mean measurement for each concentration value
-  mean_measurement <- sapply(dataCleaned, function(x) mean(x$Measurement))
+  mean_measurement <- sapply(split(X, X$Concentration), function(x) mean(x$Measurement))
 
-  #precdict measurements for each concentration using the final linear model
+  #predict measurements for each concentration using the final linear model
   estimated_measurement <- stats::predict(object = mod, newdata = data.frame(Concentration = concentrations))
 
   ### thresholds for response factor
@@ -63,16 +64,33 @@ assemble_results <- function(X,
     concentration = concentrations,
     mean_measurement = mean_measurement,
     estimated_measurement = estimated_measurement,
-    CV = PLR_res$concLevelsCV,
-    CV_within_thres = PLR_res$concLevelsCV < cv_thres,
+    removed_while_cleaning = FALSE,
+    CV = NA,
+    CV_within_thres = NA,
     preliminary_linear_range = concentrations %in% PLR_res$prelimConcLevels,
     mean_percentage_bias = NA,
     SD_percentage_bias = NA,
     CV_percentage_bias = NA,
-    mean_response_factor = avgResFacDataV,
-    RF_within_thres = avgResFacDataV <= hLineUpper & avgResFacDataV >= hLineLow,
+    mean_response_factor = NA,
+    RF_within_thres = NA,
     final_linear_range = NA
   )
+
+  ## result only for concentrations that were not removed during cleaning:
+  for (i in seq_along(concentrations)) {
+    ind <- which(concentrations[i] == concentrations_after_cleaning)
+    if (length(ind) >= 1) {
+      result_table_conc_levels$removed_while_cleaning[i] <- FALSE
+      result_table_conc_levels$CV[i] <- PLR_res$concLevelsCV[ind]
+      result_table_conc_levels$mean_response_factor[i] <- avgResFacDataV[ind]
+    } else {
+      result_table_conc_levels$removed_while_cleaning[i] <- TRUE
+    }
+  }
+
+  result_table_conc_levels$CV_within_thres <- result_table_conc_levels$CV <= cv_thres
+  result_table_conc_levels$RF_within_thres <- result_table_conc_levels$mean_response_factor <= hLineUpper & result_table_conc_levels$mean_response_factor >= hLineLow
+
 
   # fill table with percent bias information (only within final linear range) and
   # if the concentration level is within the final linear range
@@ -90,17 +108,24 @@ assemble_results <- function(X,
 
 
 
+
   # initialize second result table (one line per observation)
   result_table_obs <- data.frame(
-    substance = substance,
+    substance = rep(substance, nrow(X)),
     concentration = X$Concentration,
     measurement = X$Measurement,
+    removed_while_cleaning = !(X$Concentration %in% concentrations_after_cleaning),
     percentage_bias = NA,
-    response_factor = unlist(resFacDataV),
-    RF_within_thres = unlist(resFacDataV) <= hLineUpper & unlist(resFacDataV) >= hLineLow,
+    response_factor = NA,
+    RF_within_thres = NA,
     final_linear_range = X$Concentration %in% concentrations_FLR
   )
   rownames(result_table_obs) <- NULL
+
+  ## result only for concentrations that were not removed during cleaning:
+  result_table_obs$response_factor[!result_table_obs$removed_while_cleaning] <- unlist(resFacDataV)
+  result_table_obs$RF_within_thres <- result_table_obs$response_factor <= hLineUpper & result_table_obs$response_factor >= hLineLow
+
 
   # fill table with percent bias information (only within final linear range)
   perBias <- FLR_res$perBias
