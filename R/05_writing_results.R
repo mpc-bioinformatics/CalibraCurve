@@ -1,6 +1,6 @@
 
 
-#' Assemle result tables
+#' Assemble result tables
 #'
 #' @param X **data.frame** \cr Original data set, result of \code{\link{readData}}.
 #' @param dataCleaned **list of data.frames** \cr Cleaned data, result of \code{\link{cleanData}}.
@@ -20,6 +20,25 @@
 #' @export
 #'
 #' @examples
+#' data(D_MFAP4)
+#' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+#' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
+#'               cv_thres = 10,
+#'               calcContinuousPrelimRanges = TRUE)
+#' RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
+#'
+#' resFacDataV <- calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
+#'
+#' avgResFacDataV <- calcRFMeans(RES_RF)
+#'
+#' assemble_results(X = D_MFAP4,
+#'                  dataCleaned = D_MFAP4_cleaned,
+#'                  PLR_res = RES_PLR,
+#'                  resFacDataV = resFacDataV,
+#'                  avgResFacDataV = avgResFacDataV,
+#'                  FLR_res = RES_FLR,
+#'                  mod = RES_FLR$mod)
+#'
 assemble_results <- function(X,
                              dataCleaned,
                              cv_thres = 20,
@@ -156,8 +175,6 @@ assemble_results <- function(X,
 #'
 #' @returns Returns nothing, but the function saves the results to the specified output path.
 #' @export
-#'
-#' @examples
 saveCCResult <- function(CC_res, output_path, suffix = "") {
   # save result tables
   openxlsx::write.xlsx(CC_res$result_table_conc_levels,

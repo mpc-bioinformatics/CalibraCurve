@@ -2,7 +2,7 @@
 % Please edit documentation in R/05_writing_results.R
 \name{assemble_results}
 \alias{assemble_results}
-\title{Assemle result tables}
+\title{Assemble result tables}
 \usage{
 assemble_results(
   X,
@@ -49,5 +49,26 @@ List with the following elements:
 }
 }
 \description{
-Assemle result tables
+Assemble result tables
+}
+\examples{
+data(D_MFAP4)
+D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
+              cv_thres = 10,
+              calcContinuousPrelimRanges = TRUE)
+RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
+
+resFacDataV <- calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
+
+avgResFacDataV <- calcRFMeans(RES_RF)
+
+assemble_results(X = D_MFAP4,
+                 dataCleaned = D_MFAP4_cleaned,
+                 PLR_res = RES_PLR,
+                 resFacDataV = resFacDataV,
+                 avgResFacDataV = avgResFacDataV,
+                 FLR_res = RES_FLR,
+                 mod = RES_FLR$mod)
+
 }

@@ -40,6 +40,7 @@ readData <- function(data_path,
                      sheet = 1) {
 
   ### check input arguments
+  checkmate::assert_file_exists(data_path)
   checkmate::assert_character(data_path, len = 1)
   checkmate::assert_choice(filetype, c("csv", "txt", "xlsx"))
   checkmate::assert_int(conc_col)

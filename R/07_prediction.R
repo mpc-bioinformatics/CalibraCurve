@@ -18,6 +18,10 @@
 #' This is important to ensure that the predictions are reliable and within the linear range of the calibration curve.
 #'
 #' @examples
+#'
+#' data(RES_ALB)
+#'
+#'
 predictConcentration <- function(CC_res, newdata) {
 
   mod <- CC_res$mod

@@ -16,8 +16,6 @@
 #' @param expConc **numeric(1)** \cr  Expected concentration (known concentration value).
 #'
 #' @returns vector of response factors for this specific concentration level
-#'
-#' @examples
 calcResponseFactors <- function(x, intercept, expConc) {
   result <- (x - intercept) / expConc
   return(result)
@@ -29,13 +27,22 @@ calcResponseFactors <- function(x, intercept, expConc) {
 #' @description
 #' Final linear range: Function, which returns a list with response factor values for a data set (given as list)
 #'
-#' @param x **list of data.frames** \cr List of data.frames containing data for eacht concentration level (result from \code{\link{cleanData}}).
+#' @param x **list of data.frames** \cr List of data.frames containing data for each concentration level (result from \code{\link{cleanData}}).
 #' @param mod **lm object** \cr Final linear model fit (object "mod" from results of \code{\link{calculate_FLR}}).
 #'
 #' @returns List of response factor values for each concentration level.
 #' @export
 #'
 #' @examples
+#' data(D_MFAP4)
+#' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+#' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
+#'               cv_thres = 10,
+#'               calcContinuousPrelimRanges = TRUE)
+#' RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
+#'
+#' calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
+#'
 calcRFLevels <- function(x, mod) {
   interc <- unname(mod$coefficients[1])
   concentrations <- as.numeric(names(x))
@@ -64,13 +71,21 @@ calcRFLevels <- function(x, mod) {
 #' @export
 #'
 #' @examples
+#' #' data(D_MFAP4)
+#' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+#' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
+#'               cv_thres = 10,
+#'               calcContinuousPrelimRanges = TRUE)
+#' RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
+#'
+#' RES_RF <- calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
+#' calcRFMeans(RES_RF)
 calcRFMeans <- function(x) {
   avgRF <- NULL
   for (i in seq_along(x)) {
     avgRFCurrLevel <- mean(x[[i]])
     avgRF <- c(avgRF, avgRFCurrLevel)
   }
-  #result <- data.frame(avgPerBias, stdDev, CV)
   names(avgRF) <- names(x)
   return(avgRF)
 }

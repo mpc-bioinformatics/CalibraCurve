@@ -32,3 +32,9 @@ A ggplot2 object containing the calibration curve plot.
 \description{
 Plot the calibration curve
 }
+\examples{
+
+data(RES_ALB)
+plotCalibraCurve(RES_ALB)
+
+}

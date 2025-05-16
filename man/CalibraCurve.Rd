@@ -7,10 +7,10 @@
 CalibraCurve(
   data_path,
   output_path = NULL,
-  suffix = "",
   conc_col,
   meas_col,
   substance = "substance1",
+  suffix = paste0("_", substance),
   filetype = "xlsx",
   sep = ",",
   dec = ".",
@@ -43,13 +43,13 @@ CalibraCurve(
 
 \item{output_path}{\strong{character(1)} \cr Folder to save results (table and plots). If NULL (default), results are not saved.}
 
-\item{suffix}{\strong{character(1)} \cr Suffix for the output files, ideally starting with "_" (default is "").}
-
 \item{conc_col}{\strong{integer(1)} \cr Column number of the concentration values.}
 
 \item{meas_col}{\strong{integer(1)} \cr Column number of the concentration values.}
 
-\item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1").}
+\item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1"). Will be added to the result files and may be used when plotting multiple calibration curves in one plot.}
+
+\item{suffix}{\strong{character(1)} \cr Suffix for the output files, ideally starting with "\emph{" (default is substance with a "}" in front).}
 
 \item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
 
@@ -117,4 +117,10 @@ List with the following elements:
 }
 \description{
 CalibraCurve
+}
+\examples{
+
+data_path <- system.file("extdata", "ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
+CalibraCurve(data_path = data_path, conc_col = 6, meas_col = 7)
+
 }

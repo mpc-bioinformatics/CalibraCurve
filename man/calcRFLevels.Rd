@@ -7,7 +7,7 @@
 calcRFLevels(x, mod)
 }
 \arguments{
-\item{x}{\strong{list of data.frames} \cr List of data.frames containing data for eacht concentration level (result from \code{\link{cleanData}}).}
+\item{x}{\strong{list of data.frames} \cr List of data.frames containing data for each concentration level (result from \code{\link{cleanData}}).}
 
 \item{mod}{\strong{lm object} \cr Final linear model fit (object "mod" from results of \code{\link{calculate_FLR}}).}
 }
@@ -16,4 +16,15 @@ List of response factor values for each concentration level.
 }
 \description{
 Final linear range: Function, which returns a list with response factor values for a data set (given as list)
+}
+\examples{
+data(D_MFAP4)
+D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
+              cv_thres = 10,
+              calcContinuousPrelimRanges = TRUE)
+RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
+
+calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
+
 }

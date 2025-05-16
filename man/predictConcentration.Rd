@@ -26,3 +26,9 @@ Predict concentrations from intensity values based on a given calibration curve
 The function will give a warning if any of the predicted concentrations are outside the final linear range.
 This is important to ensure that the predictions are reliable and within the linear range of the calibration curve.
 }
+\examples{
+
+data(RES_ALB)
+
+
+}

@@ -3,10 +3,10 @@
 #'
 #' @param data_path **character(1)** \cr Path to the data file (.csv, .txt or .xlsx file).
 #' @param output_path **character(1)** \cr Folder to save results (table and plots). If NULL (default), results are not saved.
-#' @param suffix **character(1)** \cr Suffix for the output files, ideally starting with "_" (default is "").
 #' @param conc_col **integer(1)** \cr Column number of the concentration values.
 #' @param meas_col **integer(1)** \cr Column number of the concentration values.
-#' @param substance **character(1)** \cr Name of the substance (default is "substance1").
+#' @param substance **character(1)** \cr Name of the substance (default is "substance1"). Will be added to the result files and may be used when plotting multiple calibration curves in one plot.
+#' @param suffix **character(1)** \cr Suffix for the output files, ideally starting with "_" (default is substance with a "_" in front).
 #' @param filetype **character(1)** \cr Type of input file: "csv" or "txt" or "xlsx".
 #' @param sep **character(1)** \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. Default is ",".
 #' @param dec **character(1)** \cr Decimal separator, e.g. "," for comma or "." for dot. Default is ".".
@@ -46,12 +46,16 @@
 #' @export
 #'
 #' @examples
+#'
+#' data_path <- system.file("extdata", "ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
+#' CalibraCurve(data_path = data_path, conc_col = 6, meas_col = 7)
+#'
 CalibraCurve <- function(data_path,
                          output_path = NULL,
-                         suffix = "",
                          conc_col,
                          meas_col,
                          substance = "substance1",
+                         suffix = paste0("_", substance),
 
                          filetype = "xlsx",
                          sep = ",",
@@ -65,7 +69,6 @@ CalibraCurve <- function(data_path,
                          cv_thres = 20,
                          calcContinuousPrelimRanges = TRUE,
 
-
                          weightingMethod = "1/x^2",
                          centralTendencyMeasure = "mean",
                          perBiasThres = 20,
@@ -75,7 +78,7 @@ CalibraCurve <- function(data_path,
                          RfThresL = 80,
                          RfThresU = 120,
 
-                         ### paramaters for plotting
+                         ### parameters for plotting
                          ylab = "Intensity",
                          xlab = "Concentration",
                          show_regression_info = FALSE,
@@ -86,6 +89,12 @@ CalibraCurve <- function(data_path,
                          plot_height = 10,
                          plot_dpi = 300
                          ) {
+
+  ### check arguments (only those that are not already checked inside one of the low-level functions)
+  checkmate::assert_choice(device, c("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg", "wmf"))
+  checkmate::assert_numeric(plot_width, lower = 0, len = 1)
+  checkmate::assert_numeric(plot_height, lower = 0, len = 1)
+  checkmate::assert_numeric(plot_dpi, lower = 0, len = 1)
 
   ## read in data
   X <- CalibraCurve::readData(data_path = data_path,
@@ -162,29 +171,32 @@ CalibraCurve <- function(data_path,
                                           show_regression_info = show_regression_info,
                                           show_linear_range = show_linear_range,
                                           show_data_points = show_data_points)
-  ## save the plot
-  ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve", suffix, ".", device),
-                 plot = pl_CC,
-                 device = device,
-                 width = plot_width,
-                 height = plot_height,
-                 units = "cm",
-                 dpi = plot_dpi)
+  if (!is.null(output_path)) {
+    ## save the plot
+    ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve", suffix, ".", device),
+                    plot = pl_CC,
+                    device = device,
+                    width = plot_width,
+                    height = plot_height,
+                    units = "cm",
+                    dpi = plot_dpi)
+  }
   RES$plot_CC <- pl_CC
 
 
   ## response factor plot
   pl_RF <- CalibraCurve::plotResponseFactors(RES)
 
-  ## save the plot
-  ggplot2::ggsave(filename = paste0(output_path, "/ResponseFactors", suffix, ".", device),
-                  plot = pl_RF,
-                  device = device,
-                  width = plot_width,
-                  height = plot_height,
-                  units = "cm",
-                  dpi = plot_dpi)
-
+  if (!is.null(output_path)) {
+    ## save the plot
+    ggplot2::ggsave(filename = paste0(output_path, "/ResponseFactors", suffix, ".", device),
+                    plot = pl_RF,
+                    device = device,
+                    width = plot_width,
+                    height = plot_height,
+                    units = "cm",
+                    dpi = plot_dpi)
+  }
 
   RES$plot_RF <- pl_RF
 

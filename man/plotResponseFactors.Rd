@@ -19,3 +19,8 @@ A ggplot2 object containing the response factor plot.
 \description{
 Plot response factors
 }
+\examples{
+
+data(RES_ALB)
+plotResponseFactors(RES_ALB)
+}

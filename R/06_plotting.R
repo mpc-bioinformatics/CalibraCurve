@@ -15,6 +15,10 @@
 #' @export
 #'
 #' @examples
+#'
+#' data(RES_ALB)
+#' plotCalibraCurve(RES_ALB)
+#'
 plotCalibraCurve <- function(RES,
                              ylab = "Intensity",
                              xlab = "Concentration",
@@ -22,12 +26,16 @@ plotCalibraCurve <- function(RES,
                              show_linear_range = TRUE,
                              show_data_points = TRUE) {
 
+  checkmate::assertCharacter(ylab, len = 1)
+  checkmate::assertCharacter(xlab, len = 1)
+  checkmate::assertFlag(show_regression_info)
+  checkmate::assertFlag(show_linear_range)
+  checkmate::assertFlag(show_data_points)
+
 
   mod <- RES$mod
   D <- RES$result_table_obs
-  D$measurement <- D$measurement + 1 # add 1 to avoid log10(0) in the plot
-
-
+  D$measurement[D$measurement == 0] <- NA # add 1 to avoid log10(0) in the plot
 
   ## generate data for the calibration curve
   grid <- seq(log10(min(D$concentration)), log10(max(D$concentration)), length.out = 1000)
@@ -119,9 +127,17 @@ plotCalibraCurve <- function(RES,
 #' @export
 #'
 #' @examples
+#'
+#' data(RES_ALB)
+#' plotResponseFactors(RES_ALB)
 plotResponseFactors <- function(RES,
                                 ylab = "Response Factor",
                                 xlab = "Concentration") {
+
+
+
+  checkmate::assertCharacter(ylab, len = 1)
+  checkmate::assertCharacter(xlab, len = 1)
 
   range_dat <- RES$result_table_obs
   range_dat <- range_dat[!is.na(range_dat$response_factor), ]
