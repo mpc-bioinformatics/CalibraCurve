@@ -13,7 +13,7 @@
 
 ####################################################################################################
 
-library(tidyverse)
+#library(tidyverse)
 
 # D: data set
 chooseWeightingMethod <- function(D) {
@@ -44,7 +44,7 @@ data("D_MFAP4")
 
 D <- D_MFAP4
 
-library(tidyverse)
+#library(tidyverse)
 
 D_var_sd <- D_MFAP4 %>%
   group_by(Concentration) %>%
@@ -71,7 +71,7 @@ sd(D_var_sd$RSD1)/mean(D_var_sd$RSD1)*100
 
 data("D_ALB")
 
-library(tidyverse)
+#library(tidyverse)
 
 D_var_sd <- D_ALB %>%
   group_by(Concentration) %>%
@@ -95,7 +95,7 @@ sd(D_var_sd$RSD1)/mean(D_var_sd$RSD1)*100
 
 data("D_Apolipoprotein")
 
-library(tidyverse)
+#library(tidyverse)
 
 D_var_sd <- D_Apolipoprotein %>%
   group_by(Concentration) %>%
