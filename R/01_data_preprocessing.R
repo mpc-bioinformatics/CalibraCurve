@@ -137,7 +137,8 @@ checkNumberReplicates <- function(x, data, minNumber) {
 #'
 #' cleanData(D_ALB, min_replicates = 3)
 #' ## Returns original data because it doesn't contain 0s or NAs and it has enough replicates.
-#' ## Data is now given as a list, each element containing the data of one specific concentration level.
+#' ## Data is now given as a list, each element containing the data of one specific concentration
+#' ## level.
 #'
 #'\dontrun{
 #' cleanData(D_ALB, min_replicates = 5)

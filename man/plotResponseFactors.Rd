@@ -4,14 +4,33 @@
 \alias{plotResponseFactors}
 \title{Plot response factors}
 \usage{
-plotResponseFactors(RES, ylab = "Response Factor", xlab = "Concentration")
+plotResponseFactors(
+  RES,
+  RfThresL = 80,
+  RfThresU = 120,
+  ylab = "Response Factor",
+  xlab = "Concentration",
+  colour_threshold = "orange",
+  colour_within = "#00BFC4",
+  colour_outside = "#F8766D"
+)
 }
 \arguments{
 \item{RES}{\strong{list} \cr Results of \code{\link{CalibraCurve}}.}
 
+\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in percent (default is 80).}
+
+\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in percent (default is 120).}
+
 \item{ylab}{\strong{character(1)} \cr y-axis label.}
 
 \item{xlab}{\strong{character(1)} \cr x-axis label.}
+
+\item{colour_threshold}{\strong{character(1)} \cr Colour for horizontal threshold lines, default is "orange".}
+
+\item{colour_within}{\strong{character(1)} \cr Colour for points and lines within the final linear range, default is "#00BFC4" (default ggplot colour).}
+
+\item{colour_outside}{\strong{character(1)} \cr Colour for horizontal outside of the final linear range, default is "#F8766D" (default ggplot colour).}
 }
 \value{
 A ggplot2 object containing the response factor plot.

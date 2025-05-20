@@ -29,7 +29,7 @@
 #'
 #' resFacDataV <- calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
 #'
-#' avgResFacDataV <- calcRFMeans(RES_RF)
+#' avgResFacDataV <- calcRFMeans(resFacDataV)
 #'
 #' assemble_results(X = D_MFAP4,
 #'                  dataCleaned = D_MFAP4_cleaned,

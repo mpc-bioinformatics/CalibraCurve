@@ -13,11 +13,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     checkmate,
-    dplyr,
     ggplot2,
     magrittr,
     openxlsx,
-    tidyr
+    scales
 Suggests: 
     testthat (>= 3.0.0),
     vdiffr

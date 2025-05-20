@@ -29,13 +29,18 @@
 #' @param ylab **character(1)** \cr y-axis label.
 #' @param xlab **character(1)** \cr x-axis label.
 #' @param show_regression_info **logical(1)** \cr If TRUE, show regression information (R2, slope, intercept) on the plot.
-#' @param show_linear_range **logical(1)** \cr If TRUE, show the linear range of the calibration curve.
+#' @param show_linear_range **logical(1)** \cr If TRUE, show the linear range of the calibration curve as a rectangle in the plot.
 #' @param show_data_points **logical(1)** \cr If TRUE, show the data points on the plot.
+#' @param point_colour **character(1)** \cr Colour of the data points, default is "black".
+#' @param curve_colour **character(1)** \cr Colour of the calibration curve, default is "red".
+#' @param linear_range_colour **character(1)** \cr Colour of the linear range background, default is "black" (colour is weakened by alpha = 0.1).
+#' @param RF_colour_threshold **character(1)** \cr Response factor plot: Colour for horizontal threshold lines, default is "orange".
+#' @param RF_colour_within **character(1)** \cr Response factor plot: Colour for points and lines within the final linear range, default is "#00BFC4" (default ggplot colour).
+#' @param RF_colour_outside **character(1)** \cr Response factor plot: Colour for horizontal outside of the final linear range, default is "#F8766D" (default ggplot colour).
 #' @param device **character(1)** \cr Device for saving the plot (default is "png"). Other options include "pdf", "jpeg", "tiff", "svg" etc. For details see \code{\link[ggplot2]{ggsave}}.
 #' @param plot_width **numeric(1)** \cr Plot width in cm (default is 10).
 #' @param plot_height **numeric(1)** \cr Plot height in cm (default is 10).
 #' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
-#'
 #' @returns List with the following elements:
 #' - \code{mod}: lm-object containing the final linear model.
 #' - \code{final_linear_range}: vector of concentration levels that are part of the final linear range.
@@ -84,6 +89,12 @@ CalibraCurve <- function(data_path,
                          show_regression_info = FALSE,
                          show_linear_range = TRUE,
                          show_data_points = TRUE,
+                         point_colour = "black",
+                         curve_colour = "red",
+                         linear_range_colour = "black",
+                         RF_colour_threshold = "orange",
+                         RF_colour_within = "#00BFC4",
+                         RF_colour_outside = "#F8766D",
                          device = "png",
                          plot_width = 12,
                          plot_height = 10,
@@ -170,7 +181,11 @@ CalibraCurve <- function(data_path,
                                           xlab = xlab,
                                           show_regression_info = show_regression_info,
                                           show_linear_range = show_linear_range,
-                                          show_data_points = show_data_points)
+                                          show_data_points = show_data_points,
+                                          point_colour = point_colour,
+                                          curve_colour = curve_colour,
+                                          linear_range_colour = linear_range_colour
+                                          )
   if (!is.null(output_path)) {
     ## save the plot
     ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve", suffix, ".", device),
@@ -185,7 +200,12 @@ CalibraCurve <- function(data_path,
 
 
   ## response factor plot
-  pl_RF <- CalibraCurve::plotResponseFactors(RES)
+  pl_RF <- CalibraCurve::plotResponseFactors(RES,
+                                             RfThresL = RfThresL,
+                                             RfThresU = RfThresU,
+                                             colour_threshold = RF_colour_threshold,
+                                             colour_within = RF_colour_within,
+                                             colour_outside = RF_colour_outside)
 
   if (!is.null(output_path)) {
     ## save the plot

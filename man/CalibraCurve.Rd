@@ -32,6 +32,12 @@ CalibraCurve(
   show_regression_info = FALSE,
   show_linear_range = TRUE,
   show_data_points = TRUE,
+  point_colour = "black",
+  curve_colour = "red",
+  linear_range_colour = "black",
+  RF_colour_threshold = "orange",
+  RF_colour_within = "#00BFC4",
+  RF_colour_outside = "#F8766D",
   device = "png",
   plot_width = 12,
   plot_height = 10,
@@ -92,9 +98,21 @@ percent bias values is lower than perBiasDistThres.}
 
 \item{show_regression_info}{\strong{logical(1)} \cr If TRUE, show regression information (R2, slope, intercept) on the plot.}
 
-\item{show_linear_range}{\strong{logical(1)} \cr If TRUE, show the linear range of the calibration curve.}
+\item{show_linear_range}{\strong{logical(1)} \cr If TRUE, show the linear range of the calibration curve as a rectangle in the plot.}
 
 \item{show_data_points}{\strong{logical(1)} \cr If TRUE, show the data points on the plot.}
+
+\item{point_colour}{\strong{character(1)} \cr Colour of the data points, default is "black".}
+
+\item{curve_colour}{\strong{character(1)} \cr Colour of the calibration curve, default is "red".}
+
+\item{linear_range_colour}{\strong{character(1)} \cr Colour of the linear range background, default is "black" (colour is weakened by alpha = 0.1).}
+
+\item{RF_colour_threshold}{\strong{character(1)} \cr Response factor plot: Colour for horizontal threshold lines, default is "orange".}
+
+\item{RF_colour_within}{\strong{character(1)} \cr Response factor plot: Colour for points and lines within the final linear range, default is "#00BFC4" (default ggplot colour).}
+
+\item{RF_colour_outside}{\strong{character(1)} \cr Response factor plot: Colour for horizontal outside of the final linear range, default is "#F8766D" (default ggplot colour).}
 
 \item{device}{\strong{character(1)} \cr Device for saving the plot (default is "png"). Other options include "pdf", "jpeg", "tiff", "svg" etc. For details see \code{\link[ggplot2]{ggsave}}.}
 

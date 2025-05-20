@@ -9,18 +9,23 @@
 
 A data frame with 55 rows and 2 columns:
 \describe{
-\item{Concentration}{Concentration}
-\item{Measurement}{Measurement}
+\item{Concentration}{Concentration in fmol/µl}
+\item{Measurement}{Measurement  as total area}
 }
 }
 }
 \source{
-TODO
+T. Bracht, V. Schweinsberg, M. Trippler, M. Kohl, M. Ahrens, J. Padden,
+W. Naboulsi, K. Barkovits, D. A. Megger, M. Eisenacher, C. H.
+Borchers, J. F. Schlaak, A. C. Hoffmann, F. Weber, H. A. Baba, H. E.
+Meyer, B. Sitek, J. Proteome Res. 2015, 14, 2278.
 }
 \usage{
 D_MFAP4
 }
 \description{
-Details TODO
+MRM validation experiment carried out for the y4 fragment ion of peptide WTVFQK of the microfibril associated protein 4 (MFAP4).
+The measurements were conducted as part of a proteomics discovery study aiming at biomarker identification for hepatic fibrosis (Bracht et al., 2015).
+The raw files can be obtained from PASSEL using the identifier PASS00653 (TODO: Link).
 }
 \keyword{datasets}

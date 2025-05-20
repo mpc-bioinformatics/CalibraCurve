@@ -9,18 +9,19 @@
 
 A data frame with 21 rows and 2 columns:
 \describe{
-\item{Concentration}{Concentration}
-\item{Measurement}{Measurement}
+\item{Concentration}{Concentration in fmol/µl}
+\item{Measurement}{Measurement as ratio between response of stable isotope standard and native peptide}
 }
 }
 }
 \source{
-TODO
+Y. Mohammed, A. J. Percy, A. G. Chambers, C. H. Borchers, J. Proteome Res. 2015, 14, 1137.
 }
 \usage{
 D_ALB
 }
 \description{
-Details TODO
+Measurement of the y8 fragment ion of the  peptide LVNEVTEFAK of Albumin (Mohammed et al., 2015).
+TODO
 }
 \keyword{datasets}
