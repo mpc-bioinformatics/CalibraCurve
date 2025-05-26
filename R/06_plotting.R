@@ -27,12 +27,13 @@ plotCalibraCurve <- function(RES,
                              show_regression_info = FALSE,
                              show_linear_range = TRUE,
                              show_data_points = TRUE,
+                             conc_unit = "[mg/L]",
                              point_colour = "black",
+                             in_facet_wrap = TRUE,
                              curve_colour = "red",
                              linear_range_colour = "black") {
 
-  ### TODO: plot multiple curves in one plot
-  ### TODO: plot multiple curves with facet_wrap
+
 
   checkmate::assertCharacter(ylab, len = 1)
   checkmate::assertCharacter(xlab, len = 1)
@@ -43,87 +44,127 @@ plotCalibraCurve <- function(RES,
   checkmate::assertCharacter(curve_colour, len = 1)
   checkmate::assertCharacter(linear_range_colour, len = 1)
 
-
-  concentration <- measurement <- final_linear_range <- predicted <- NULL # silence notes when checking the package
-
-  mod <- RES$mod
-  D <- RES$result_table_obs
-  D$measurement[D$measurement == 0] <- NA # set 0s to NA to avoid log10(0) for the plot
-
-  ## generate data for the calibration curve
-  grid <- seq(log10(min(D$concentration)), log10(max(D$concentration)), length.out = 1000)
-  pred <- stats::predict(mod, newdata = data.frame(Concentration = 10^grid))
-  CC_dat <- data.frame(concentration = 10^grid, predicted = pred)
-  CC_dat <- CC_dat[CC_dat$predicted > 0, ] # remove negative values in prediction (causes problems in log10-transformation later)
-
+  
+  calib_tibble <- RES %>%
+    mutate(
+      range_dat = list(res$result_table_obs),
+      intercept = res$mod$coefficients[1],
+      coeff = res$mod$coefficients[2],
+      r2 = summary(res$mod)$r.squared,
+      weight_m = res$weightingMethod
+    ) %>%
+    unnest(range_dat)
+  
+  calib_tibble$measurement[calib_tibble$measurement == 0] <- NA # set 0s to NA to avoid log10(0) for the plot
+  
+  annotation_dat <- calib_tibble %>% 
+    select(substance, concentration, intercept, coeff, r2,final_linear_range) %>% 
+    group_by(substance, intercept, coeff,r2) %>%
+    summarise(LLOQ = min(concentration[final_linear_range]),
+              ULOQ = max(concentration[final_linear_range])) %>%
+    mutate(lin_range = paste0("linear range: (", LLOQ, ", ", ULOQ, ") ", conc_unit),
+           eq = paste0(
+             "y = ",
+             format(intercept, scientific = TRUE, digits = 2),
+             " + ",
+             format(coeff, scientific = TRUE, digits = 2),
+             " * x",
+             " (R² = ",
+             round(r2, 3),
+             ")"
+           ),
+           r2_eq = paste0("R^2 = ", round(r2, 4)))
+  
+  curve_dat <- calib_tibble %>% 
+    select(substance, concentration, measurement, intercept, coeff, final_linear_range) %>% 
+    group_by(substance, intercept, coeff) %>%
+    reframe(concentration = list(10^seq(log10(min(concentration)), log10(max(concentration)), length.out = 1000))) %>% 
+    unnest(concentration) %>%
+    mutate(predicted = intercept + coeff * concentration) %>% 
+    filter(predicted >= 0)
 
   ### initialize plot
-  pl <- ggplot2::ggplot(D, ggplot2::aes(x = concentration, y = measurement))
-
-  ### add data points
-  if (show_data_points) {
+  pl <- ggplot2::ggplot(calib_tibble, ggplot2::aes(x = concentration, y = log(measurement))) + 
+    theme_bw() +
+    # log10 transformation only for x-values to keep geom_rect()-functionalities
+    ggplot2::scale_x_continuous(trans = "log10", labels = scales::label_comma(drop0trailing=TRUE))+
+    ggplot2::scale_y_continuous(labels = function(y) paste0(round(10^y, 5)))
+  
+  if(!in_facet_wrap) {
+    
+    ### add data points
+    if (show_data_points) {
+      pl <- pl +
+        ggplot2::geom_point(size = 1.7, ggplot2::aes(alpha = final_linear_range, color = substance, group = substance)) +
+        ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.1))
+    }
+    
+    ### add calibration curve
     pl <- pl +
-      ggplot2::geom_point(size = 1.7, ggplot2::aes(alpha = final_linear_range), colour = point_colour) +
-      ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.1))
+      ggplot2::geom_line(
+        data = curve_dat,
+        ggplot2::aes(x = concentration, y = log(predicted), color = substance, group = substance),
+        inherit.aes = FALSE
+      )
   }
-
-  # log10 transformation
-  pl <- pl +
-    ggplot2::scale_x_continuous(trans = "log10", labels = scales::comma) +
-    ggplot2::scale_y_continuous(trans = "log10")
-
-
-  ### add calibration curve
-  pl <- pl +
-    ggplot2::geom_line(
-      color = curve_colour,
-      data = CC_dat,
-      ggplot2::aes(x = concentration, y = predicted),
+    
+  if(in_facet_wrap) {
+    
+    ### add data points
+    if (show_data_points) {
+      pl <- pl +
+        ggplot2::geom_point(size = 1.7, ggplot2::aes(alpha = final_linear_range), color = point_colour) +
+        ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.1)) +
+        facet_wrap(substance ~ ., scales = "free")
+    }
+    
+    ### add calibration curve
+    pl <- pl +
+      ggplot2::geom_line(
+        color = curve_colour,
+        data = curve_dat,
+        ggplot2::aes(x = concentration, y = log(predicted)),
+        inherit.aes = FALSE
+      ) 
+    
+    if (show_linear_range) {
+      pl <- pl + ggplot2::geom_rect(
+      data = annotation_dat,
+      aes(
+        xmin = LLOQ,
+        xmax = ULOQ,
+        ymin = -Inf,
+        ymax = Inf
+      ),
+      alpha = 0.1,
       inherit.aes = FALSE
     )
-
-  pl
-
-  ### add shading for linear range
-  if (show_linear_range) {
-    pl <- pl +
-      ggplot2::annotate(geom = "rect",
-               xmin = min(RES$final_linear_range),
-               ymin = min(CC_dat$predicted)*0.01, # 0 causes warning because of log10-transformation
-               xmax = max(RES$final_linear_range),
-               ymax = Inf,
-               fill = linear_range_colour,
-               alpha = 0.1)
+    }
+    
+    if (show_regression_info) {
+      pl <- pl + ggplot2::geom_text(
+        data = annotation_dat,
+        aes(y = -Inf, x = Inf, label = eq),
+        vjust = -1.2,
+        hjust = 1.1,
+        alpha = 0.6,
+        inherit.aes = FALSE,
+        color = curve_colour,
+        size=3
+      )
+    }
+    
+    
   }
-
+  
   ## theme and labels
   pl <- pl +
+    guides(alpha = "none") +
     ggplot2::theme_bw() +
     ggplot2::ylab(ylab) +
     ggplot2::xlab(xlab) +
-    ggplot2::theme(legend.position = "bottom",
+    ggplot2::theme(title = element_text("Substance"),
                    plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm"))
-
-
-
-  if (show_regression_info) {
-    intercept <- stats::coef(mod)[1]
-    slope <- stats::coef(mod)[2]
-    r2 <- summary(mod)$r.squared
-    eq = paste0(
-      "y = ",
-      format(intercept, scientific = TRUE, digits = 2),
-      " + ",
-      format(slope, scientific = TRUE, digits = 2),
-      " * x",
-      " (R2 = ",
-      round(r2, 3),
-      ")"
-    )
-
-    pl <- pl +
-      ggplot2::annotate("text", x = min(D$concentration), y = max(D$measurement), label = eq, hjust = 0)
-  }
 
   return(pl)
 }
@@ -170,19 +211,25 @@ plotResponseFactors <- function(RES,
   checkmate::assertCharacter(colour_within, len = 1)
   checkmate::assertCharacter(colour_outside, len = 1)
 
-
-  concentration <- response_factor <- final_linear_range <- mean_response_factor <- NULL # silence notes when checking the package
-
-  range_dat <- RES$result_table_obs
-  range_dat <- range_dat[!is.na(range_dat$response_factor), ]
-  sum_dat <- RES$result_table_conc_levels
-  sum_dat <- sum_dat[!is.na(sum_dat$mean_response_factor), ]
-  all_rf_mean <- mean(range_dat$response_factor[range_dat$final_linear_range])
+  response_dat <- RES %>% 
+    mutate(result_dat = list(res$result_table_obs)) %>%
+    unnest(result_dat) %>% 
+    select(substance_name, concentration, response_factor, final_linear_range) %>%
+    drop_na(concentration, response_factor)
+  
+  mean_rf <- response_dat %>% 
+    group_by(substance_name, concentration, final_linear_range) %>% 
+    reframe(mean_rf = mean(response_factor))
+  
+  all_mean_rf <- mean_rf %>% 
+    filter(final_linear_range) %>% 
+    group_by(substance_name)%>% 
+    reframe(all_mean_rf = mean(mean_rf))
 
 
   ### initialize plot
   pl <- ggplot2::ggplot(
-    range_dat,
+    response_dat,
     ggplot2::aes(
       x = concentration,
       y = response_factor,
@@ -194,48 +241,38 @@ plotResponseFactors <- function(RES,
   )
 
   ### log10 transformation of x-axis
-  pl <- pl + ggplot2::scale_x_continuous(trans = "log10", labels = scales::comma)
-
+  pl <- pl + ggplot2::scale_x_continuous(trans = "log10", labels = scales::label_comma(drop0trailing=TRUE))
+  
   ### add data points + mean response factors per concentration level
   pl <- pl +
-    ggplot2::geom_point(size = 1.7, shape = 21) +
+    ggplot2::geom_point(size = 1.7, shape = 21) + facet_wrap(substance_name ~ ., scales = "free") +
     ggplot2::geom_point(
-      data = sum_dat,
-      ggplot2::aes(x = concentration, y = mean_response_factor),
+      data = mean_rf,
+      ggplot2::aes(x = concentration, y = mean_rf),
       color = "black",
       shape = 21,
       size = 2.5
     )
 
-
-  sum_dat2 <- sum_dat
-  if (any(sum_dat2$final_linear_range)) {
-    ind <- which(sum_dat2$final_linear_range)
-    ind_last <- ind[length(ind)]
-    if (ind_last != length(sum_dat2$final_linear_range))
-      sum_dat2$final_linear_range[ind_last] <- FALSE
-  }
-
   ### add line between mean response factors
   pl <- pl +
-    ggplot2::geom_line(data = sum_dat2, ggplot2::aes(x = concentration, y = mean_response_factor))
+    ggplot2::geom_line(data = mean_rf, ggplot2::aes(x = concentration, y = mean_rf))
 
   ## scaling of alpha and colours
   pl <- pl +
     ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.3)) +
     ggplot2::scale_colour_manual(values = c("TRUE" = colour_within, "FALSE" = colour_outside)) +
     ggplot2::scale_fill_manual(values = c("TRUE" = colour_within, "FALSE" = colour_outside))
-  #ggplot2::facet_wrap(substance ~ ., scales = "free") +
 
   ### add horizontal lines for response factor thresholds
   pl <- pl +
-    ggplot2::geom_hline(
-      yintercept = all_rf_mean * (RfThresU/100),
-      linetype = "dashed",
+    ggplot2::geom_hline(data = all_mean_rf, aes(
+      yintercept = all_mean_rf * (RfThresU/100)),
+      linetype = "dashed", 
       color = colour_threshold
     ) +
-    ggplot2::geom_hline(
-      yintercept = all_rf_mean * (RfThresL/100),
+    ggplot2::geom_hline(data = all_mean_rf, aes(
+      yintercept = all_mean_rf * (RfThresL/100)),
       linetype = "dashed",
       color = colour_threshold
     )

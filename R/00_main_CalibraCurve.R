@@ -54,25 +54,118 @@
 #'
 #' data_path <- system.file("extdata", "ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
 #' CalibraCurve(data_path = data_path, conc_col = 6, meas_col = 7)
-#'
+
+
+calc_single_curve <- function(single_path,
+                              output_path = NULL,
+                              conc_col,
+                              meas_col,
+                              substance = "substance1",
+                              suffix = paste0("_", substance),
+                              
+                              filetype = "csv",
+                              sep = ",",
+                              dec = ".",
+                              header = TRUE,
+                              na.strings = c("NA", "NaN", "Filtered", "#NV"),
+                              sheet = 1,
+                              
+                              min_replicates = 3,
+                              
+                              cv_thres = 20,
+                              calcContinuousPrelimRanges = TRUE,
+                              
+                              weightingMethod = "1/x^2",
+                              centralTendencyMeasure = "mean",
+                              perBiasThres = 30,
+                              considerPerBiasCV = TRUE,
+                              perBiasDistThres = 10,
+                              
+                              RfThresL = 80,
+                              RfThresU = 120) {
+  ## read in data
+  X <- CalibraCurve::readData(data_path = single_path,
+                              conc_col = conc_col,
+                              meas_col = meas_col,
+                              filetype = filetype,
+                              sep = sep,
+                              dec = dec,
+                              header = header,
+                              na.strings = na.strings,
+                              sheet = sheet)
+  
+  ## clean data
+  dataCleaned <- CalibraCurve::cleanData(X,
+                                         min_replicates = min_replicates)
+  
+  ## calculate preliminary linear range
+  PLR_res <- CalibraCurve::calculate_PLR(dataCleaned = dataCleaned,
+                                         cv_thres = cv_thres,
+                                         calcContinuousPrelimRanges = calcContinuousPrelimRanges)
+  
+  
+  ## calculate final linear range
+  FLR_res <- CalibraCurve::calculate_FLR(PLR_res$dataPrelim,
+                                         weightingMethod = weightingMethod,
+                                         centralTendencyMeasure = centralTendencyMeasure,
+                                         perBiasThres = perBiasThres,
+                                         considerPerBiasCV = considerPerBiasCV,
+                                         perBiasDistThres = perBiasDistThres)
+  
+  dataFinal <- FLR_res$dataFinal
+  mod <- FLR_res$mod
+  
+  
+  ### calculate response factors
+  resFacDataV <- CalibraCurve::calcRFLevels(dataCleaned, mod = mod)
+  
+  # Calculation of mean response factor values
+  avgResFacDataV <- CalibraCurve::calcRFMeans(resFacDataV)
+  
+  
+  #### generate result tables
+  tables <- CalibraCurve::assemble_results(X = X,
+                                           dataCleaned = dataCleaned,
+                                           cv_thres = cv_thres,
+                                           PLR_res = PLR_res,
+                                           resFacDataV = resFacDataV,
+                                           avgResFacDataV = avgResFacDataV,
+                                           FLR_res = FLR_res,
+                                           mod = mod,
+                                           RfThresL = RfThresL,
+                                           RfThresU = RfThresU,
+                                           substance = substance
+  )
+  
+  RES <- list(mod = mod,
+              final_linear_range = as.numeric(names(dataFinal)),
+              # dataCleaned = dataCleaned,
+              weightingMethod = weightingMethod,
+              result_table_conc_levels = tables$result_table_conc_levels,
+              result_table_obs = tables$result_table_obs)
+  
+  RES
+}
+
+
 CalibraCurve <- function(data_path,
                          output_path = NULL,
                          conc_col,
                          meas_col,
                          substance = "substance1",
                          suffix = paste0("_", substance),
-
-                         filetype = "xlsx",
+                        
+                         filetype = "csv",
                          sep = ",",
                          dec = ".",
                          header = TRUE,
                          na.strings = c("NA", "NaN", "Filtered", "#NV"),
                          sheet = 1,
 
-                         min_replicates = 3,
+                         min_replicates = 1,
 
                          cv_thres = 20,
-                         calcContinuousPrelimRanges = TRUE,
+                         calcContinuousPrelimRanges = FALSE,
 
                          weightingMethod = "1/x^2",
                          centralTendencyMeasure = "mean",
@@ -86,7 +179,9 @@ CalibraCurve <- function(data_path,
                          ### parameters for plotting
                          ylab = "Intensity",
                          xlab = "Concentration",
-                         show_regression_info = FALSE,
+                         in_facet_wrap = TRUE,
+                         plot_single_subst = TRUE,
+                         show_regression_info = TRUE,
                          show_linear_range = TRUE,
                          show_data_points = TRUE,
                          point_colour = "black",
@@ -107,122 +202,158 @@ CalibraCurve <- function(data_path,
   checkmate::assert_numeric(plot_height, lower = 0, len = 1)
   checkmate::assert_numeric(plot_dpi, lower = 0, len = 1)
 
-  ## read in data
-  X <- CalibraCurve::readData(data_path = data_path,
-                              conc_col = conc_col,
-                              meas_col = meas_col,
-                              filetype = filetype,
-                              sep = sep,
-                              dec = dec,
-                              header = header,
-                              na.strings = na.strings,
-                              sheet = sheet)
+  
+  data_path = "data/alina_kisep_20250514"
+  output_path = "data/alina_kisep_20250514_results"
+  
+  all_files <- list.files(data_path)
+  
+  RES <- data.frame(file = all_files) %>% 
+    rowwise() %>%
+    mutate(substance_name = sub("\\..*$", "", file),
+           full_path = paste0(data_path, "/", file))
+  
+  RES <- RES %>% mutate(
+    res = list(calc_single_curve(single_path = full_path,
+                            conc_col = 1,
+                            meas_col = 3,
+                            cv_thres = 20,
+                            min_replicates = 1,
+                            calcContinuousPrelimRanges = FALSE,
+                            dec = ".",
+                            filetype = "csv",
+                            substance = substance_name)))
 
-  ## clean data
-  dataCleaned <- CalibraCurve::cleanData(X,
-                                           min_replicates = min_replicates)
-
-  ## calculate preliminary linear range
-  PLR_res <- CalibraCurve::calculate_PLR(dataCleaned = dataCleaned,
-                                         cv_thres = cv_thres,
-                                         calcContinuousPrelimRanges = calcContinuousPrelimRanges)
-
-
-  ## calculate final linear range
-  FLR_res <- CalibraCurve::calculate_FLR(PLR_res$dataPrelim,
-                       weightingMethod = weightingMethod,
-                       centralTendencyMeasure = centralTendencyMeasure,
-                       perBiasThres = perBiasThres,
-                       considerPerBiasCV = considerPerBiasCV,
-                       perBiasDistThres = perBiasDistThres)
-
-  dataFinal <- FLR_res$dataFinal
-  mod <- FLR_res$mod
-
-
-  ### calculate response factors
-  resFacDataV <- CalibraCurve::calcRFLevels(dataCleaned, mod = mod)
-
-  # Calculation of mean response factor values
-  avgResFacDataV <- CalibraCurve::calcRFMeans(resFacDataV)
-
-
-  #### generate result tables
-  tables <- CalibraCurve::assemble_results(X = X,
-                             dataCleaned = dataCleaned,
-                             cv_thres = cv_thres,
-                             PLR_res = PLR_res,
-                             resFacDataV = resFacDataV,
-                             avgResFacDataV = avgResFacDataV,
-                             FLR_res = FLR_res,
-                             mod = mod,
-                             RfThresL = RfThresL,
-                             RfThresU = RfThresU,
-                             substance = substance
-  )
-
-  RES <- list(mod = mod,
-              final_linear_range = as.numeric(names(dataFinal)),
-              dataCleaned = dataCleaned,
-              weightingMethod = weightingMethod,
-              result_table_conc_levels = tables$result_table_conc_levels,
-              result_table_obs = tables$result_table_obs)
-
+  
   if (!is.null(output_path)) {
-  CalibraCurve::saveCCResult(CC_res = RES,
-                             output_path = output_path,
-                             suffix = suffix)
+    for (i in 1:nrow(RES)) {
+      ## save the calibration results
+      CalibraCurve::saveCCResult(
+        CC_res = unlist(RES[i, ]$res, recursive = FALSE),
+        output_path = output_path,
+        suffix = paste0("_", RES[i, ]$substance_name)
+      )
+    }
   }
-
-
-  ## calibration curve plot
-  pl_CC <- CalibraCurve::plotCalibraCurve(RES,
-                                          ylab = ylab,
-                                          xlab = xlab,
-                                          show_regression_info = show_regression_info,
-                                          show_linear_range = show_linear_range,
-                                          show_data_points = show_data_points,
-                                          point_colour = point_colour,
-                                          curve_colour = curve_colour,
-                                          linear_range_colour = linear_range_colour
-                                          )
+  
+  
   if (!is.null(output_path)) {
-    ## save the plot
-    ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve", suffix, ".", device),
-                    plot = pl_CC,
-                    device = device,
-                    width = plot_width,
-                    height = plot_height,
-                    units = "cm",
-                    dpi = plot_dpi)
+    if (plot_single_subst) {
+      for (i in 1:nrow(RES)) {
+        ## save the calibration curve plot
+        ggplot2::ggsave(
+          filename = paste0(
+            output_path,
+            "/CalibraCurve_",
+            RES[i, ]$substance_name,
+            ".",
+            device
+          ),
+          plot = plotCalibraCurve(
+            RES = RES[i, ],
+            ylab = ylab,
+            xlab = xlab,
+            show_regression_info = show_regression_info,
+            show_linear_range = show_linear_range,
+            show_data_points = show_data_points,
+            point_colour = point_colour,
+            curve_colour = curve_colour,
+            linear_range_colour = linear_range_colour
+          ),
+          device = device,
+          width = plot_width,
+          height = plot_height,
+          units = "cm",
+          dpi = plot_dpi
+        )
+        
+        ggplot2::ggsave(
+          filename = paste0(
+            output_path,
+            "/ResponseFactors_",
+            RES[i, ]$substance_name,
+            ".",
+            device
+          ),
+          plot = plotResponseFactors(
+            RES[i, ],
+            RfThresL = RfThresL,
+            RfThresU = RfThresU,
+            colour_threshold = RF_colour_threshold,
+            colour_within = RF_colour_within,
+            colour_outside = RF_colour_outside
+          ),
+          device = device,
+          width = plot_width,
+          height = plot_height,
+          units = "cm",
+          dpi = plot_dpi
+        )
+      }
+    } else {
+      res_pl <- plotCalibraCurve(
+        RES = RES,
+        ylab = ylab,
+        xlab = xlab,
+        show_regression_info = show_regression_info,
+        show_linear_range = show_linear_range,
+        show_data_points = show_data_points,
+        point_colour = point_colour,
+        curve_colour = curve_colour,
+        linear_range_colour = linear_range_colour
+        
+      )
+      
+      ggplot2::ggsave(
+        filename = paste0(output_path, "/CalibraCurve_all_substances", ".", device),
+        plot = res_pl,
+        device = device,
+        width = 2.7 * plot_width,
+        height = 2.7 * plot_height,
+        units = "cm",
+        dpi = plot_dpi
+      )
+      
+      pl_RF <- plotResponseFactors(
+        RES,
+        RfThresL = RfThresL,
+        RfThresU = RfThresU,
+        colour_threshold = RF_colour_threshold,
+        colour_within = RF_colour_within,
+        colour_outside = RF_colour_outside
+      )
+      
+      ggplot2::ggsave(
+        filename = paste0(output_path, "/ResponseFactors_all_substances", ".", device),
+        plot = pl_RF,
+        device = device,
+        width = 2.7 * plot_width,
+        height = 2.7 * plot_height,
+        units = "cm",
+        dpi = plot_dpi
+      )
+      
+      
+    }
   }
-  RES$plot_CC <- pl_CC
-
-
-  ## response factor plot
-  pl_RF <- CalibraCurve::plotResponseFactors(RES,
-                                             RfThresL = RfThresL,
-                                             RfThresU = RfThresU,
-                                             colour_threshold = RF_colour_threshold,
-                                             colour_within = RF_colour_within,
-                                             colour_outside = RF_colour_outside)
-
-  if (!is.null(output_path)) {
-    ## save the plot
-    ggplot2::ggsave(filename = paste0(output_path, "/ResponseFactors", suffix, ".", device),
-                    plot = pl_RF,
-                    device = device,
-                    width = plot_width,
-                    height = plot_height,
-                    units = "cm",
-                    dpi = plot_dpi)
-  }
-
-  RES$plot_RF <- pl_RF
-
-
-  return(RES)
-
+  
+  summarytab <- RES %>%
+    mutate(
+      range_dat = list(res$result_table_obs),
+      intercept = res$mod$coefficients[1],
+      coeff = res$mod$coefficients[2],
+      r2 = summary(res$mod)$r.squared,
+      weight_m = res$weightingMethod
+    )%>%
+    unnest(range_dat) %>% 
+    select(substance, concentration, intercept, coeff, r2, final_linear_range) %>% 
+    group_by(substance, intercept, coeff,r2) %>%
+    summarise(LLOQ = min(concentration[final_linear_range]),
+              ULOQ = max(concentration[final_linear_range]))
+  
+  openxlsx::write.xlsx(test, file = paste0(output_path, "/summarytable_calibration_models.xlsx"))
+  
+  return(summarytab)
 }
 
 
