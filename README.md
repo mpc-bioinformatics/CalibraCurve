@@ -7,7 +7,7 @@ Here, we present a software named CalibraCurve that enables an automated batch-m
 
 ## Installation
 
-You can install the development version of ProtStatsWF from
+You can install the development version of CalibraCurve from
 [GitHub](https://github.com/) with:
 
 ``` r
