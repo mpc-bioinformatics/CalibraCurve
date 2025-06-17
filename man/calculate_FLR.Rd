@@ -25,7 +25,7 @@ calculate_FLR(
 \item{considerPerBiasCV}{\strong{logical(1)} \cr If TRUE, CV is considered for the elimination of the concentration level (default). CV will only be considered if the difference in
 percent bias values is lower than perBiasDistThres.}
 
-\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10.}
+\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10. Only relevant if considerPerBiasCV = TRUE.}
 }
 \value{
 List with the following elements:

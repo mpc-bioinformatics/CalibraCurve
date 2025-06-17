@@ -25,13 +25,13 @@ readData(
 
 \item{meas_col}{\strong{integer} \cr Column number of the concentration values.}
 
-\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab.}
+\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. The default is ",".}
 
-\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot.}
+\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot. The default is ".".}
 
-\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names.}
+\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names. The default is TRUE.}
 
-\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA.}
+\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA. The default is c("NA", "NaN", "Filtered", "#NV").}
 
 \item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
 }
