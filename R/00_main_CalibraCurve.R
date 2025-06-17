@@ -353,7 +353,7 @@ CalibraCurve <- function(data_path,
   return(summarytab)
 }
 
-# CalibraCurve(conc_col = 1, meas_col = 6, 
+# CalibraCurve(conc_col = 1, meas_col = 6,
 #              data_path = "data/alina_daten_neu20250603_par",
 #              output_path = "data/alina_daten_neu20250603_par_results",
 #              cv_thres = 20,
