@@ -196,7 +196,7 @@ selctConcLevel <- function(x, perBiasT = 20, consPerBiasCV = TRUE, perBiasDistT 
 #' @param perBiasThres **numeric(1)** \cr Threshold for average percent bias in percent, default is 20.
 #' @param considerPerBiasCV **logical(1)** \cr If TRUE, CV is considered for the elimination of the concentration level (default). CV will only be considered if the difference in
 #'                                             percent bias values is lower than perBiasDistThres.
-#' @param perBiasDistThres **numeric(1)** \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10.
+#' @param perBiasDistThres **numeric(1)** \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10. Only relevant if considerPerBiasCV = TRUE.
 #'
 #' @returns List with the following elements:
 #' - \code{dataFinal}: List of data.frames containing data only within the final linear range.

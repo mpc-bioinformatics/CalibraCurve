@@ -1,0 +1,165 @@
+---
+title: "CalibraCurve_Tutorial"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{CalibraCurve_Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(CalibraCurve)
+```
+
+
+# CalibraCurve Tutorial
+
+## Introduction
+
+- R package for calculating calibration curve for targeted mass-spectrometry based experiments, e.g. targeted proteomics, lipidomics, metabolomics, etc.
+
+
+
+## Installation
+
+
+## How to prepare the data
+
+The input data must be provided as .xlsx, .csv or .txt files. The data must have at least two columns:
+ one containing the given concentrations and one containing the measurements (e.g. the intensity of the analyte). Additional columns are allowed but will not be processed. 
+CalibraCurve was developed to support generic calibration tasks, where the unit of the concentrations of the type of measurement are flexible. 
+For example in targeted proteomics, the measurement can be the intensity calculated as the peak area of a fragment ion. Alternatively, if a heavy version of the peptide of interest was spiked into the samples, peak area ratios (PAR) between the heavy and the light peptide may be used for calibration. Please note that CalibraCurve does not calculate these ratios, but they have to be provided in the input data.  
+The CalibraCurve package contains three test data set that can be used as an example and to test the package's functionality.
+
+## Quick guide
+
+The function `CalibraCurve()` is the main function of the package. It takes the input data and calculates the calibration curve, including the final linear range (lower and upper limit of quantification), the slope and intercept of the linear regression model, and the R-squared value. 
+The calibration curve is visualized and two result tables containing all relevant information are generated (one on the level of concentration levels and one on the level of single data points).
+
+Only five arguments are mandatory to calculate CalibraCurve:
+- `data_path`: Path to the input data file (e.g. .xlsx, .csv, .txt)
+- `filetype`: Type of the input file ("xlsx", "csv" or "txt")
+- `conc_col`: Column number containing the concentrations
+- `meas_col`: Column number containing the measurements (e.g. intensity, peak area ratio)
+- `output_path`: Path to the output directory where the results (tables and graphics) will be saved.
+
+CalibraCurve uses default values for all relevant thresholds and options for the algorithm. While these default settings will usually lead to an estimate of the calibration curve, these may not be the optimal settings for each data sets. 
+
+
+```{r first_example}
+library(CalibraCurve)
+
+## choose one of the test data sets
+file <- system.file("extdata", "MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
+
+RES <- CalibraCurve(data_path = file,
+             filetype = "xlsx", # specify the file type, e.g. "xlsx", "csv", "tsv"
+             conc_col = 6, # column number containing the concentrations
+             meas_col = 7, # column number containing the measurements measurements
+             output_path = NULL) # output_path set to NULL will not save the results to files (results are still returned as a list)
+
+print(RES$plot_CC)
+print(RES$plot_RF)
+
+```
+
+## Advanced options
+
+The CalibraCurve workflow consists of the following steps:
+1) Data input
+2) Data preprocessing and cleaning
+3) Calculation of the preliminary linear range
+4) Calculation of the final linear range and the linear regression model
+5) Calculation of response factors
+6) Visualization of the calibration curve and response factors
+7) Write results
+8) (optional) prediction of concentrations for new measurements
+
+Each of these steps can be controlled by parameters, e.g. thresholds that are needed in several steps of the workflow. 
+While the default values may lead to acceptable results in many cases, they may not be optimal for all data sets. 
+The following paragraphs will explain some details of the workflow and the different options and how they may affect the calibration. 
+
+### 1) Data input
+
+During this step the data are read into R. By default, a .xlsx file is accepted that contains the data in its first sheet. However, other types of data files and configurations can be specified using the following parameters:
+
+`data_path`: Path to the input data file (.xlsx, .csv or .txt file). Can be a full path (e.g. `C:\Users\Documents\CalibraCurve\data.csv`) or a relative path (e.g. `data.csv` if the file is in the working directory). 
+
+`filetype`: Type of the input file. Can be "xlsx", "csv" or "txt".
+
+`conc_col`: Column number containing the concentrations.
+
+`meas_col`: Column number containing the measurements (e.g. intensity, peak area ratio).
+
+`sep`: The field separator for .csv and .txt files, e.g. " " for blanks, "," for comma or "\\t" for tab. Please note that German csv files often use ";" as separator, while English csv files use ",". The default is ",".
+
+`dec`: The decimal separator for .csv and .txt files, e.g. "," for German or "." for English-style files.
+
+`header`: Logical value indicating whether the first row of the input file contains column names (TRUE) or not (FALSE). Default is TRUE.
+
+`na.strings`: A character vector of strings to be interpreted as NA values. Default is c("NA", "NaN", "Filtered", "#NV").. This can be used to handle missing values in the input data. 
+
+`sheet`: Sheet number to read from .xlsx files. Default is 1, which means the first sheet will be read. If the input file is a .csv or .txt file, this parameter is ignored.
+
+### 2) Data preprocessing and cleaning
+
+In this step, non-usable values are removed from the data. Data points with missing or zero values in either the concentration or measurement columns are removed. Zero values are removed because they cannot be log-transformed, which is necessary for further calculations. If a certain concentration level has not enough data points left after this cleaning step, it is removed from the data set.
+
+`min_replicates`: Minimal number of replicates/data points per concentration level. Concentration levels with too few data points will be removed.
+
+
+### 3) Calculation of the preliminary linear range
+
+The preliminary linear range is calculated on the cleaned data based on the CV (coefficient of variation) of the replicates for each concentration level. The CV is calculated as the standard deviation divided by the mean of the replicates (times 100 to get percentages). The preliminary linear range is defined as the concentration range where the CV is below a certain threshold. Besides the CV threshold, other options can be set:
+
+`cv_thres`: Threshold for CV per concentration level in percent (default is 20)
+
+`calcContinuousPrelimRanges`: In some cases not all concentration levels between the highest and lowest with a CV < cv_thres also fulfill this criterion. By default (calcContinuousPrelimRanges = TRUE), the longest continous range with a CV < cv_thres is calculated. 
+If calcContinuousPrelimRanges is set to FALSE, the preliminary linear range is defined as the range between the lowest and highest concentration levels with a CV < cv_thres. This means that intermediate concentrations with a CV >= cv_thres are allowe,  which may lead to a longer preliminary linear range.
+
+
+### 4) Calculation of the final linear range and the linear regression model
+
+Based on the preliminary linear range, a linear regression model is build using the lm() function in R.
+
+`weightingMethod``: Method for weighting for the linear regression model. 
+Can be "None", "1/x", "1/x^2" (default). 
+
+
+Based on this model, the percentage bias values are calculated for each concentration level (TODO: formula). 
+
+`centralTendencyMeasure`: Method for calculating average percent bias, "mean" (default) or "median". Using median values may be beneficial in case of single  outliers.
+
+`perBiasThres`: Threshold for the percentage Bias in percent, default is 20.
+
+`consPerBiasCV`: If the percentage bias values are close together (difference below the threshold `perBiasDistT`) it is possible to use the CV of the percentage bias values as an additional criterion. This is the deault behaviour (consPerBiasCV = TRUE). If det to FALSE, strictly only the average percentage bias values are used without considering the CV.
+
+`perBiasDistT`: Threshold for the distance between the percentage bias values in percent, default is 10. If the difference between the percentage bias values is below this threshold, they are considered close together. This is only relevant if `consPerBiasCV` is set to TRUE.
+
+
+### advanced options for data cleaning and preliminary linear range
+### advanced options for final linear range
+
+### advanced options for plotting (graphic parameters)
+
+## Prediction
+
+## More examples
+
+## Troubleshooting/Common errors
+
+## References
+
+
+
+
+
+
+
