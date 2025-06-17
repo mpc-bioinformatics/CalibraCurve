@@ -180,7 +180,7 @@ CalibraCurve <- function(data_path,
                          ylab = "Intensity",
                          xlab = "Concentration",
                          in_facet_wrap = TRUE,
-                         plot_single_subst = TRUE,
+                         plot_single_subst = FALSE,
                          show_regression_info = TRUE,
                          show_linear_range = TRUE,
                          show_data_points = TRUE,
@@ -201,10 +201,6 @@ CalibraCurve <- function(data_path,
   checkmate::assert_numeric(plot_width, lower = 0, len = 1)
   checkmate::assert_numeric(plot_height, lower = 0, len = 1)
   checkmate::assert_numeric(plot_dpi, lower = 0, len = 1)
-
-  
-  data_path = "data/alina_kisep_20250514"
-  output_path = "data/alina_kisep_20250514_results"
   
   all_files <- list.files(data_path)
   
@@ -215,15 +211,14 @@ CalibraCurve <- function(data_path,
   
   RES <- RES %>% mutate(
     res = list(calc_single_curve(single_path = full_path,
-                            conc_col = 1,
-                            meas_col = 3,
-                            cv_thres = 20,
-                            min_replicates = 1,
-                            calcContinuousPrelimRanges = FALSE,
-                            dec = ".",
-                            filetype = "csv",
+                            conc_col = conc_col,
+                            meas_col = meas_col,
+                            cv_thres = cv_thres,
+                            min_replicates = min_replicates,
+                            calcContinuousPrelimRanges = calcContinuousPrelimRanges,
+                            dec = dec,
+                            filetype = filetype,
                             substance = substance_name)))
-
   
   if (!is.null(output_path)) {
     for (i in 1:nrow(RES)) {
@@ -351,9 +346,14 @@ CalibraCurve <- function(data_path,
     summarise(LLOQ = min(concentration[final_linear_range]),
               ULOQ = max(concentration[final_linear_range]))
   
-  openxlsx::write.xlsx(test, file = paste0(output_path, "/summarytable_calibration_models.xlsx"))
+  openxlsx::write.xlsx(summarytab, file = paste0(output_path, "/summarytable_calibration_models.xlsx"))
   
   return(summarytab)
 }
 
-
+# CalibraCurve(conc_col = 1, meas_col = 6, 
+#              data_path = "data/alina_daten_neu20250603_par",
+#              output_path = "data/alina_daten_neu20250603_par_results",
+#              cv_thres = 20,
+#              plot_single_subst = TRUE,
+#              ylab = "Peak Area Ratio")
