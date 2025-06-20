@@ -110,7 +110,7 @@ calculate_PLR <- function(dataCleaned,
       dataPrelim <- dataCleaned[longestRange$startPoints[1]:longestRange$endPoints[1]]
     } else {
       if (longestRange$extent == 0) {
-        stop(paste0("No preliminary linear range with CV <= ", cv_thres, ") could be calculated. Please check your data or increase the CV threshold."))
+        stop(paste0("No preliminary linear range with CV <= ", cv_thres, " could be calculated. Please check your data or increase the CV threshold."))
       }
       dataPrelim <- dataCleaned[longestRange$startPoints:longestRange$endPoints]  # if nrow(longestRange) == 1
     }
