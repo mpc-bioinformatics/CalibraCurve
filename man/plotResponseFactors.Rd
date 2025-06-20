@@ -16,7 +16,7 @@ plotResponseFactors(
 )
 }
 \arguments{
-\item{RES}{\strong{list} \cr Results of \code{\link{CalibraCurve}}.}
+\item{RES}{\strong{list} \cr Results of \code{\link{calc_single_curve}}.}
 
 \item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in percent (default is 80).}
 

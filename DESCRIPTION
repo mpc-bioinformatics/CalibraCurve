@@ -1,6 +1,6 @@
 Package: CalibraCurve
-Title: Calibration curves for targeted proteomics, lipidomics and metabolomics data.
-Version: 0.0.0.9000
+Title: Calibration curves for targeted proteomics, lipidomics and metabolomics data
+Version: 3.0.0
 Authors@R: c(
     person("Karin", "Schork", , "karin.schork@rub.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-3756-4347")),
@@ -17,8 +17,7 @@ Imports:
     ggplot2,
     magrittr,
     openxlsx,
-    scales,
-    tidyr
+    scales
 Suggests: 
     knitr,
     rmarkdown,

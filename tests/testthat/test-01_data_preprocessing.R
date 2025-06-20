@@ -1,19 +1,19 @@
 test_that("readData xlsx", {
-  file <- system.file("extdata", "MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
+  file <- system.file("extdata", "xlsx/MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
   D <- readData(file,
                 filetype = "xlsx",
                 conc_col = 6,
                 meas_col = 7)
   expect_equal(D, CalibraCurve::D_MFAP4)
 
-  file <- system.file("extdata", "Apolipoprotein_TPAYYPNAGLIK_y7.xlsx", package = "CalibraCurve")
+  file <- system.file("extdata", "xlsx/Apolipoprotein_TPAYYPNAGLIK_y7.xlsx", package = "CalibraCurve")
   D <- readData(file,
                 filetype = "xlsx",
                 conc_col = 6,
                 meas_col = 7)
   expect_equal(D, CalibraCurve::D_Apolipoprotein)
 
-  file <- system.file("extdata", "ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
+  file <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
   D <- readData(file,
                 filetype = "xlsx",
                 conc_col = 6,
@@ -23,21 +23,21 @@ test_that("readData xlsx", {
 
 
 test_that("readData csv", {
-  file <- system.file("extdata", "MFAP4_WTVFQK_y4.csv", package = "CalibraCurve")
+  file <- system.file("extdata", "csv/MFAP4_WTVFQK_y4.csv", package = "CalibraCurve")
   D <- readData(file,
                 filetype = "csv",
                 conc_col = 6,
                 meas_col = 7)
   expect_equal(D, CalibraCurve::D_MFAP4)
 
-  file <- system.file("extdata", "Apolipoprotein_TPAYYPNAGLIK_y7.csv", package = "CalibraCurve")
+  file <- system.file("extdata", "csv/Apolipoprotein_TPAYYPNAGLIK_y7.csv", package = "CalibraCurve")
   D <- readData(file,
                 filetype = "csv",
                 conc_col = 6,
                 meas_col = 7)
   expect_equal(D, CalibraCurve::D_Apolipoprotein)
 
-  file <- system.file("extdata", "ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
+  file <- system.file("extdata", "csv/ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
   D <- readData(file,
                 filetype = "csv",
                 conc_col = 6,
