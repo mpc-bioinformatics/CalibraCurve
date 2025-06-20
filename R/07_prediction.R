@@ -21,11 +21,11 @@
 #'
 #' data(RES_MFAP4)
 #' newdata <- c(5, 0.2, 10)
-#' predictConcentration(CC_res = RES_MFAP4, newdata = newdata)
+#' predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
 #'
 #' ## concentration that leads to predictions outside of the linear range -> warning
 #' newdata2 <- c(100)
-#' predictConcentration(CC_res = RES_MFAP4, newdata = newdata)
+#' predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
 #'
 #'
 predictConcentration <- function(CC_res, newdata) {
