@@ -91,7 +91,7 @@ calculate_PLR <- function(dataCleaned,
   index <- which(concLevelsCV <= cv_thres)
 
   if (length(index) <= 1) {
-    stop(paste0("No preliminary linear range with (CV <= ", cv_thres, " threshold) could be calculated. Please check your data or increase the CV threshold."))
+    stop(paste0("No preliminary linear range with CV <= ", cv_thres, " could be calculated. Please check your data or increase the CV threshold."))
   }
 
   ### calculate candidates for the PLR (parts where CV < threshold)
@@ -106,11 +106,11 @@ calculate_PLR <- function(dataCleaned,
     longestRange <- rangeProperties[which(rangeProperties$extent == max(rangeProperties$extent)),]
 
     if (nrow(longestRange) > 1) {# Special case: more than one range with the same number of concentration levels that pass the CV threshold exist
-      warning("More than one preliminary linear ranges with the same number of concentration levels passing the CV threshold exist. \n The first one will be selected. Set calcContinuousPrelimRanges to TRUE if you want to allow gaps with CV > threshold.")
+      warning(paste0("More than one preliminary linear ranges with the same number of concentration levels passing the CV threshold exist. \n The first one will be selected. Set calcContinuousPrelimRanges to TRUE if you want to allow gaps with CV >", cv_thres, "."))
       dataPrelim <- dataCleaned[longestRange$startPoints[1]:longestRange$endPoints[1]]
     } else {
       if (longestRange$extent == 0) {
-        stop("No preliminary linear range with (CV < threshold) could be calculated. Please check your data or increase the CV threshold.")
+        stop(paste0("No preliminary linear range with CV <= ", cv_thres, " could be calculated. Please check your data or increase the CV threshold."))
       }
       dataPrelim <- dataCleaned[longestRange$startPoints:longestRange$endPoints]  # if nrow(longestRange) == 1
     }
@@ -126,7 +126,7 @@ calculate_PLR <- function(dataCleaned,
 
   # Cancel calculations if less than two remaining concentration levels exist, which pass the CV value threshold
   if (length(prelimConcLevels) < 2) {
-    stop("Less than two concentration levels with CV < threshold exist. \n Please check your data or increase the CV threshold.")
+    stop(paste0("Less than two concentration levels with CV <= ", cv_thres, " exist. \n Please check your data or increase the CV threshold."))
   }
 
   return(list(dataPrelim = dataPrelim,

@@ -33,9 +33,9 @@ test_that("plot calibration curve", {
               result_table_obs = tables$result_table_obs)
 
 
-  pl_CC <- CalibraCurve::plotCalibraCurve(RES,
-                                          show_regression_info = FALSE,
-                                          show_linear_range = TRUE,
+  pl_CC <- CalibraCurve::plotCalibraCurve(list("substance1" = RES),
+                                          show_regression_info = TRUE,
+                                          show_linear_range = FALSE,
                                           show_data_points = TRUE)
 
 

@@ -30,9 +30,11 @@
 #'
 predictConcentration <- function(CC_res, newdata) {
 
-  mod <- CC_res$mod
+  RES <- CC_res$RES[[1]]
 
-  FLR <- CC_res$final_linear_range
+  mod <- RES$mod
+
+  FLR <- RES$final_linear_range
   min_FLR <- min(FLR)
   max_FLR <- max(FLR)
 
@@ -42,7 +44,7 @@ predictConcentration <- function(CC_res, newdata) {
 
   # linear model: intensity = intercept + slope * concentration + e
   # prediction of concentration: concentration = (intensity - intercept) / slope
-  predictedConcentration = (intercept + slope * newdata) / slope
+  predictedConcentration = (newdata - intercept) / slope
 
   # check if predicted concentration is within the final linear range
   linear_range <- predictedConcentration >= min_FLR & predictedConcentration <= max_FLR

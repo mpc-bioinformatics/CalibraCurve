@@ -25,13 +25,13 @@ readData(
 
 \item{meas_col}{\strong{integer} \cr Column number of the concentration values.}
 
-\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab.}
+\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. The default is ",".}
 
-\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot.}
+\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot. The default is ".".}
 
-\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names.}
+\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names. The default is TRUE.}
 
-\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA.}
+\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA. The default is c("NA", "NaN", "Filtered", "#NV").}
 
 \item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
 }
@@ -42,14 +42,14 @@ Data.frame with two numeric columns: Concentration and Measurement
 Read in data in different input formats
 }
 \examples{
-file <- system.file("extdata", "MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
+file <- system.file("extdata", "xlsx/MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
 D <- readData(file,
              filetype = "xlsx",
              conc_col = 6,
              meas_col = 7)
 
 
-file2 <- system.file("extdata", "ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
+file2 <- system.file("extdata", "csv/ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
 D <- readData(file2,
              filetype = "csv",
              conc_col = 6,
