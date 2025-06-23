@@ -133,7 +133,8 @@ assemble_results <- function(X,
     substance = rep(substance, nrow(X)),
     concentration = X$Concentration,
     measurement = X$Measurement,
-    removed_while_cleaning = !(X$Concentration %in% concentrations_after_cleaning),
+    removed_while_cleaning = !(X$Concentration %in% concentrations_after_cleaning) |
+      is.na(X$Measurement) | X$Measurement == 0 | X$Concentration == 0,
     percentage_bias = NA,
     response_factor = NA,
     RF_within_thres = NA,
@@ -142,6 +143,10 @@ assemble_results <- function(X,
   rownames(result_table_obs) <- NULL
 
   ## result only for concentrations that were not removed during cleaning:
+
+  resFacDataV2 <<- resFacDataV
+  result_table_obs2 <<- result_table_obs
+
   result_table_obs$response_factor[!result_table_obs$removed_while_cleaning] <- unlist(resFacDataV)
   result_table_obs$RF_within_thres <- result_table_obs$response_factor <= hLineUpper & result_table_obs$response_factor >= hLineLow
 

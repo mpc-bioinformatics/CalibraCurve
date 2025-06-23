@@ -157,8 +157,8 @@ plotCalibraCurve <- function(RES,
     if (show_data_points) {
       pl <- pl +
         ggplot2::geom_point(size = 1.7, color = point_colour) +
-        ggplot2::scale_alpha_manual(labels = c("No", "Yes"), values = c("Yes" = 1, "No" = 0.1), name = "Linear range") #+
-        #ggplot2::facet_wrap(substance ~., scales = multiplot_scales, nrow = multiplot_nrow, ncol = multiplot_ncol)
+        ggplot2::scale_alpha_manual(labels = c("No", "Yes"), values = c("Yes" = 1, "No" = 0.1), name = "Linear range") +
+        ggplot2::facet_wrap(substance ~., scales = multiplot_scales, nrow = multiplot_nrow, ncol = multiplot_ncol)
     }
 
     ### add calibration curve
