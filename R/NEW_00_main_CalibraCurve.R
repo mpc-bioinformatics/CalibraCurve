@@ -160,7 +160,7 @@ CalibraCurve <- function(data_path = NULL,
 
   ### check if all files are valid (correct file type)
 
-  all_files <- all_files[filetable$file_ext == filetype]
+  filetable <- filetable[filetable$file_ext == filetype,]
 
 
 
