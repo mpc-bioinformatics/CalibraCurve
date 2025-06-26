@@ -40,7 +40,7 @@
 #' @param linear_range_colour **character(1)** \cr Colour of the linear range background, default is "black" (colour is weakened by alpha = 0.1).
 #' @param multiplot_nrow **integer(1)** \cr Number of rows for the multiplot layout (default is NULL, which means that there is only one row).
 #' @param multiplot_ncol **integer(1)** \cr Number of columns for the multiplot layout (default is NULL, which means that the number of columns is determined automatically based on the number of curves).
-#' @param multiplot_scales **character(1)** \cr Scales for the multiplot layout, default is "free" (which means that each plot has its own scales). Other options are "fixed", "free_x", "free_y".
+#' @param multiplot_scales **character(1)** \cr Scales for the multiplot layout, default is "fixed" (which means that each plot has the same scale). Other options are "free", "free_x", "free_y".
 #' @param RF_colour_threshold **character(1)** \cr Response factor plot: Colour for horizontal threshold lines, default is "orange".
 #' @param RF_colour_within **character(1)** \cr Response factor plot: Colour for points and lines within the final linear range, default is "#00BFC4" (default ggplot colour).
 #' @param RF_colour_outside **character(1)** \cr Response factor plot: Colour for horizontal outside of the final linear range, default is "#F8766D" (default ggplot colour).
@@ -157,7 +157,7 @@ CalibraCurve <- function(data_path = NULL,
 
   ### check if all files are valid (correct file type)
 
-  all_files <- all_files[all_files$file_ext == filetype,]
+  all_files <- all_files[filetable$file_ext == filetype,]
 
 
 
