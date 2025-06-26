@@ -155,9 +155,12 @@ CalibraCurve <- function(data_path = NULL,
                     file_ext = tools::file_ext(file))
   }
 
+  print(all_files)
+  print(filetable)
+
   ### check if all files are valid (correct file type)
 
-  all_files <- all_files[filetable$file_ext == filetype,]
+  all_files <- all_files[filetable$file_ext == filetype]
 
 
 
@@ -307,7 +310,10 @@ CalibraCurve <- function(data_path = NULL,
     openxlsx::write.xlsx(summary_tab, file = paste0(output_path, "/summarytable_calibration_models.xlsx"))
   }
 
+
+  suppressWarnings({
   return(list(RES = RES, summary_tab = summary_tab, plot_CC_list = pl_CC_list, plot_RF_list = pl_RF_list))
+  })
 }
 
 

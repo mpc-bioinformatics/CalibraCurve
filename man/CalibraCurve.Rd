@@ -125,7 +125,7 @@ or "all_in_one" (generate a single plot with all substances).}
 
 \item{multiplot_ncol}{\strong{integer(1)} \cr Number of columns for the multiplot layout (default is NULL, which means that the number of columns is determined automatically based on the number of curves).}
 
-\item{multiplot_scales}{\strong{character(1)} \cr Scales for the multiplot layout, default is "free" (which means that each plot has its own scales). Other options are "fixed", "free_x", "free_y".}
+\item{multiplot_scales}{\strong{character(1)} \cr Scales for the multiplot layout, default is "fixed" (which means that each plot has the same scale). Other options are "free", "free_x", "free_y".}
 
 \item{RF_colour_threshold}{\strong{character(1)} \cr Response factor plot: Colour for horizontal threshold lines, default is "orange".}
 
