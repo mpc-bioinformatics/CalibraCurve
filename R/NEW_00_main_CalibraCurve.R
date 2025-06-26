@@ -139,7 +139,6 @@ CalibraCurve <- function(data_path = NULL,
   if (is.null(data_path)) { # if folder (with potentially multiple files) is given
     #### TODO: hier müsste nach relevanten files (xlsx, csv, usw) gefiltert werden
     all_files <- setdiff(list.files(path = data_folder), list.dirs(path = data_folder, recursive = FALSE, full.names = FALSE))
-    print(all_files)
 
     filetable <- data.frame(file = all_files) %>%
       dplyr::rowwise() %>%
@@ -152,12 +151,13 @@ CalibraCurve <- function(data_path = NULL,
     filetable <- data.frame(file = all_files) %>%
       dplyr::rowwise() %>%
       dplyr::mutate(substance_name = strsplit(basename(file), "\\.")[[1]][1],
-                    full_path = file)
+                    full_path = file,
+                    file_ext = tools::file_ext(file))
   }
-
 
   ### check if all files are valid (correct file type)
 
+  all_files <- all_files[all_files$file_ext == filetype,]
 
 
 
