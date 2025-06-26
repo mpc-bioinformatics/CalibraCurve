@@ -14,7 +14,9 @@ test_that("prediction", {
 
   ## concentrations that lead to predictions outside of the linear range
   newdata2 <- c(5, 0.02, 100)
-  expect_warning(predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata2))
 
+
+  ### TODO: rewrite test so that it checks output table of predictConcentration
+  expect_warning(predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata2))
 
 })

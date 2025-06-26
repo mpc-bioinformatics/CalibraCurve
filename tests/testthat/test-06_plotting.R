@@ -33,14 +33,13 @@ test_that("plot calibration curve", {
               result_table_obs = tables$result_table_obs)
 
 
+  suppressWarnings({
   pl_CC <- CalibraCurve::plotCalibraCurve(list("substance1" = RES),
                                           show_regression_info = TRUE,
                                           show_linear_range = FALSE,
                                           show_data_points = TRUE)
-
-
   vdiffr::expect_doppelganger("CC_testfile_1", pl_CC)
-
+  })
 
 })
 
@@ -72,6 +71,7 @@ test_that("plot response factor plot", {
                                            substance = "substance1"
   )
 
+
   RES <- list(mod = RES_FLR$mod,
               final_linear_range = as.numeric(names(RES_FLR$dataFinal)),
               dataCleaned = D_MFAP4_cleaned,
@@ -79,11 +79,9 @@ test_that("plot response factor plot", {
               result_table_conc_levels = tables$result_table_conc_levels,
               result_table_obs = tables$result_table_obs)
 
-
+  suppressWarnings({
   pl_CC <- CalibraCurve::plotResponseFactors(RES)
-
-
   vdiffr::expect_doppelganger("RF_testfile_1", pl_CC)
-
+  })
 
 })
