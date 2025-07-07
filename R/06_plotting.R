@@ -120,9 +120,11 @@ plotCalibraCurve <- function(RES,
 
 
   D_calib$final_linear_range <- factor(D_calib$final_linear_range, levels = c(FALSE, TRUE), labels = c("No", "Yes")) # convert to logical for ggplot2 aesthetics
+
   ### initialize plot
   pl <- ggplot2::ggplot(D_calib, ggplot2::aes(x = concentration, y = measurement, alpha = final_linear_range)) +
-    ggplot2::theme_bw()
+    ggplot2::theme_bw() #+
+    #ggplot2::lims(colour = c("No", "Yes"))
 
   pl <- pl + ggplot2::scale_x_continuous(trans = "log10", labels = scales::label_comma(drop0trailing = TRUE)) +
     ggplot2::scale_y_continuous(trans = "log10")
@@ -135,8 +137,9 @@ plotCalibraCurve <- function(RES,
     ### add data points
     if (show_data_points) {
       pl <- pl +
-        ggplot2::geom_point(size = 1.7, ggplot2::aes(color = substance, group = substance)) +
-        ggplot2::scale_alpha_manual(values = c("Yes" = 1, "No" = 0.1), name = "Linear range")
+        ggplot2::geom_point(size = 1.7, ggplot2::aes(group = substance, colour = substance), show.legend = c(alpha = TRUE, colour = FALSE)) + # color = substance,
+        ggplot2::scale_alpha_manual(values = c("Yes" = 1, "No" = 0.1), name = "Linear range", drop=FALSE) #+
+        #ggplot2::scale_color_discrete(drop = FALSE, values = c(point_colour, point_colour))
     }
 
     ### add calibration curve
@@ -144,7 +147,8 @@ plotCalibraCurve <- function(RES,
       ggplot2::geom_line(
         data = curve_dat,
         ggplot2::aes(x = concentration, y = predicted, color = substance, group = substance),
-        inherit.aes = FALSE
+        inherit.aes = FALSE,
+        show.legend = c(colour = TRUE, alpha = FALSE)
       )
   }
 
@@ -156,8 +160,9 @@ plotCalibraCurve <- function(RES,
     ### add data points
     if (show_data_points) {
       pl <- pl +
-        ggplot2::geom_point(size = 1.7, color = point_colour) +
-        ggplot2::scale_alpha_manual(labels = c("No", "Yes"), values = c("Yes" = 1, "No" = 0.1), name = "Linear range") +
+        ggplot2::geom_point(size = 1.7, color = point_colour, show.legend = c(alpha = TRUE, colour = FALSE)) +
+        #ggplot2::scale_color_manual(drop = FALSE, values = c(point_colour, point_colour)) +
+        ggplot2::scale_alpha_manual(values = c("Yes" = 1, "No" = 0.1), name = "Linear range", drop=FALSE) + # labels = c("No", "Yes")
         ggplot2::facet_wrap(substance ~., scales = multiplot_scales, nrow = multiplot_nrow, ncol = multiplot_ncol)
     }
 
@@ -167,7 +172,8 @@ plotCalibraCurve <- function(RES,
         color = curve_colour,
         data = curve_dat,
         ggplot2::aes(x = concentration, y = predicted),
-        inherit.aes = FALSE
+        inherit.aes = FALSE,
+        show.legend = FALSE
       )
 
     if (show_linear_range) {
