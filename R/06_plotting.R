@@ -119,7 +119,7 @@ plotCalibraCurve <- function(RES,
 
 
 
-  D_calib$final_linear_range <- factor(D_calib$final_linear_range, labels = c("No", "Yes")) # convert to logical for ggplot2 aesthetics
+  D_calib$final_linear_range <- factor(D_calib$final_linear_range, levels = c(FALSE, TRUE), labels = c("No", "Yes")) # convert to logical for ggplot2 aesthetics
   ### initialize plot
   pl <- ggplot2::ggplot(D_calib, ggplot2::aes(x = concentration, y = measurement, alpha = final_linear_range)) +
     ggplot2::theme_bw()

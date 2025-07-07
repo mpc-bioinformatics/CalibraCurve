@@ -135,9 +135,9 @@ CalibraCurve <- function(data_path = NULL,
   checkmate::assert_numeric(plot_dpi, lower = 0, len = 1)
 
   ### TODO: check if exactly one of data_path or data_folder is given
+  ### TODO: generate output_folder if it does not exist yet.
 
   if (is.null(data_path)) { # if folder (with potentially multiple files) is given
-    #### TODO: hier müsste nach relevanten files (xlsx, csv, usw) gefiltert werden
     all_files <- setdiff(list.files(path = data_folder), list.dirs(path = data_folder, recursive = FALSE, full.names = FALSE))
 
     filetable <- data.frame(file = all_files) %>%
@@ -155,8 +155,6 @@ CalibraCurve <- function(data_path = NULL,
                     file_ext = tools::file_ext(file))
   }
 
-  print(all_files)
-  print(filetable)
 
   ### check if all files are valid (correct file type)
 
