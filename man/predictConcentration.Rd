@@ -36,5 +36,4 @@ predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = n
 newdata2 <- c(100)
 predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
 
-
 }

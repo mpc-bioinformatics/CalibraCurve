@@ -1,5 +1,3 @@
-
-
 #' FLR: calculate weights for linear model for a specific concentration level
 #'
 #' @param x **data.frame** \cr Data.frame containing data for a specific concentration level.
@@ -7,15 +5,15 @@
 #'
 #' @returns Vector of a constant weights for each measurement in this concentration level.
 calcWeights <- function(x, weightingMethod = "1/x^2") {
-  currConcLevData <- x
-  if (weightingMethod == '1/x^2') {
-    weightsCurrLev <- 1/(currConcLevData$Concentration^2)
-  }
-  if (weightingMethod == '1/x') {
-      weightsCurrLev <- 1/currConcLevData$Concentration
-  }
-  result <- weightsCurrLev
-  return(result)
+    currConcLevData <- x
+    if (weightingMethod == "1/x^2") {
+        weightsCurrLev <- 1 / (currConcLevData$Concentration^2)
+    }
+    if (weightingMethod == "1/x") {
+        weightsCurrLev <- 1 / currConcLevData$Concentration
+    }
+    result <- weightsCurrLev
+    return(result)
 }
 
 
@@ -26,17 +24,16 @@ calcWeights <- function(x, weightingMethod = "1/x^2") {
 #' @param weights **numeric** \cr Vector of weights as calculated by applying \code{\link{calcWeights}} (default is NULL and will result in an unweighted model).
 #'
 #' @returns Fit of the linear model as an object of class "lm".
-calcLinearModel <- function(x, weights = NULL){
+calcLinearModel <- function(x, weights = NULL) {
+    ## combine list elements to a data set
+    dataSetDF <- do.call(rbind, x)
 
-  ## combine list elements to a data set
-  dataSetDF <- do.call(rbind, x)
-
-  if (is.null(weights)) {  # unweighted model
-    lmfit <- stats::lm(Measurement ~ Concentration, data = dataSetDF)
-  } else { # weighted model
-    lmfit <- stats::lm(Measurement ~ Concentration, data = dataSetDF, weights = weights)
-  }
-  return(lmfit)
+    if (is.null(weights)) { # unweighted model
+        lmfit <- stats::lm(Measurement ~ Concentration, data = dataSetDF)
+    } else { # weighted model
+        lmfit <- stats::lm(Measurement ~ Concentration, data = dataSetDF, weights = weights)
+    }
+    return(lmfit)
 }
 
 
@@ -47,12 +44,12 @@ calcLinearModel <- function(x, weights = NULL){
 #' @param expConc **numeric(1)** \cr Expected (known) concentration level.
 #'
 #' @returns Vector of percent bias values for each data point in this concentration level.
-calcPerBias <- function(x, LMfit, expConc){
-  coeff <- LMfit$coefficients
-  calculatedConc <- (x - coeff[1])/coeff[2]
-  perBias <- 100 * abs(calculatedConc - expConc) / expConc
-  names(perBias) <- NULL
-  return(perBias)
+calcPerBias <- function(x, LMfit, expConc) {
+    coeff <- LMfit$coefficients
+    calculatedConc <- (x - coeff[1]) / coeff[2]
+    perBias <- 100 * abs(calculatedConc - expConc) / expConc
+    names(perBias) <- NULL
+    return(perBias)
 }
 
 
@@ -63,18 +60,18 @@ calcPerBias <- function(x, LMfit, expConc){
 #' @param LMfit **lm object** \cr Linear model fit as calculated by \code{\link{calcLinearModel}}.
 #'
 #' @returns List of vectors with percent bias values for each data point per concentration level
-calcPerBiasLevels <- function(x, LMfit){
-  concentrations <- as.numeric(names(x))
-  perBiasValuesList <- NULL
-  for (i in seq_along(x)) {
-    currConcLevData <- x[[i]]
-    expectConc <- concentrations[i]
-    currConcLevMeas <- currConcLevData$Measurement
-    perBiasValuesList[i] <- list(sapply(currConcLevMeas, calcPerBias, LMfit = LMfit, expConc = expectConc))
-  }
+calcPerBiasLevels <- function(x, LMfit) {
+    concentrations <- as.numeric(names(x))
+    perBiasValuesList <- NULL
+    for (i in seq_along(x)) {
+        currConcLevData <- x[[i]]
+        expectConc <- concentrations[i]
+        currConcLevMeas <- currConcLevData$Measurement
+        perBiasValuesList[i] <- list(sapply(currConcLevMeas, calcPerBias, LMfit = LMfit, expConc = expectConc))
+    }
 
-  names(perBiasValuesList) <- names(x)
-  return(perBiasValuesList)
+    names(perBiasValuesList) <- names(x)
+    return(perBiasValuesList)
 }
 
 
@@ -86,29 +83,29 @@ calcPerBiasLevels <- function(x, LMfit){
 #' @returns data frame with 3 columns: avgPerBias, stdDevPerBias, CV_PerBias
 #'          \cr each row is one concentration level
 calcPerBiasAvgSDCV <- function(x, method = "mean") {
-  avgPerBias <- NULL
-  stdDevPerBias <- NULL
-  CV_PerBias <- NULL
+    avgPerBias <- NULL
+    stdDevPerBias <- NULL
+    CV_PerBias <- NULL
 
-  for (i in seq_along(x)) {
-    # Average percent bias value
-    meanPerBias <- mean(x[[i]])
-    if (method == 'mean') {
-      currAvgPerBias <- meanPerBias
+    for (i in seq_along(x)) {
+        # Average percent bias value
+        meanPerBias <- mean(x[[i]])
+        if (method == "mean") {
+            currAvgPerBias <- meanPerBias
+        }
+        if (method == "median") {
+            currAvgPerBias <- stats::median(x[[i]])
+        }
+        # Standard deviation of the percent bias values
+        currStdDev <- stats::sd(x[[i]])
+        currCV <- currStdDev / meanPerBias * 100
+        avgPerBias <- c(avgPerBias, currAvgPerBias)
+        stdDevPerBias <- c(stdDevPerBias, currStdDev)
+        CV_PerBias <- c(CV_PerBias, currCV)
     }
-    if (method == 'median') {
-      currAvgPerBias <- stats::median(x[[i]])
-    }
-    # Standard deviation of the percent bias values
-    currStdDev <- stats::sd(x[[i]])
-    currCV <- currStdDev/meanPerBias*100
-    avgPerBias <- c(avgPerBias, currAvgPerBias)
-    stdDevPerBias <- c(stdDevPerBias, currStdDev)
-    CV_PerBias <- c(CV_PerBias, currCV)
-  }
-  result <- data.frame(avgPerBias, stdDevPerBias, CV_PerBias)
-  rownames(result) <- names(x)
-  return(result)
+    result <- data.frame(avgPerBias, stdDevPerBias, CV_PerBias)
+    rownames(result) <- names(x)
+    return(result)
 }
 
 
@@ -119,24 +116,23 @@ calcPerBiasAvgSDCV <- function(x, method = "mean") {
 #'
 #' @returns  TRUE if both lowest and highest concentration level passed the check
 #'          (and the final linear range is reached), FALSE otherwise
-checkFinalRange <- function(perBiasInfo, perBiasThres = 20){
+checkFinalRange <- function(perBiasInfo, perBiasThres = 20) {
+    bothLevelsPassed <- FALSE
+    lowLevelPassed <- FALSE
+    highLevelPassed <- FALSE
 
-  bothLevelsPassed <- FALSE
-  lowLevelPassed <- FALSE
-  highLevelPassed <- FALSE
+    if (perBiasInfo$avgPerBias[1] <= perBiasThres) {
+        lowLevelPassed <- TRUE
+    }
+    if (perBiasInfo$avgPerBias[length(perBiasInfo$avgPerBias)] <= perBiasThres) {
+        highLevelPassed <- TRUE
+    }
 
-  if (perBiasInfo$avgPerBias[1] <= perBiasThres) {
-    lowLevelPassed <- TRUE
-  }
-  if (perBiasInfo$avgPerBias[length(perBiasInfo$avgPerBias)] <= perBiasThres) {
-    highLevelPassed <- TRUE
-  }
-
-  if (lowLevelPassed && highLevelPassed) {
-    bothLevelsPassed <- TRUE
-  }
-  result <- bothLevelsPassed
-  return(result)
+    if (lowLevelPassed && highLevelPassed) {
+        bothLevelsPassed <- TRUE
+    }
+    result <- bothLevelsPassed
+    return(result)
 }
 
 
@@ -150,39 +146,38 @@ checkFinalRange <- function(perBiasInfo, perBiasThres = 20){
 #'
 #' @returns TRUE, if lowest concentration will be removed, FALSE if highest will be removed
 selctConcLevel <- function(x, perBiasT = 20, consPerBiasCV = TRUE, perBiasDistT = 10) {
-  removeLow <- NULL
-  featuresLowestLevel <- x[1,]
-  featuresHighestLevel <- x[nrow(x),]
+    removeLow <- NULL
+    featuresLowestLevel <- x[1, ]
+    featuresHighestLevel <- x[nrow(x), ]
 
-  lowPerBias <- featuresLowestLevel$avgPerBias
-  highPerBias <- featuresHighestLevel$avgPerBias
+    lowPerBias <- featuresLowestLevel$avgPerBias
+    highPerBias <- featuresHighestLevel$avgPerBias
 
-  lowFails <- (lowPerBias >= perBiasT)
-  highFails <- (highPerBias >= perBiasT)
+    lowFails <- (lowPerBias >= perBiasT)
+    highFails <- (highPerBias >= perBiasT)
 
-  if (lowFails && highFails) {
-    # Case: both the highest and lowest concentration level fails percent bias threshold
+    if (lowFails && highFails) {
+        # Case: both the highest and lowest concentration level fails percent bias threshold
 
-    if (!consPerBiasCV) {
-      # remove the level with the higher percent bias
-      removeLow <- ifelse(lowPerBias >= highPerBias, TRUE, FALSE)
+        if (!consPerBiasCV) {
+            # remove the level with the higher percent bias
+            removeLow <- ifelse(lowPerBias >= highPerBias, TRUE, FALSE)
+        } else {
+            # calculate distance between the two percent bias values
+            dist <- abs(lowPerBias - highPerBias)
+            if (dist <= perBiasDistT) {
+                # CV values are considered because distance between the two percent bias values is low
+                removeLow <- ifelse(featuresLowestLevel$CV >= featuresHighestLevel$CV, TRUE, FALSE)
+            } else {
+                # only percent bias values are considered because distance is high
+                removeLow <- ifelse(lowPerBias >= highPerBias, TRUE, FALSE)
+            }
+        }
     } else {
-      # calculate distance between the two percent bias values
-      dist <- abs(lowPerBias - highPerBias)
-      if (dist <= perBiasDistT) {
-        # CV values are considered because distance between the two percent bias values is low
-        removeLow <- ifelse(featuresLowestLevel$CV >= featuresHighestLevel$CV, TRUE, FALSE)
-      } else {
-        # only percent bias values are considered because distance is high
-        removeLow <- ifelse(lowPerBias >= highPerBias, TRUE, FALSE)
-      }
+        # Case: only one levels fails the threshold criteria
+        removeLow <- ifelse(lowFails, TRUE, FALSE)
     }
-
-  } else {
-    # Case: only one levels fails the threshold criteria
-    removeLow <- ifelse(lowFails, TRUE, FALSE)
-  }
-  return(removeLow)
+    return(removeLow)
 }
 
 
@@ -211,71 +206,71 @@ selctConcLevel <- function(x, perBiasT = 20, consPerBiasCV = TRUE, perBiasDistT 
 #' data(D_MFAP4)
 #' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
 #' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
-#'               cv_thres = 10,
-#'               calcContinuousPrelimRanges = TRUE)
+#'     cv_thres = 10,
+#'     calcContinuousPrelimRanges = TRUE
+#' )
 #' calculate_FLR(RES_PLR$dataPrelim)
 calculate_FLR <- function(dataPrelim,
-                          weightingMethod = "1/x^2",
-                          centralTendencyMeasure = "mean",
-                          perBiasThres = 20,
-                          considerPerBiasCV = TRUE,
-                          perBiasDistThres = 10) {
+    weightingMethod = "1/x^2",
+    centralTendencyMeasure = "mean",
+    perBiasThres = 20,
+    considerPerBiasCV = TRUE,
+    perBiasDistThres = 10) {
+    ### check input arguments
+    checkmate::assertChoice(weightingMethod, choices = c("1/x", "1/x^2", "None"))
+    checkmate::assertChoice(centralTendencyMeasure, choices = c("mean", "median"))
+    checkmate::assertNumeric(perBiasThres, lower = 0, len = 1)
+    checkmate::assertFlag(considerPerBiasCV)
+    checkmate::assertNumeric(perBiasDistThres, lower = 0, len = 1)
 
-  ### check input arguments
-  checkmate::assertChoice(weightingMethod, choices = c("1/x", "1/x^2", "None"))
-  checkmate::assertChoice(centralTendencyMeasure, choices = c("mean", "median"))
-  checkmate::assertNumeric(perBiasThres, lower = 0, len = 1)
-  checkmate::assertFlag(considerPerBiasCV)
-  checkmate::assertNumeric(perBiasDistThres, lower = 0, len = 1)
+    dataFinal <- dataPrelim
+    finalRangeReached <- FALSE
 
-  dataFinal <- dataPrelim
-  finalRangeReached <- FALSE
+    while (!finalRangeReached) {
+        if (length(dataFinal) < 2) {
+            stop("Only one concentration level left in final linear range. Computation cannot continue. Increasing perBiasThres may help to continue calculating, but results in a less accurate result.")
+        }
 
-  while (!finalRangeReached) {
-    if (length(dataFinal) < 2) {
-      stop("Only one concentration level left in final linear range. Computation cannot continue. Increasing perBiasThres may help to continue calculating, but results in a less accurate result.")
+        ## calculate the weights for each concentration:
+        if (weightingMethod != "None") {
+            allWeights <- as.vector(sapply(dataFinal,
+                FUN = calcWeights,
+                weightingMethod = weightingMethod
+            ))
+        } else {
+            allWeights <- NULL # if weightingMethod == "None"
+        }
+
+
+        ## calculate linear model
+        mod <- calcLinearModel(dataFinal, weights = allWeights)
+
+        ## calculate the percent bias for each data point
+        perBias <- calcPerBiasLevels(dataFinal, LMfit = mod)
+
+        ## calculate the average percent bias, standard deviation and CV for each concentration level
+        perBiasAvgSDCV <- calcPerBiasAvgSDCV(perBias, method = centralTendencyMeasure)
+
+        ## check if final linear range is reached (is lowest and highest concentration level within the percent bias threshold?).
+        checkFLR <- checkFinalRange(perBiasInfo = perBiasAvgSDCV, perBiasThres = perBiasThres)
+
+
+        if (checkFLR) {
+            finalRangeReached <- TRUE
+        } else {
+            # Final linear range is not reached yet, so it is decided if the lowest or highest concentration level will be removed
+            removeLow <- selctConcLevel(perBiasAvgSDCV,
+                perBiasT = perBiasThres,
+                consPerBiasCV = considerPerBiasCV, perBiasDistT = perBiasDistThres
+            )
+
+            # setting the list element to NULL removes the concentration level from the list
+            if (removeLow) {
+                dataFinal[[1]] <- NULL
+            } else {
+                dataFinal[[length(dataFinal)]] <- NULL
+            }
+        }
     }
-
-    ## calculate the weights for each concentration:
-    if (weightingMethod != "None") {
-
-      allWeights <- as.vector(sapply(dataFinal,
-                                     FUN = calcWeights,
-                                     weightingMethod = weightingMethod))
-    } else {
-      allWeights <- NULL # if weightingMethod == "None"
-    }
-
-
-    ## calculate linear model
-    mod <- calcLinearModel(dataFinal, weights = allWeights)
-
-    ## calculate the percent bias for each data point
-    perBias <- calcPerBiasLevels(dataFinal, LMfit = mod)
-
-    ## calculate the average percent bias, standard deviation and CV for each concentration level
-    perBiasAvgSDCV <- calcPerBiasAvgSDCV(perBias, method = centralTendencyMeasure)
-
-    ## check if final linear range is reached (is lowest and highest concentration level within the percent bias threshold?).
-    checkFLR <- checkFinalRange(perBiasInfo = perBiasAvgSDCV, perBiasThres = perBiasThres)
-
-
-    if (checkFLR) {
-      finalRangeReached <- TRUE
-    } else {
-      # Final linear range is not reached yet, so it is decided if the lowest or highest concentration level will be removed
-      removeLow <- selctConcLevel(perBiasAvgSDCV, perBiasT = perBiasThres,
-                                  consPerBiasCV = considerPerBiasCV, perBiasDistT = perBiasDistThres)
-
-      # setting the list element to NULL removes the concentration level from the list
-      if (removeLow) {
-        dataFinal[[1]] <- NULL
-      } else {
-        dataFinal[[length(dataFinal)]] <- NULL
-      }
-    }
-  }
-  return(list(dataFinal = dataFinal, mod = mod, perBias = perBias, perBiasAvgSDCV = perBiasAvgSDCV))
+    return(list(dataFinal = dataFinal, mod = mod, perBias = perBias, perBiasAvgSDCV = perBiasAvgSDCV))
 }
-
-
