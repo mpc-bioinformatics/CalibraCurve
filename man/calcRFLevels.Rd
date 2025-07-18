@@ -21,8 +21,9 @@ Final linear range: Function, which returns a list with response factor values f
 data(D_MFAP4)
 D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
 RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
-              cv_thres = 10,
-              calcContinuousPrelimRanges = TRUE)
+    cv_thres = 10,
+    calcContinuousPrelimRanges = TRUE
+)
 RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
 
 calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)

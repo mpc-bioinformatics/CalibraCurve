@@ -1,4 +1,3 @@
-
 #' Read in data in different input formats
 #'
 #' @param data_path **character(1)** \cr Path to the data file (.csv, .txt or .xlsx file).
@@ -17,74 +16,76 @@
 #' @examples
 #' file <- system.file("extdata", "xlsx/MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
 #' D <- readData(file,
-#'              filetype = "xlsx",
-#'              conc_col = 6,
-#'              meas_col = 7)
+#'     filetype = "xlsx",
+#'     conc_col = 6,
+#'     meas_col = 7
+#' )
 #'
 #'
 #' file2 <- system.file("extdata", "csv/ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
 #' D <- readData(file2,
-#'              filetype = "csv",
-#'              conc_col = 6,
-#'              meas_col = 7,
-#'              dec = ".",
-#'              sep = ",")
+#'     filetype = "csv",
+#'     conc_col = 6,
+#'     meas_col = 7,
+#'     dec = ".",
+#'     sep = ","
+#' )
 readData <- function(data_path,
-                     filetype,
-                     conc_col,
-                     meas_col,
-                     sep = ",",
-                     dec = ".",
-                     header = TRUE,
-                     na.strings = c("NA", "NaN", "Filtered", "#NV"),
-                     sheet = 1) {
-
-  ### check input arguments
-  checkmate::assert_file_exists(data_path)
-  checkmate::assert_character(data_path, len = 1)
-  checkmate::assert_choice(filetype, c("csv", "txt", "xlsx"))
-  checkmate::assert_int(conc_col)
-  checkmate::assert_int(meas_col)
-  checkmate::assert_character(sep, len = 1)
-  checkmate::assert_character(dec, len = 1)
-  checkmate::assert_flag(header)
-  checkmate::assert_character(na.strings)
-  checkmate::assert_int(sheet)
-  if (conc_col == meas_col) stop("Concentration and measurement columns cannot be identical.")
-
+    filetype,
+    conc_col,
+    meas_col,
+    sep = ",",
+    dec = ".",
+    header = TRUE,
+    na.strings = c("NA", "NaN", "Filtered", "#NV"),
+    sheet = 1) {
+    ### check input arguments
+    checkmate::assert_file_exists(data_path)
+    checkmate::assert_character(data_path, len = 1)
+    checkmate::assert_choice(filetype, c("csv", "txt", "xlsx"))
+    checkmate::assert_int(conc_col)
+    checkmate::assert_int(meas_col)
+    checkmate::assert_character(sep, len = 1)
+    checkmate::assert_character(dec, len = 1)
+    checkmate::assert_flag(header)
+    checkmate::assert_character(na.strings)
+    checkmate::assert_int(sheet)
+    if (conc_col == meas_col) stop("Concentration and measurement columns cannot be identical.")
 
 
-  if (filetype == "csv" | filetype == "txt") {
-    rawData <- utils::read.table(data_path,
-                          sep = sep,
-                          header = header,
-                          dec = dec)
-  }
-  if (filetype == "xlsx") {
-    rawData <- openxlsx::read.xlsx(data_path, colNames = header, sheet = sheet)
-  }
 
-  ### check if column numbers are valid
-  if (meas_col > ncol(rawData)) {
-    stop("Number of measurement column cannot be larger than number of columns in data set.")
-  }
-  if (conc_col > ncol(rawData)) {
-    stop("Number of concentration column cannot be larger than number of columns in data set.")
-  }
+    if (filetype == "csv" | filetype == "txt") {
+        rawData <- utils::read.table(data_path,
+            sep = sep,
+            header = header,
+            dec = dec
+        )
+    }
+    if (filetype == "xlsx") {
+        rawData <- openxlsx::read.xlsx(data_path, colNames = header, sheet = sheet)
+    }
 
-  ### extract relevant columns:
-  rawData <- rawData[, c(conc_col, meas_col)]
-  colnames(rawData) <- c("Concentration", "Measurement")
+    ### check if column numbers are valid
+    if (meas_col > ncol(rawData)) {
+        stop("Number of measurement column cannot be larger than number of columns in data set.")
+    }
+    if (conc_col > ncol(rawData)) {
+        stop("Number of concentration column cannot be larger than number of columns in data set.")
+    }
 
-  ### check if relevant columns are numeric:
-  if (!is.numeric(rawData[["Concentration"]])) {
-    stop("Concentration column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
-  }
-  if (!is.numeric(rawData[["Measurement"]])) {
-    stop("Measurement column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
-  }
+    ### extract relevant columns:
+    rawData <- rawData[, c(conc_col, meas_col)]
+    colnames(rawData) <- c("Concentration", "Measurement")
 
-  return(rawData)
+    ### check if relevant columns are numeric:
+    if (!is.numeric(rawData[["Concentration"]])) {
+        stop("Concentration column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
+    }
+    if (!is.numeric(rawData[["Measurement"]])) {
+        stop("Measurement column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
+    }
+
+    return(rawData)
 }
 
 
@@ -97,9 +98,9 @@ readData <- function(data_path,
 #'
 #' @returns data.frame
 filterConcentrationLevel <- function(x,
-                                     rawData) {
-  result <- rawData[rawData$Concentration == x, ]
-  return(result)
+    rawData) {
+    result <- rawData[rawData$Concentration == x, ]
+    return(result)
 }
 
 
@@ -112,13 +113,12 @@ filterConcentrationLevel <- function(x,
 #'
 #' @returns **locgical(1)** \cr TRUE if there are enough replicates or FALSE if not
 checkNumberReplicates <- function(x, data, minNumber) {
-  if (nrow(data[[x]]) < minNumber) {
-    result <- FALSE
-  }
-  else {
-    result <- TRUE
-  }
-  return(result)
+    if (nrow(data[[x]]) < minNumber) {
+        result <- FALSE
+    } else {
+        result <- TRUE
+    }
+    return(result)
 }
 
 
@@ -140,41 +140,39 @@ checkNumberReplicates <- function(x, data, minNumber) {
 #' ## Data is now given as a list, each element containing the data of one specific concentration
 #' ## level.
 #'
-#'\dontrun{
+#' \dontrun{
 #' cleanData(D_ALB, min_replicates = 5)
-#'}
+#' }
 #' ## returns error message as no concentration level has 5 replicates:
 #'
 cleanData <- function(rawData,
-                      min_replicates = 3) {
+    min_replicates = 3) {
+    ### check input arguments
+    checkmate::assert_int(min_replicates, lower = 1)
 
-  ### check input arguments
-  checkmate::assert_int(min_replicates, lower = 1)
+    # Removing rows that contain unwanted 0 values (problems with log-transform later) or NA values in either
+    # the concentration or measurement column
+    dataValidated <- rawData[rawData$Concentration != 0 & !is.na(rawData$Concentration) & rawData$Measurement != 0 & !is.na(rawData$Measurement), ]
 
-  # Removing rows that contain unwanted 0 values (problems with log-transform later) or NA values in either
-  # the concentration or measurement column
-  dataValidated <- rawData[rawData$Concentration != 0 & !is.na(rawData$Concentration) & rawData$Measurement != 0 & !is.na(rawData$Measurement),]
+    # Determination of existing concentration levels in the validated data
+    concLevels <- unique(dataValidated$Concentration)
+    concLevels <- sort(concLevels, decreasing = FALSE)
 
-  # Determination of existing concentration levels in the validated data
-  concLevels <- unique(dataValidated$Concentration)
-  concLevels <- sort(concLevels, decreasing = FALSE)
+    # Transforming a data set into a list with entries for each concentration level (and the related data)
+    dataValidated <- lapply(concLevels, FUN = filterConcentrationLevel, rawData = dataValidated)
 
-  # Transforming a data set into a list with entries for each concentration level (and the related data)
-  dataValidated <- lapply(concLevels, FUN = filterConcentrationLevel, rawData = dataValidated)
+    # Deleting concentration levels with insufficient number of replicates
+    dataValidated <- dataValidated[sapply(1:length(dataValidated), FUN = checkNumberReplicates, data = dataValidated, minNumber = min_replicates)]
 
-  # Deleting concentration levels with insufficient number of replicates
-  dataValidated <- dataValidated[sapply(1:length(dataValidated), FUN = checkNumberReplicates, data = dataValidated, minNumber = min_replicates)]
+    if (length(dataValidated) == 0) {
+        stop(paste0("No concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates."))
+    }
+    if (length(dataValidated) == 1) {
+        stop(paste0("Only one concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates."))
+    }
 
-  if (length(dataValidated) == 0) {
-    stop(paste0("No concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates."))
-  }
-  if (length(dataValidated) == 1) {
-    stop(paste0("Only one concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates."))
-  }
+    dataValConcLevels <- sapply(dataValidated, FUN = function(x) x$Concentration[1])
+    names(dataValidated) <- dataValConcLevels
 
-  dataValConcLevels <- sapply(dataValidated, FUN = function(x) x$Concentration[1])
-  names(dataValidated) <- dataValConcLevels
-
-  return(dataValidated)
+    return(dataValidated)
 }
-

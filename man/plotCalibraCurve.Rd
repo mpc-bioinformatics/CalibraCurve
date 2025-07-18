@@ -67,13 +67,15 @@ plotCalibraCurve(list("ALB" = RES_ALB, "MFAP4" = RES_MFAP4, "Apolipoprotein" = R
 
 ### multiplot: one plot with subplots for each substance
 plotCalibraCurve(list("ALB" = RES_ALB, "MFAP4" = RES_MFAP4, "Apolipoprotein" = RES_Apolipoprotein),
-                plot_type = "multiplot",
-                multiplot_nrow = 2,
-                multiplot_ncol = 2,
-                show_regression_info = TRUE)
+    plot_type = "multiplot",
+    multiplot_nrow = 2,
+    multiplot_ncol = 2,
+    show_regression_info = TRUE
+)
 
 
 ### all in one plot: all substances in one plot
 plotCalibraCurve(list("ALB" = RES_ALB, "MFAP4" = RES_MFAP4, "Apolipoprotein" = RES_Apolipoprotein),
-                plot_type = "all_in_one")
+    plot_type = "all_in_one"
+)
 }

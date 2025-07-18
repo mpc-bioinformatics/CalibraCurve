@@ -44,16 +44,18 @@ Read in data in different input formats
 \examples{
 file <- system.file("extdata", "xlsx/MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
 D <- readData(file,
-             filetype = "xlsx",
-             conc_col = 6,
-             meas_col = 7)
+    filetype = "xlsx",
+    conc_col = 6,
+    meas_col = 7
+)
 
 
 file2 <- system.file("extdata", "csv/ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
 D <- readData(file2,
-             filetype = "csv",
-             conc_col = 6,
-             meas_col = 7,
-             dec = ".",
-             sep = ",")
+    filetype = "csv",
+    conc_col = 6,
+    meas_col = 7,
+    dec = ".",
+    sep = ","
+)
 }
