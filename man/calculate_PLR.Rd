@@ -29,14 +29,16 @@ Calculate preliminary linear range (PLR)
 data(D_MFAP4)
 D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
 calculate_PLR(D_MFAP4_cleaned,
-              cv_thres = 10,
-              calcContinuousPrelimRanges = TRUE)
+    cv_thres = 10,
+    calcContinuousPrelimRanges = TRUE
+)
 ## With calcContinuousPrelimRanges = TRUE, only concentration levels 0.025-2.5
 ## are part of the preliminary linear range.
 
 calculate_PLR(D_MFAP4_cleaned,
-              cv_thres = 10,
-              calcContinuousPrelimRanges = FALSE)
+    cv_thres = 10,
+    calcContinuousPrelimRanges = FALSE
+)
 ## With calcContinuousPrelimRanges = FALSE, gaps are allowed, so the preliminary
 ## linear range is 0.025-25 (although 5 has a CV larger than the threshold 10).
 

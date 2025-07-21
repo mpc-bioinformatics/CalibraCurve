@@ -1,5 +1,3 @@
-
-
 #' Calculate Response factors
 #'
 #' @description
@@ -17,8 +15,8 @@
 #'
 #' @returns vector of response factors for this specific concentration level
 calcResponseFactors <- function(x, intercept, expConc) {
-  result <- (x - intercept) / expConc
-  return(result)
+    result <- (x - intercept) / expConc
+    return(result)
 }
 
 
@@ -37,26 +35,27 @@ calcResponseFactors <- function(x, intercept, expConc) {
 #' data(D_MFAP4)
 #' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
 #' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
-#'               cv_thres = 10,
-#'               calcContinuousPrelimRanges = TRUE)
+#'     cv_thres = 10,
+#'     calcContinuousPrelimRanges = TRUE
+#' )
 #' RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
 #'
 #' calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
 #'
 calcRFLevels <- function(x, mod) {
-  interc <- unname(mod$coefficients[1])
-  concentrations <- as.numeric(names(x))
+    interc <- unname(mod$coefficients[1])
+    concentrations <- as.numeric(names(x))
 
-  rfValuesList <- NULL
-  for (i in seq_along(x)) {
-    currConcLevData <- x[[i]]
-    expectConc <- concentrations[i]
-    currConcLevMeas <- currConcLevData[, "Measurement"]
-    rfValuesList[i] <- list(sapply(currConcLevMeas, calcResponseFactors, intercept = interc, expConc = expectConc))
-  }
+    rfValuesList <- NULL
+    for (i in seq_along(x)) {
+        currConcLevData <- x[[i]]
+        expectConc <- concentrations[i]
+        currConcLevMeas <- currConcLevData[, "Measurement"]
+        rfValuesList[i] <- list(sapply(currConcLevMeas, calcResponseFactors, intercept = interc, expConc = expectConc))
+    }
 
-  names(rfValuesList) <- concentrations
-  return(rfValuesList)
+    names(rfValuesList) <- concentrations
+    return(rfValuesList)
 }
 
 
@@ -74,20 +73,19 @@ calcRFLevels <- function(x, mod) {
 #' #' data(D_MFAP4)
 #' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
 #' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
-#'               cv_thres = 10,
-#'               calcContinuousPrelimRanges = TRUE)
+#'     cv_thres = 10,
+#'     calcContinuousPrelimRanges = TRUE
+#' )
 #' RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
 #'
 #' RES_RF <- calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
 #' calcRFMeans(RES_RF)
 calcRFMeans <- function(x) {
-  avgRF <- NULL
-  for (i in seq_along(x)) {
-    avgRFCurrLevel <- mean(x[[i]])
-    avgRF <- c(avgRF, avgRFCurrLevel)
-  }
-  names(avgRF) <- names(x)
-  return(avgRF)
+    avgRF <- NULL
+    for (i in seq_along(x)) {
+        avgRFCurrLevel <- mean(x[[i]])
+        avgRF <- c(avgRF, avgRFCurrLevel)
+    }
+    names(avgRF) <- names(x)
+    return(avgRF)
 }
-
-

@@ -42,9 +42,9 @@
 #'   \item{Measurement}{Measurement  as total area}
 #' }
 #' @source T. Bracht, V. Schweinsberg, M. Trippler, M. Kohl, M. Ahrens, J. Padden,
-#'W. Naboulsi, K. Barkovits, D. A. Megger, M. Eisenacher, C. H.
-#'Borchers, J. F. Schlaak, A. C. Hoffmann, F. Weber, H. A. Baba, H. E.
-#'Meyer, B. Sitek, J. Proteome Res. 2015, 14, 2278.
+#' W. Naboulsi, K. Barkovits, D. A. Megger, M. Eisenacher, C. H.
+#' Borchers, J. F. Schlaak, A. C. Hoffmann, F. Weber, H. A. Baba, H. E.
+#' Meyer, B. Sitek, J. Proteome Res. 2015, 14, 2278.
 "D_MFAP4"
 
 
@@ -74,4 +74,3 @@
 #' @format ## `RES_MFAP4`
 #' Results from CalibraCurve calculations.
 "RES_MFAP4"
-
