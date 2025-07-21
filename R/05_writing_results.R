@@ -143,16 +143,9 @@ assemble_results <- function(X,
 
     ## result only for concentrations that were not removed during cleaning:
 
-<<<<<<< HEAD
-  result_table_obs$response_factor[!result_table_obs$removed_while_cleaning] <- unlist(resFacDataV)
-  result_table_obs$RF_within_thres <- result_table_obs$response_factor <= hLineUpper & result_table_obs$response_factor >= hLineLow
-=======
-    resFacDataV2 <<- resFacDataV
-    result_table_obs2 <<- result_table_obs
 
     result_table_obs$response_factor[!result_table_obs$removed_while_cleaning] <- unlist(resFacDataV)
     result_table_obs$RF_within_thres <- result_table_obs$response_factor <= hLineUpper & result_table_obs$response_factor >= hLineLow
->>>>>>> 7c0249ed3a2d7add348b1e7520344067e9342a22
 
 
     # fill table with percent bias information (only within final linear range)
