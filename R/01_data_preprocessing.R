@@ -166,10 +166,10 @@ cleanData <- function(rawData,
   dataValidated <- dataValidated[sapply(1:length(dataValidated), FUN = checkNumberReplicates, data = dataValidated, minNumber = min_replicates)]
 
   if (length(dataValidated) == 0) {
-    stop(paste0("No concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates."))
+    stop("No concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates.")
   }
   if (length(dataValidated) == 1) {
-    stop(paste0("Only one concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates."))
+    stop("Only one concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates.")
   }
 
   dataValConcLevels <- sapply(dataValidated, FUN = function(x) x$Concentration[1])

@@ -17,6 +17,8 @@ test_that("prediction", {
 
 
   ### TODO: rewrite test so that it checks output table of predictConcentration
-  expect_warning(predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata2))
+  ### or use purrr:quietly?
+  expect_warning(predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata2),
+                 regexp = "outside the final linear range", fixed = TRUE)
 
 })
