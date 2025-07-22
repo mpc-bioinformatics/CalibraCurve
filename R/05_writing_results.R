@@ -51,6 +51,7 @@ assemble_results <- function(X,
     RfThresL = 80,
     RfThresU = 120,
     substance = "substance1") {
+
     checkmate::assertNumeric(RfThresL, lower = 0, upper = 100, finite = TRUE)
     checkmate::assertNumeric(RfThresU, lower = 100)
     checkmate::assertCharacter(substance, len = 1)

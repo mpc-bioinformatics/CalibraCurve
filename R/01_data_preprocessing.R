@@ -85,6 +85,10 @@ readData <- function(data_path,
         stop("Measurement column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
     }
 
+    ### sort by concentration level (from lowest to highest)
+    rawData <- rawData[order(rawData$Concentration), ]
+
+
     return(rawData)
 }
 

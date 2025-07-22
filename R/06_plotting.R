@@ -284,9 +284,9 @@ plotResponseFactors <- function(RES,
         ggplot2::aes(
             x = concentration,
             y = response_factor,
-            color = final_linear_range,
-            fill = final_linear_range,
-            alpha = final_linear_range,
+            color = RF_within_thres,
+            fill = RF_within_thres,
+            alpha = RF_within_thres,
             group = 1
         )
     )
@@ -306,18 +306,36 @@ plotResponseFactors <- function(RES,
         )
 
 
+    ### adjust colour of lines (only within_colour for consecutive mean response
+    ### factors within the threshold)
     sum_dat2 <- sum_dat
-    if (any(sum_dat2$final_linear_range)) {
-        ind <- which(sum_dat2$final_linear_range)
-        ind_last <- ind[length(ind)]
-        if (ind_last != length(sum_dat2$final_linear_range)) {
-            sum_dat2$final_linear_range[ind_last] <- FALSE
-        }
+    for(i in 1:(nrow(sum_dat)-1)) {
+      ### if the mean RF is within the threshold and the next one is too:
+      if (sum_dat$RF_within_thres[i] == TRUE & sum_dat$RF_within_thres[i+1] == TRUE) {
+        sum_dat2$RF_within_thres[i] <- TRUE
+      } else {
+        sum_dat2$RF_within_thres[i] <- FALSE
+      }
     }
+
+
+    #
+    # if (any(sum_dat2$RF_within_thres)) {
+    #
+    #
+    #
+    #     ind <- which(sum_dat2$final_linear_range)
+    #     ind_last <- ind[length(ind)]
+    #     if (ind_last != length(sum_dat2$final_linear_range)) {
+    #         sum_dat2$final_linear_range[ind_last] <- FALSE
+    #     }
+    # }
 
     ### add line between mean response factors
     pl <- pl +
-        ggplot2::geom_line(data = sum_dat2, ggplot2::aes(x = concentration, y = mean_response_factor))
+        ggplot2::geom_line(data = sum_dat2,
+                           ggplot2::aes(x = concentration,
+                                        y = mean_response_factor))
 
     ## scaling of alpha and colours
     pl <- pl +

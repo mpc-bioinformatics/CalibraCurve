@@ -141,6 +141,7 @@ CalibraCurve <- function(data_path = NULL,
     } else { # if data_path is given (single file)
         all_files <- data_path
         data_folder <- dirname(data_path) # extract folder from file path
+
         filetable <- data.frame(file = all_files) %>%
             dplyr::rowwise() %>%
             dplyr::mutate(
@@ -165,38 +166,50 @@ CalibraCurve <- function(data_path = NULL,
 
         print(paste0("Calculating calibration curve for ", substance, " ..."))
 
-        RES_tmp <- calc_single_curve(
-            data_path = data_path,
-            output_path = output_path,
-            conc_col = conc_col,
-            meas_col = meas_col,
-            substance = substance,
-            filetype = filetype,
-            sep = sep,
-            dec = dec,
-            header = header,
-            na.strings = na.strings,
-            sheet = sheet,
-            min_replicates = min_replicates,
-            cv_thres = cv_thres,
-            calcContinuousPrelimRanges = calcContinuousPrelimRanges,
-            weightingMethod = weightingMethod,
-            centralTendencyMeasure = centralTendencyMeasure,
-            perBiasThres = perBiasThres,
-            considerPerBiasCV = considerPerBiasCV,
-            perBiasDistThres = perBiasDistThres,
-            RfThresL = RfThresL,
-            RfThresU = RfThresU
+        RES_tmp <- try({calc_single_curve(
+          data_path = data_path,
+          output_path = output_path,
+          conc_col = conc_col,
+          meas_col = meas_col,
+          substance = substance,
+          filetype = filetype,
+          sep = sep,
+          dec = dec,
+          header = header,
+          na.strings = na.strings,
+          sheet = sheet,
+          min_replicates = min_replicates,
+          cv_thres = cv_thres,
+          calcContinuousPrelimRanges = calcContinuousPrelimRanges,
+          weightingMethod = weightingMethod,
+          centralTendencyMeasure = centralTendencyMeasure,
+          perBiasThres = perBiasThres,
+          considerPerBiasCV = considerPerBiasCV,
+          perBiasDistThres = perBiasDistThres,
+          RfThresL = RfThresL,
+          RfThresU = RfThresU
         )
-        RES[[i]] <- RES_tmp
-        names(RES)[i] <- substance
+        }, silent = TRUE)
+        ## TODO: mute error message?
+        ## TODO: following error message when something fails:
+        #Error in summary(RES[[i]]$mod)$r.squared :
+        #  $ operator is invalid for atomic vectors
 
-        if (!is.null(output_path)) {
+        if (inherits(RES_tmp, "try-error")) {
+          warning(paste0("Error while calculating calibration curve for ", substance, ": ", RES_tmp))
+          next
+        } else {
+
+          RES[[i]] <- RES_tmp
+          names(RES)[i] <- substance
+
+          if (!is.null(output_path)) {
             CalibraCurve::saveCCResult(
-                CC_res = RES[[i]],
-                output_path = output_path,
-                suffix = paste0("_", substance)
+              CC_res = RES[[i]],
+              output_path = output_path,
+              suffix = paste0("_", substance)
             )
+          }
         }
     }
 
@@ -207,7 +220,7 @@ CalibraCurve <- function(data_path = NULL,
     if (plot_type == "single_plots") {
         annotation_dat <- NULL
 
-        for (i in 1:length(RES)) {
+        for (i in seq_along(RES)) {
             RES_tmp <- list(RES[[i]])
             names(RES_tmp) <- names(RES)[i]
 
@@ -276,7 +289,7 @@ CalibraCurve <- function(data_path = NULL,
 
     ## generate and save response factor plots (each as a single plot)
     pl_RF_list <- list()
-    for (i in 1:length(RES)) {
+    for (i in seq_along(RES)) {
         pl_RF <- plotResponseFactors(
             RES = RES[[i]],
             RfThresL = RfThresL,
@@ -372,6 +385,8 @@ calc_single_curve <- function(data_path,
     perBiasDistThres = 10,
     RfThresL = 80,
     RfThresU = 120) {
+
+
     ## read in data
     X <- CalibraCurve::readData(
         data_path = data_path,
@@ -420,6 +435,7 @@ calc_single_curve <- function(data_path,
     # Calculation of mean response factor values
     avgResFacDataV <- CalibraCurve::calcRFMeans(resFacDataV)
 
+
     #### generate result tables
     tables <- CalibraCurve::assemble_results(
         X = X,
@@ -434,7 +450,6 @@ calc_single_curve <- function(data_path,
         RfThresU = RfThresU,
         substance = substance
     )
-
 
     RES <- list(
         mod = mod,
