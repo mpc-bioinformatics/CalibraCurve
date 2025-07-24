@@ -7,10 +7,11 @@ on:
         description: Testing
   push:
     branches:
-      - "main"
+      - "devel"
+      - "SummarizedExperiment"
   pull_request:
     branches:
-      - "main"
+      - "devel"
     paths:
       - ".github/workflows/testing.yml"
 

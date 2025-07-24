@@ -22,7 +22,12 @@
 
 on:
   push:
+    branches:
+    - "devel"
+    - "SummarizedExperiment"
   pull_request:
+    branches:
+    - "devel"
 
 name: R-CMD-check-bioc
 
