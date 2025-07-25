@@ -1,0 +1,317 @@
+---
+title: "Customizing the visualizations of CalibraCurve"
+author: 
+  - name: Karin Schork
+    affiliation:
+    - Medizinisches Proteom-Center, Ruhr-Universität Bochum
+    email: karin.schork@rub.de
+output: 
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: show
+date: "`r doc_date()`"
+package: "`r pkg_ver('CalibraCurve')`"
+vignette: >
+  %\VignetteIndexEntry{2. Customizing the visualizations of CalibraCurve}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
+)
+```
+
+
+```{r vignetteSetup, echo=FALSE, message=FALSE, warning = FALSE}
+## Bib setup
+library("RefManageR")
+
+## Write bibliography information
+bib <- c(
+    R = citation(),
+    BiocStyle = citation("BiocStyle")[1],
+    knitr = citation("knitr")[1],
+    RefManageR = citation("RefManageR")[1],
+    rmarkdown = citation("rmarkdown")[1],
+    sessioninfo = citation("sessioninfo")[1],
+    testthat = citation("testthat")[1],
+    CalibraCurve = citation("CalibraCurve")[1]
+)
+```
+
+
+# Introduction
+
+```{r "start", message=FALSE}
+library("CalibraCurve")
+
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", package = "CalibraCurve")
+
+D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance")
+
+RES <- CalibraCurve(D)
+
+```
+
+
+# Handling multiple calibration curves
+
+If multiple analytes are present in the data, `CalibraCurve` by default.
+
+
+
+
+
+-----------------
+
+Targeted mass spectrometry based experiments (e.g. proteomics, metabolomics or lipidomics) are used for validation of biomarkers or for quantitative assays.
+During the development of these assays, calibration curves are a valuable tool to assess the upper and lower limit of quantification and the linearity of the obtained measurements. 
+The resulting model may also allow to predict concentrations from measured intensities (absolute quantification).
+
+CalibraCurve is a tool to generate and visualize calibration curves. The tool is already established as a KNIME workflow based on an R script [cite paper] and a service in de.NBI [link] and ELIXIR Germany [link]. The code base was re-worked into an R package without changing the underlying algorith. Several improvements were made:
+- allowing xlsx files and SummarizedExperiment objects as input
+- generate plots with `ggplot2` for nicer, publication-ready visualization 
+- more customization possibilities for the plots (colours etc.)
+- added possibility to generate multiple curves in one graph
+- re-worked and improved error messages
+- added a function to predict concentrations based on the model
+- additional nextflow workflow [link] which allows CalibraCurve to run in the MacWorP GUI [REF]
+
+
+
+# Installation of  `CalibraCurve`
+
+To install the latest version of `CalibraCurve` from Bioconductor use the following code snippet:
+
+```{r "install", eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+      install.packages("BiocManager")
+  }
+
+BiocManager::install("CalibraCurve")
+```
+
+# Asking for help
+
+If you need help with `CalibraCurve`, encountered a bug or have suggestions for improvements leave a post in the 
+[Bioconductor support site](https://support.bioconductor.org/) with the `CalibraCurve` tag or start an issue on our [github page](https://github.com/mpc-bioinformatics/CalibraCurve).
+
+
+# Citing `CalibraCurve`
+
+We hope that `r Biocpkg("CalibraCurve")` will be useful for your research. Please use the following information to cite the package and the overall approach. Thank you!
+
+```{r "citation"}
+## Citation info
+citation("CalibraCurve")
+```
+
+
+# Quick start to using `CalibraCurve`
+
+CalibraCurve's main task is to calculate calibration curves for targeted mass spectrometry based data like
+proteomics, metabolomics or lipidomics. 
+The experimental setup is the following: for the analyte of interest, samples with different known concentrations levels of this analyte are prepared.
+Ideally, these samples are measured in replicates, leading to intensities or areas as a measurement.
+
+To calculate the calibration curve, two pieces of information are needed: The known concentration levels and the measured intensities for each sample.
+
+There are two options to provide this information for CalibraCurve. First, a set of Excel files may be provided that contain at least a Concentration and a Measurement column each. 
+Second, a SummarizedExperiment object may be provided. This object may contain measurements for different analytes, one analyte per row. Information about the concentration levels
+have to be provided in the colData part. 
+
+## Example data set
+
+
+
+## Import one or more Excel files
+
+```{r "start", message=FALSE}
+library("CalibraCurve")
+```
+
+
+## Import SummarizedExperiments object
+
+A SummarizedExperiment object stored as an .rds file can be imported using the 
+function `readDataSE` function. 
+The column name of the colData part belonging to the concentration levels have to be defined as `concColName`.
+The column name of the rowData part belonging to the substance or analyte have to be defined as `substColName`.
+The resulting object can then be directly used in the main function `CalibraCurve` to generate and visualize the Calibration curve.
+Here, we will use the default options. 
+
+
+```{r "start_SE", message=FALSE}
+library("CalibraCurve")
+
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", package = "CalibraCurve")
+
+D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance")
+
+
+
+
+```
+
+
+## Apply CalibraCurve
+
+As soon as the data have been imported using X, Y or Z, they can directly be used inside the CalibraCurve function.
+CalibraCurve has a lot of options, e.g. thresholds or customizing options for the graphics. All of these options
+have sensible default values, so you can just try out CalibraCurve withou thinking about these. However for optimal
+results or publication-ready visualizations some adjustments may be necessary. These will be explained in the other two 
+vignettes in more detail.
+
+```{r "apply_CC", message=FALSE}
+RES <- CalibraCurve(D)
+
+
+```
+
+
+CalibraCurve outputs several tables and two kinds of plots: the calibration curve and the response factor plots.
+The calibration curves are stort in the list entry `plot_CC_list` of the result object.
+By default, each calibration curve is plotted separately. As an example, we plot here
+the calibration curve for the fourth analyte: 
+
+
+```{r "plot_SE", message=FALSE}
+print(RES$plot_CC_list[[4]])
+```
+
+The calibration curve is plotted as a red line, both axes are shown on logarithmic scale. 
+The grey background shows the linear range (here between XY and 1000 fmol), the curve was only fitted to data points inside this range. The grey data point outside of the linear range visibly do not fit to the curve.
+
+Additionally, we can now look at the corresponding response factor plot:
+
+```{r "plot_RF", message=FALSE}
+print(RES$plot_RF_list[[4]])
+```
+
+For each data point the so called response factor is calculated. For the data point $i$ it is defined as
+(intensity - y intercept)/concentration.
+
+The nominator describes the signal produced by the analyte (intensity minus the intersect) and the denominator the concentration or amount of the analyte. [cite Green]
+Ideally the mean response factors for each concentration level (shown as the larger dots) would lie in a straight line and not vary much for the different concentration levels. In orange, thresholds based on 80\% and 120\% of the overall mean response factor (within the linear range) are plotted.  Values within these borders are coloured in green, the ones outside in pink. For all concentration levels within the final linear range the response factors lie within these borders, serving as a further quality check of the results and linearity of the response.
+
+For each analyte, two result tables are produced to give inside into the steps of the algorithm. The first one gives an overview of the
+results on the level of concentration levels:
+
+```{r "print_table_conc_levels", message=FALSE}
+print(RES$RES[[4]]$result_table_conc_levels)
+```
+
+There is one row for each concentration level. It contains the mean measurement, the estimated measurement by the linear model and further information on the different steps of the algorithm (e.g. if the concentration level was removed during the cleaning step or if it was resent in the preliminary linear range). The last column shows which concentration levels ended up in the final linear range.
+
+For this specific analyte, no concentration level was removed during the cleaning step and all levels fulfilled the CV criterion and where included in the preliminary linear range. The two highest concentration levels were subsequently removed during the calculation of the final linear range.
+
+The second table offers a more detailed view for each individual replicate:
+
+```{r "print_table_obs", message=FALSE}
+print(RES$RES[[4]]$result_table_obs)
+```
+
+This table offers a more detailed view, e.g. it can be seen that every single replicate within the final linear range also fulfills the response factore criterion.
+
+
+If multiple analytes are analyzed, a further summary table is generated:
+
+```{r "print_table_summary", message=FALSE}
+print(RES$summary_tab)
+```
+
+
+This table contains one row per analyte and contains more detailed information on the linear model (coefficients and R squared) and the lower and upper limit of quantification. In this case it can be seen that the QExactive leads to the worst R squared value overall, while the TSQCVantage lead to a wider linear range.
+
+
+
+## Use calibration curve for prediction
+
+The resulting calibration curves can be used to predict the analytes' concentration based on measured intensities. You need to define a vector with measured intensities and
+feed it into the `predictConcentration` function together with the Calibracurve result object for this particular analyte. Imagine we have measured three new samples, with an intensity of 1e6, 1e7 and 1e8, respectively.
+
+```{r "prediction", message=FALSE}
+newdata <- c(1000000, #1e6
+             10000000, #1e7
+             100000000) # 1e8
+
+
+CC_res = RES$RES[[4]]
+
+predictConcentration(CC_res = RES$RES[[4]], newdata = newdata) 
+```
+
+In the table, the predicted concentrations based on the linear model are given.
+Please note the warning message: The predicted concentration for the intensity 1e8 falls outside of the linear range for this analyte. Therefore this value may be unreliable.
+
+
+
+
+
+
+
+
+
+
+# Further information
+
+- information on customizing the graphics can be found in vignette xy
+- more detailed information on the parameters ans settings can be found in vignette XY
+
+
+# Comparison with other related packages
+
+There are not many R packages that have functionality for the analysis of targeted mass spectrometry based data, in particular for calculating and visualizing calibration curves. Therefore, `CalibraCurve` complements other existing packages in this research area and is a valuable addition for the field of targeted proteomics, metabolomics and lipidomics. There are some packages with functionalities for targeted proteomics data that cover different parts of the whole workflow. These may be used in combination with `CalibraCurve`, e.g. to handle the raw data, process them or to do further statistical analysis on the predicted concentrations (e.g. group comparisons).
+
+- `MSStatsLOBD` [REF] estimates the limit of detection and limit of blank (LoB) for targeted experiments. In contrast to `CalibraCurve` it does not estimate the lower and upper limit of quantification (linear range) and does only provide minimal functionality for visualizing calibration curves. Response factor plots or the ability to predict concentrations are also not provided.
+- The package `msqc1` [REF] is a data package containing targeted proteomics data from the MSQC1 standard samples for benchmarking of different machines and methods. We will use parts of the dilution series data in the following as an example (see also section "Example data set"). 
+- The package `specL` [REF] produces spectra libraries that can be used to identify peptides in targeted proteomics data and therefore covers the very beginning of the targeted data analysis workflow.
+- The package `MSStats` [REF] contains a lot of functionality for the statistical analysis of proteomics data (targeted and untargeted). For example, estimate the required sample size for an experiment, summarizing data to protein level, visualizations and statistical analysis (group comparisons). 
+- `mzR` [REF] provides parsing for differnt standard file formats used for mass spectrometry data.
+- The packages `xcms` [REF] and `MSnbase` provide functionality for processing and visualizing mass spectrometry based (proteomics) data.
+
+
+# Reproducibility
+
+The `r Biocpkg("CalibraCurve")` package 
+was made possible thanks to:
+
+* R `r Citep(bib[["R"]])`
+* `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
+* `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])`
+* `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`
+* `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])`
+* `r CRANpkg("sessioninfo")` `r Citep(bib[["sessioninfo"]])`
+* `r CRANpkg("testthat")` `r Citep(bib[["testthat"]])`
+
+This package was developed using `r BiocStyle::Biocpkg("biocthis")`.
+
+`R` session information.
+
+```{r reproduce3, echo=FALSE}
+## Session info
+library("sessioninfo")
+options(width = 120)
+session_info()
+```
+
+
+
+# Bibliography
+
+This vignette was generated using `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
+with `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])` and `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])` running behind the scenes.
+
+Citations made with `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`.
+
+```{r vignetteBiblio, results = "asis", echo = FALSE, warning = FALSE, message = FALSE}
+## Print bibliography
+PrintBibliography(bib, .opts = list(hyperlink = "to.doc", style = "html"))
+```
