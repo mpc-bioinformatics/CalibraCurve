@@ -4,10 +4,12 @@ Version: 0.99.0
 Authors@R: c(
     person("Karin", "Schork", , "karin.schork@rub.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-3756-4347")),
+    person("Robin", "Grugel", , "robin.grugel@rub.de", role = c("aut")),
+    person("Michael", "Kohl", , , role = c("aut")),
+    person("Markus", "Stepath", , , role = c("aut")),
     person("Martin", "Eisenacher", , "martin.eisenacher@rub.de", role = c("aut", "fnd")))
 Description: Calibration curves for targeted proteomics, lipidomics and metabolomics data.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
@@ -17,11 +19,17 @@ Imports:
     ggplot2,
     magrittr,
     openxlsx,
-    scales
+    scales,
+    SummarizedExperiment,
+    tidyr
 Suggests: 
+    BiocStyle,
     knitr,
+    msqc1,
+    RefManageR,
     rmarkdown,
-    testthat (>= 3.0.0),
+    sessioninfo,
+    testthat,
     vdiffr
 URL: https://github.com/mpc-bioinformatics/CalibraCurve
 BugReports: https://github.com/mpc-bioinformatics/CalibraCurve/issues
