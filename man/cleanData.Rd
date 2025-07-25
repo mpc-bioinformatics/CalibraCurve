@@ -2,33 +2,32 @@
 % Please edit documentation in R/01_data_preprocessing.R
 \name{cleanData}
 \alias{cleanData}
-\title{Clean data (remove 0s and NAs, remove concentration levels with insufficient number of replicates)}
+\title{Clean data (remove 0s and NAs, remove concentration levels with insufficient
+number of replicates)}
 \usage{
-cleanData(rawData, min_replicates = 3)
+cleanData(rawData, minReplicates = 3)
 }
 \arguments{
-\item{rawData}{\strong{data.frame} \cr data set to be cleaned, result of readData.}
+\item{rawData}{\strong{data.frame} \cr data set to be cleaned, result of
+\code{\link{readDataTable}} or \code{\link{readDataSE}}.}
 
-\item{min_replicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
-Concentration levels with too few data points will be removed.}
+\item{minReplicates}{\strong{integer(1)} \cr Minimal number of replicates
+per concentration level. Concentration levels with too few data points will
+be removed.}
 }
 \value{
-list of data.frames, each data.frame contains data for a specific concentration level
+list of data.frames, each element contains data for a specific
+concentration level
 }
 \description{
-Clean data (remove 0s and NAs, remove concentration levels with insufficient number of replicates)
+Clean data (remove 0s and NAs, remove concentration levels with insufficient
+number of replicates)
 }
 \examples{
 data(D_ALB)
 
-cleanData(D_ALB, min_replicates = 3)
-## Returns original data because it doesn't contain 0s or NAs and it has enough replicates.
-## Data is now given as a list, each element containing the data of one specific concentration
-## level.
-
-\dontrun{
-cleanData(D_ALB, min_replicates = 5)
-}
-## returns error message as no concentration level has 5 replicates:
-
+cleanData(D_ALB, minReplicates = 3)
+## Returns original data because it doesn't contain 0s or NAs and it has
+## enough replicates. Data is now given as a list, each element containing
+## the data of one specific concentration level.
 }

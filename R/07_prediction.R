@@ -15,6 +15,8 @@
 #'
 #' @examples
 #'
+#' TODO: adapt examples
+#'
 #' data(RES_MFAP4)
 #' newdata <- c(5, 0.2, 10)
 #' predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
@@ -24,11 +26,11 @@
 #' predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
 #'
 predictConcentration <- function(CC_res, newdata) {
-    RES <- CC_res$RES[[1]]
+    #RES <- CC_res$RES[[1]]
 
-    mod <- RES$mod
+    mod <- CC_res$mod
 
-    FLR <- RES$final_linear_range
+    FLR <- CC_res$final_linear_range
     min_FLR <- min(FLR)
     max_FLR <- max(FLR)
 

@@ -1,183 +1,280 @@
-#' Read in data in different input formats
+#' Read data in different table input formats (xlsx, csv or txt).
+#' Extracts the two relevant columns (concentration and measurement) and
+#' orders the data by increasing concentration.
 #'
-#' @param data_path **character(1)** \cr Path to the data file (.csv, .txt or .xlsx file).
-#' @param filetype **character(1)** \cr Type of input file: "csv" or "txt" or "xlsx".
-#' @param conc_col **integer(1)** \cr Column number of the concentration values.
-#' @param meas_col **integer** \cr Column number of the concentration values.
-#' @param sep **character(1)** \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. The default is ",".
-#' @param dec **character(1)** \cr Decimal separator, e.g. "," for comma or "." for dot. The default is ".".
-#' @param header **logical(1)** \cr If TRUE, first line is counted as column names. The default is TRUE.
-#' @param na.strings **character** \cr Character vector of strings which are to be interpreted as NA. The default is c("NA", "NaN", "Filtered", "#NV").
-#' @param sheet **integer(1)** \cr Sheet number (only needed for xlsx files, default is to use the first sheet).
+#' @param dataPath **character(1)** \cr Path to the data file
+#'      (.csv, .txt or .xlsx file).
+#' @param fileType **character(1)** \cr Type of file: "csv", "txt" or "xlsx".
+#' @param concCol **integer(1)** \cr Column number of the concentration values.
+#' @param measCol **integer** \cr Column number of the concentration values.
+#' @param sep **character(1)** \cr The field separator, default is ",".
+#' @param dec **character(1)** \cr Decimal separator, default is ".".
+#' @param header **logical(1)** \cr If TRUE, first line is counted as column
+#'      names. The default is TRUE.
+#' @param naStrings **character** \cr Vector of strings which are to be
+#'      interpreted as NA. The default is c("NA", "NaN", "Filtered", "#NV").
+#' @param sheet **integer(1)** \cr Sheet number (only needed for xlsx files,
+#'      default is to use the first sheet).
 #'
 #' @returns Data.frame with two numeric columns: Concentration and Measurement
 #' @export
 #'
 #' @examples
-#' file <- system.file("extdata", "xlsx/MFAP4_WTVFQK_y4.xlsx", package = "CalibraCurve")
-#' D <- readData(file,
-#'     filetype = "xlsx",
-#'     conc_col = 6,
-#'     meas_col = 7
-#' )
+#' ### xlsx file:
+#' file <- system.file("extdata", "xlsx/MFAP4_WTVFQK_y4.xlsx",
+#'   package = "CalibraCurve")
+#' D <- readDataTable(file, fileType = "xlsx", concCol = 6, measCol = 7)
 #'
-#'
-#' file2 <- system.file("extdata", "csv/ALB_LVNEVTEFAK_y8.csv", package = "CalibraCurve")
-#' D <- readData(file2,
-#'     filetype = "csv",
-#'     conc_col = 6,
-#'     meas_col = 7,
-#'     dec = ".",
-#'     sep = ","
-#' )
-readData <- function(data_path,
-    filetype,
-    conc_col,
-    meas_col,
-    sep = ",",
-    dec = ".",
-    header = TRUE,
-    na.strings = c("NA", "NaN", "Filtered", "#NV"),
+#' ### csv file:
+#' file2 <- system.file("extdata", "csv/ALB_LVNEVTEFAK_y8.csv",
+#'   package = "CalibraCurve")
+#' D <- readDataTable(file2, fileType = "csv", concCol = 6, measCol = 7,
+#'   dec = ".", sep = ",")
+readDataTable <- function(dataPath, fileType, concCol, measCol, sep = ",",
+    dec = ".", header = TRUE, naStrings = c("NA", "NaN", "Filtered", "#NV"),
     sheet = 1) {
-    ### check input arguments
-    checkmate::assert_file_exists(data_path)
-    checkmate::assert_character(data_path, len = 1)
-    checkmate::assert_choice(filetype, c("csv", "txt", "xlsx"))
-    checkmate::assert_int(conc_col)
-    checkmate::assert_int(meas_col)
+    ### check input parameters
+    checkmate::assert_file_exists(dataPath)
+    checkmate::assert_character(dataPath, len = 1)
+    checkmate::assert_choice(fileType, c("csv", "txt", "xlsx"))
+    checkmate::assert_int(concCol, lower = 1)
+    checkmate::assert_int(measCol)
     checkmate::assert_character(sep, len = 1)
     checkmate::assert_character(dec, len = 1)
     checkmate::assert_flag(header)
-    checkmate::assert_character(na.strings)
+    checkmate::assert_character(naStrings)
     checkmate::assert_int(sheet)
-    if (conc_col == meas_col) stop("Concentration and measurement columns cannot be identical.")
+    if (concCol == measCol) stop("Concentration and measurement columns cannot
+                                 be identical.")
 
-
-
-    if (filetype == "csv" | filetype == "txt") {
-        rawData <- utils::read.table(data_path,
-            sep = sep,
-            header = header,
-            dec = dec
-        )
-    }
-    if (filetype == "xlsx") {
-        rawData <- openxlsx::read.xlsx(data_path, colNames = header, sheet = sheet)
+    if (fileType == "csv" | fileType == "txt") {
+        rawData <- utils::read.table(dataPath, sep = sep, header = header,
+                                     dec = dec, na.strings = naStrings)
+        }
+    if (fileType == "xlsx") {
+        rawData <- openxlsx::read.xlsx(dataPath, colNames = header,
+                                       sheet = sheet, na.strings = naStrings)
     }
 
     ### check if column numbers are valid
-    if (meas_col > ncol(rawData)) {
-        stop("Number of measurement column cannot be larger than number of columns in data set.")
+    if (measCol > ncol(rawData)) {
+        stop("Number of measurement column cannot be larger than number of
+             columns in data set.")
     }
-    if (conc_col > ncol(rawData)) {
-        stop("Number of concentration column cannot be larger than number of columns in data set.")
+    if (concCol > ncol(rawData)) {
+        stop("Number of concentration column cannot be larger than number of
+             columns in data set.")
     }
 
     ### extract relevant columns:
-    rawData <- rawData[, c(conc_col, meas_col)]
-    colnames(rawData) <- c("Concentration", "Measurement")
+    rawData <- data.frame("Concentration" = rawData[, concCol],
+                          "Measurement" = rawData[, measCol])
 
     ### check if relevant columns are numeric:
-    if (!is.numeric(rawData[["Concentration"]])) {
-        stop("Concentration column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
-    }
-    if (!is.numeric(rawData[["Measurement"]])) {
-        stop("Measurement column must be numeric. Issue may come from non-fitting decimal separator or na.strings.")
+    if (!is.numeric(rawData[,1]) | !is.numeric(rawData[,2])) {
+        stop("Concentration and measurement columns must be numeric.
+             Issue may come from non-fitting decimal separator or na.strings.")
     }
 
     ### sort by concentration level (from lowest to highest)
     rawData <- rawData[order(rawData$Concentration), ]
 
-
     return(rawData)
 }
 
 
-
-
-#' Data preprocessing: Helper function to select all rows from a specific concentration level
+#'Read folder of files in different table input formats (xlsx, csv or txt).
 #'
-#' @param x **numeric(1)** \cr concentration level to select
-#' @param rawData **data.frame** \cr data set to be filtered (e.g. result of \code{\link{readData}})
+#' @param dataFolder **character(1)** \cr Folder containing either xlsx, csv or txt files
+#' @param fileType **character(1)** \cr Type of file: "csv", "txt" or "xlsx".
+#' @param concCol **integer(1)** \cr Column number of the concentration values.
+#' @param measCol **integer** \cr Column number of the concentration values.
+#' @param ... additional parameters to \code{\link{readDataTable}}
 #'
-#' @returns data.frame
-filterConcentrationLevel <- function(x,
-    rawData) {
-    result <- rawData[rawData$Concentration == x, ]
-    return(result)
+#' @returns List of data.frame, each with two numeric columns:
+#'    Concentration and Measurement
+#' @export
+#'
+#' @examples  # TODO
+readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
+  allFiles <- setdiff(list.files(path = dataFolder),
+          list.dirs(path = dataFolder, recursive = FALSE, full.names = FALSE))
+
+  fileTable <- data.frame(file = allFiles) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      substanceName = strsplit(basename(file), "\\.")[[1]][1],
+      fullPath = paste0(dataFolder, "/", file),
+      fileExt = tools::file_ext(file)
+    )
+
+  ### filter files for correct filetype
+  fileTable <- fileTable[fileTable$fileExt == fileType, ]
+
+  rawDataList <- lapply(fileTable$fullPath, FUN = readDataTable, fileType = fileType,
+         concCol = concCol, measCol = measCol, ...)
+
+  names(rawDataList) <- fileTable$substanceName
+  return(rawDataList)
 }
 
 
 
-#' Data preprocessing: Helper function to check for sufficient number of replicates for a specific concentration level
+
+
+
+
+
+
+#' Read data stored as an SummarizedExperiment object in an .rds file.
+#' Extracts the two relevant columns (concentration and measurement) and
+#' orders the data by increasing concentration.
 #'
-#' @param x **numeric(1)** \cr concentration level to check
-#' @param data **list of data.frames** \cr list of data.frames (each dataframe contains data for a specific concentration level)
-#' @param minNumber **integer(1)** \cr minimal number of data points per concentration level
+#' @details
+#' The SummarizedEsperiments object may contain quantitative values from
+#' targeted proteomics, lipidomics or metabolomics experiments.
+#' The colData has to contain a column with the concentration levels
+#' (concColName).
+#' The rowData has to contain a column with the substance names (e.g. peptide
+#' sequence, name of lipid or metabolite etc).
 #'
-#' @returns **locgical(1)** \cr TRUE if there are enough replicates or FALSE if not
-checkNumberReplicates <- function(x, data, minNumber) {
-    if (nrow(data[[x]]) < minNumber) {
-        result <- FALSE
-    } else {
-        result <- TRUE
-    }
-    return(result)
+#' @param dataPath **character(1)** \cr Path to the data file (.rds file)
+#' @param concColName **character(1)** \cr Name of the column in the colData()
+#'    containing the concentration levels.
+#' @param substColName **character(1)** \cr column name of rowData() containing
+#' the substance name (must be a unique value in each row)
+#' @param assayNumber **integer(1)** \cr Number of assay to be extracted
+#'    from the SummarizedExperiment object
+#' @param rowNumbers **integer** \cr Row numbers to extract from the SummarizedExperiment
+#'    object. Default is NULL, which means that all rows in the object will be used.
+#'
+#' @returns List of data.frame, each with two numeric columns:
+#'    Concentration and Measurement
+#' @export
+#'
+#' @examples
+#' file <- system.file("extdata", "MSQC1/msqc1_dil_ALIVLAHSER.rds",
+#'    package = "CalibraCurve")
+#' D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
+#' assayNumber = 1)
+readDataSE <- function(dataPath, concColName, substColName, assayNumber = 1,
+                       rowNumbers = NULL) {
+  rawDataSE <- readRDS(dataPath)
+
+  if (!is.null(rowNumbers)) rawDataSE <- rawDataSE[rowNumbers,]
+
+  Data <- SummarizedExperiment::assays(rawDataSE)[[assayNumber]]
+  Data$Substance <- SummarizedExperiment::rowData(rawDataSE)[[substColName]]
+  concentrations <- SummarizedExperiment::colData(rawDataSE)[, concColName]
+  concentrations <- as.numeric(concentrations)
+  colNames <- colnames(Data)
+
+  rawData <- tidyr::pivot_longer(Data, cols = !tidyr::last_col(),
+                                 names_to = "Concentration",
+                                 values_to = "Measurement")
+  rawData$Concentration <- concentrations[match(rawData$Concentration, colNames)]
+  rawData <- as.data.frame(rawData)
+
+  rawData <- rawData[order(rawData$Concentration), ]
+  rawDataList <- split(rawData, rawData$Substance)
+  rawDataList <- lapply(rawDataList, function(x) x[,-1]) # rm substance col
+
+  return(rawDataList)
 }
 
 
 
-#' Clean data (remove 0s and NAs, remove concentration levels with insufficient number of replicates)
+
+#' Clean data (remove 0s and NAs, remove concentration levels with insufficient
+#'  number of replicates)
 #'
-#' @param rawData **data.frame** \cr data set to be cleaned, result of readData.
-#' @param min_replicates **integer(1)** \cr Minimal number of replicates/data points per concentration level.
-#'                                          Concentration levels with too few data points will be removed.
+#' @param rawData **data.frame** \cr data set to be cleaned, result of
+#'  \code{\link{readDataTable}} or \code{\link{readDataSE}}.
+#' @param minReplicates **integer(1)** \cr Minimal number of replicates
+#'  per concentration level. Concentration levels with too few data points will
+#'  be removed.
 #'
-#' @returns list of data.frames, each data.frame contains data for a specific concentration level
+#' @returns list of data.frames, each element contains data for a specific
+#'  concentration level
 #' @export
 #'
 #' @examples
 #' data(D_ALB)
 #'
-#' cleanData(D_ALB, min_replicates = 3)
-#' ## Returns original data because it doesn't contain 0s or NAs and it has enough replicates.
-#' ## Data is now given as a list, each element containing the data of one specific concentration
-#' ## level.
-#'
-#' \dontrun{
-#' cleanData(D_ALB, min_replicates = 5)
-#' }
-#' ## returns error message as no concentration level has 5 replicates:
-#'
-cleanData <- function(rawData,
-    min_replicates = 3) {
+#' cleanData(D_ALB, minReplicates = 3)
+#' ## Returns original data because it doesn't contain 0s or NAs and it has
+#' ## enough replicates. Data is now given as a list, each element containing
+#' ## the data of one specific concentration level.
+cleanData <- function(rawData, minReplicates = 3) {
     ### check input arguments
-    checkmate::assert_int(min_replicates, lower = 1)
+    checkmate::assert_int(minReplicates, lower = 1)
 
-    # Removing rows that contain unwanted 0 values (problems with log-transform later) or NA values in either
-    # the concentration or measurement column
-    dataValidated <- rawData[rawData$Concentration != 0 & !is.na(rawData$Concentration) & rawData$Measurement != 0 & !is.na(rawData$Measurement), ]
+    # Removing rows that contain unwanted 0 values (problems with log-transform
+    # later) or NA values in either the concentration or measurement column
+    dataCleaned <- rawData[rawData$Concentration != 0 &
+                               !is.na(rawData$Concentration) &
+                               rawData$Measurement != 0 &
+                               !is.na(rawData$Measurement), ]
 
     # Determination of existing concentration levels in the validated data
-    concLevels <- unique(dataValidated$Concentration)
-    concLevels <- sort(concLevels, decreasing = FALSE)
+    concLevels <- unique(dataCleaned$Concentration)
+    #concLevels <- sort(concLevels, decreasing = FALSE)
 
-    # Transforming a data set into a list with entries for each concentration level (and the related data)
-    dataValidated <- lapply(concLevels, FUN = filterConcentrationLevel, rawData = dataValidated)
+    # Transforming a data set into a list with entries for each concentration
+    # level (and the related data)
+    dataCleaned <- lapply(concLevels, FUN = .filterConcentrationLevel,
+                          data = dataCleaned)
 
     # Deleting concentration levels with insufficient number of replicates
-    dataValidated <- dataValidated[sapply(1:length(dataValidated), FUN = checkNumberReplicates, data = dataValidated, minNumber = min_replicates)]
+    ind <- sapply(seq_along(dataCleaned), FUN = .checkNumberReplicates,
+                  data = dataCleaned, minReplicates = minReplicates)
+    dataCleaned <- dataCleaned[ind]
 
-
-    if (length(dataValidated) == 0) {
-      stop("No concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates.")
+    if (length(dataCleaned) <= 1) {
+      stop("One or less concentration level(s) with at least ", minReplicates,
+           " replicates found. Please check your data or lower minReplicates.")
     }
-    if (length(dataValidated) == 1) {
-      stop("Only one concentration level with at least ", min_replicates, " replicates found. Please check your data or lower min_replicates.")
-    }
 
-    dataValConcLevels <- sapply(dataValidated, FUN = function(x) x$Concentration[1])
-    names(dataValidated) <- dataValConcLevels
+    concLevelsCleaned <- sapply(dataCleaned, FUN = function(x) x$Concentration[1])
+    names(dataCleaned) <- concLevelsCleaned
 
-    return(dataValidated)
+    return(dataCleaned)
+}
+
+
+
+
+
+#' Data preprocessing: Helper function to select all rows from a specific
+#' concentration level
+#'
+#' @param x **numeric(1)** \cr concentration level to select
+#' @param data **data.frame** \cr data set to be filtered
+#'    (e.g., result of \code{\link{readDataTable}})
+#'
+#' @returns data.frame
+.filterConcentrationLevel <- function(x, data) {
+  result <- data[data$Concentration == x, ]
+  return(result)
+}
+
+
+
+#' Data preprocessing: Helper function to check for sufficient number of
+#' replicates for a specific concentration level
+#'
+#' @param x **numeric(1)** \cr concentration level to check
+#' @param data **list of data.frames** \cr list of data.frames (each dataframe
+#'    contains data for a specific concentration level)
+#' @param minReplicates **integer(1)** \cr minimal number of data points per
+#'    concentration level
+#'
+#' @returns **logical(1)** \cr TRUE if there are enough replicates, else FALSE
+.checkNumberReplicates <- function(x, data, minReplicates) {
+  if (nrow(data[[x]]) < minReplicates) {
+    result <- FALSE
+  } else {
+    result <- TRUE
+  }
+  return(result)
 }

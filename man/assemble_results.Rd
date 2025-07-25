@@ -19,7 +19,7 @@ assemble_results(
 )
 }
 \arguments{
-\item{X}{\strong{data.frame} \cr Original data set, result of \code{\link{readData}}.}
+\item{X}{\strong{data.frame} \cr Original data set, e.g. result of \code{\link{readDataTable}}.}
 
 \item{dataCleaned}{\strong{list of data.frames} \cr Cleaned data, result of \code{\link{cleanData}}.}
 
@@ -53,7 +53,7 @@ Assemble result tables
 }
 \examples{
 data(D_MFAP4)
-D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+D_MFAP4_cleaned <- cleanData(D_MFAP4, minReplicates = 3)
 RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
     cv_thres = 10,
     calcContinuousPrelimRanges = TRUE

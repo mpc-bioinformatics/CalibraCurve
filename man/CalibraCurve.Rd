@@ -5,20 +5,10 @@
 \title{CalibraCurve}
 \usage{
 CalibraCurve(
-  data_path = NULL,
-  data_folder = NULL,
+  D_list,
   output_path = NULL,
-  conc_col,
-  meas_col,
-  substance = "substance1",
-  suffix = paste0("_", substance),
-  filetype = "xlsx",
-  sep = ",",
-  dec = ".",
-  header = TRUE,
-  na.strings = c("NA", "NaN", "Filtered", "#NV"),
-  sheet = 1,
-  min_replicates = 1,
+  substance = "substance",
+  minReplicates = 3,
   cv_thres = 20,
   calcContinuousPrelimRanges = FALSE,
   weightingMethod = "1/x^2",
@@ -52,33 +42,15 @@ CalibraCurve(
 )
 }
 \arguments{
-\item{data_path}{\strong{character(1)} \cr Path to the data file (.csv, .txt or .xlsx file).}
-
-\item{data_folder}{\strong{character(1)} \cr Path to the folder containing multiple files (.csv, .txt or .xlsx file).}
+\item{D_list}{\strong{data.frame/list} \cr Data.frame or list of data.frames
+(one for one specific substance, each must contain two columns:
+Concentration and Measurement)}
 
 \item{output_path}{\strong{character(1)} \cr Folder to save results (table and plots). If NULL (default), results are not saved.}
 
-\item{conc_col}{\strong{integer(1)} \cr Column number of the concentration values.}
-
-\item{meas_col}{\strong{integer(1)} \cr Column number of the concentration values.}
-
 \item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1"). Will be added to the result files and may be used when plotting multiple calibration curves in one plot.}
 
-\item{suffix}{\strong{character(1)} \cr Suffix for the output files, ideally starting with "\emph{" (default is substance with a "}" in front).}
-
-\item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
-
-\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. Default is ",".}
-
-\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot. Default is ".".}
-
-\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names.}
-
-\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA.}
-
-\item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
-
-\item{min_replicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
+\item{minReplicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
 Concentration levels with too few data points will be removed.}
 
 \item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
@@ -158,19 +130,25 @@ List with the following elements:
 CalibraCurve
 }
 \examples{
-
 ### NOTE: as output_path is not specified here, no files will be saved. Set output_path to a folder
 ### of your choice to save the results.
 
 ### single file:
 data_path <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
-RES <- CalibraCurve(data_path = data_path, conc_col = 6, meas_col = 7)
-#'
+D <- readDataTable(dataPath = data_path, concCol = 6, measCol = 7, fileType = "xlsx")
+RES <- CalibraCurve(D_list = D)
+RES$plot_CC_list
+RES$plot_RF_list
+
 ### multiple files (in a folder) as multiplot:
 data_folder <- system.file("extdata", "xlsx", package = "CalibraCurve")
-RES <- CalibraCurve(data_folder = data_folder, conc_col = 6, meas_col = 7, plot_type = "multiplot")
+D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx", concCol = 6, measCol = 7)
+RES <- CalibraCurve(D_list = D_list, plot_type = "multiplot")
 
-### multiple files (in a folder) as all in one plot:
-data_folder <- system.file("extdata", "xlsx", package = "CalibraCurve")
-RES <- CalibraCurve(data_folder = data_folder, conc_col = 6, meas_col = 7, plot_type = "all_in_one")
+### single rds file (SummarizedExperiment) in an all in one plot:
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", package = "CalibraCurve")
+D_list <- readDataSE(dataPath = file, concColName = "amount_fmol",
+        substColName = "Substance", assayNumber = 1)
+RES <- CalibraCurve(D_list, plot_type = "all_in_one")
+
 }

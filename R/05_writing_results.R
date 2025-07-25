@@ -1,6 +1,6 @@
 #' Assemble result tables
 #'
-#' @param X **data.frame** \cr Original data set, result of \code{\link{readData}}.
+#' @param X **data.frame** \cr Original data set, e.g. result of \code{\link{readDataTable}}.
 #' @param dataCleaned **list of data.frames** \cr Cleaned data, result of \code{\link{cleanData}}.
 #' @param cv_thres **numeric(1)** \cr Threshold for CV per concentration level in percent (default is 20).
 #' @param PLR_res **list** \cr Result object of \code{\link{calculate_PLR}}.
@@ -19,7 +19,7 @@
 #'
 #' @examples
 #' data(D_MFAP4)
-#' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+#' D_MFAP4_cleaned <- cleanData(D_MFAP4, minReplicates = 3)
 #' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
 #'     cv_thres = 10,
 #'     calcContinuousPrelimRanges = TRUE

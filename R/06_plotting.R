@@ -73,14 +73,18 @@ plotCalibraCurve <- function(RES,
 
     ### D_calib: Data frame with data points
     D_calib <- NULL
-    for (i in 1:length(RES)) {
-        tmp <- data.frame(RES[[i]]$result_table_obs,
-            intercept = unname(RES[[i]]$mod$coefficients[1]),
-            coeff = unname(RES[[i]]$mod$coefficients[2]),
-            r2 = summary(RES[[i]]$mod)$r.squared,
-            weight_m = RES[[i]]$weightingMethod
-        )
-        D_calib <- rbind(D_calib, tmp)
+
+
+
+    for (i in seq_along(RES)) {
+      if (is.null(RES)) next
+      tmp <- data.frame(RES[[i]]$result_table_obs,
+                        intercept = unname(RES[[i]]$mod$coefficients[1]),
+                        coeff = unname(RES[[i]]$mod$coefficients[2]),
+                        r2 = summary(RES[[i]]$mod)$r.squared,
+                        weight_m = RES[[i]]$weightingMethod
+      )
+      D_calib <- rbind(D_calib, tmp)
     }
     D_calib$measurement[D_calib$measurement == 0] <- NA # set 0s to NA to avoid log10(0) for the plot
 
@@ -111,15 +115,16 @@ plotCalibraCurve <- function(RES,
 
     ### curve_dat: data frame with data for calibration curves (predictions over a grid)
     curve_dat <- NULL
-    for (i in 1:length(RES)) {
-        substance <- names(RES)[i]
-        D_calib_tmp <- D_calib[D_calib$substance == substance, ]
-        ## generate data for the calibration curve
-        grid <- seq(log10(min(D_calib_tmp$concentration)), log10(max(D_calib_tmp$concentration)), length.out = 1000)
-        pred <- stats::predict(RES[[i]]$mod, newdata = data.frame(Concentration = 10^grid))
-        curve_dat_tmp <- data.frame(substance = substance, concentration = 10^grid, predicted = pred)
-        curve_dat_tmp <- curve_dat_tmp[curve_dat_tmp$predicted > 0, ] # remove negative values in prediction (causes problems in log10-transformation later)
-        curve_dat <- rbind(curve_dat, curve_dat_tmp)
+    for (i in seq_along(RES)) {
+      if (is.null(RES)) next
+      substance <- names(RES)[i]
+      D_calib_tmp <- D_calib[D_calib$substance == substance, ]
+      ## generate data for the calibration curve
+      grid <- seq(log10(min(D_calib_tmp$concentration)), log10(max(D_calib_tmp$concentration)), length.out = 1000)
+      pred <- stats::predict(RES[[i]]$mod, newdata = data.frame(Concentration = 10^grid))
+      curve_dat_tmp <- data.frame(substance = substance, concentration = 10^grid, predicted = pred)
+      curve_dat_tmp <- curve_dat_tmp[curve_dat_tmp$predicted > 0, ] # remove negative values in prediction (causes problems in log10-transformation later)
+      curve_dat <- rbind(curve_dat, curve_dat_tmp)
     }
 
 
@@ -268,8 +273,9 @@ plotResponseFactors <- function(RES,
     checkmate::assertCharacter(colour_within, len = 1)
     checkmate::assertCharacter(colour_outside, len = 1)
 
-
-    concentration <- response_factor <- final_linear_range <- mean_response_factor <- NULL # silence notes when checking the package
+    # silence notes when checking the package
+    concentration <- response_factor <- final_linear_range <- NULL
+    mean_response_factor <- RF_within_thres <-  NULL
 
     range_dat <- RES$result_table_obs
     range_dat <- range_dat[!is.na(range_dat$response_factor), ]
@@ -277,34 +283,19 @@ plotResponseFactors <- function(RES,
     sum_dat <- sum_dat[!is.na(sum_dat$mean_response_factor), ]
     all_rf_mean <- mean(range_dat$response_factor[range_dat$final_linear_range])
 
-
     ### initialize plot
-    pl <- ggplot2::ggplot(
-        range_dat,
-        ggplot2::aes(
-            x = concentration,
-            y = response_factor,
-            color = RF_within_thres,
-            fill = RF_within_thres,
-            alpha = RF_within_thres,
-            group = 1
-        )
-    )
+    pl <- ggplot2::ggplot(range_dat, mapping = ggplot2::aes(x = concentration,
+            y = response_factor, color = RF_within_thres, fill = RF_within_thres,
+            alpha = RF_within_thres, group = 1))
 
     ### log10 transformation of x-axis
     pl <- pl + ggplot2::scale_x_continuous(trans = "log10", labels = scales::comma)
 
     ### add data points + mean response factors per concentration level
-    pl <- pl +
-        ggplot2::geom_point(size = 1.7, shape = 21) +
-        ggplot2::geom_point(
-            data = sum_dat,
-            ggplot2::aes(x = concentration, y = mean_response_factor),
-            color = "black",
-            shape = 21,
-            size = 2.5
-        )
-
+    pl <- pl + ggplot2::geom_point(size = 1.7, shape = 21) +
+        ggplot2::geom_point(data = sum_dat,
+          mapping = ggplot2::aes(x = concentration, y = mean_response_factor),
+          color = "black", shape = 21, size = 2.5)
 
     ### adjust colour of lines (only within_colour for consecutive mean response
     ### factors within the threshold)
@@ -318,51 +309,26 @@ plotResponseFactors <- function(RES,
       }
     }
 
-
-    #
-    # if (any(sum_dat2$RF_within_thres)) {
-    #
-    #
-    #
-    #     ind <- which(sum_dat2$final_linear_range)
-    #     ind_last <- ind[length(ind)]
-    #     if (ind_last != length(sum_dat2$final_linear_range)) {
-    #         sum_dat2$final_linear_range[ind_last] <- FALSE
-    #     }
-    # }
-
     ### add line between mean response factors
-    pl <- pl +
-        ggplot2::geom_line(data = sum_dat2,
-                           ggplot2::aes(x = concentration,
-                                        y = mean_response_factor))
+    pl <- pl + ggplot2::geom_line(data = sum_dat2,
+            mapping = ggplot2::aes(x = concentration, y = mean_response_factor))
 
     ## scaling of alpha and colours
     pl <- pl +
         ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.3)) +
         ggplot2::scale_colour_manual(values = c("TRUE" = colour_within, "FALSE" = colour_outside)) +
         ggplot2::scale_fill_manual(values = c("TRUE" = colour_within, "FALSE" = colour_outside))
-    # ggplot2::facet_wrap(substance ~ ., scales = "free") +
 
     ### add horizontal lines for response factor thresholds
     pl <- pl +
-        ggplot2::geom_hline(
-            yintercept = all_rf_mean * (RfThresU / 100),
-            linetype = "dashed",
-            color = colour_threshold
-        ) +
-        ggplot2::geom_hline(
-            yintercept = all_rf_mean * (RfThresL / 100),
-            linetype = "dashed",
-            color = colour_threshold
-        )
+        ggplot2::geom_hline(yintercept = all_rf_mean * (RfThresU / 100),
+            linetype = "dashed", color = colour_threshold) +
+        ggplot2::geom_hline(yintercept = all_rf_mean * (RfThresL / 100),
+            linetype = "dashed", color = colour_threshold)
 
     ### theme and axis limits
-    pl <- pl +
-        ggplot2::theme_bw() +
-        ggplot2::theme(legend.position = "none", plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm")) +
-        ggplot2::ylab(ylab) +
-        ggplot2::xlab(xlab)
-
+    pl <- pl +ggplot2::theme_bw() + ggplot2::ylab(ylab) + ggplot2::xlab(xlab) +
+        ggplot2::theme(legend.position = "none",
+                       plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm"))
     return(pl)
 }

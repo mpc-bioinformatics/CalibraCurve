@@ -27,7 +27,7 @@ Calculate preliminary linear range (PLR)
 }
 \examples{
 data(D_MFAP4)
-D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+D_MFAP4_cleaned <- cleanData(D_MFAP4, minReplicates = 3)
 calculate_PLR(D_MFAP4_cleaned,
     cv_thres = 10,
     calcContinuousPrelimRanges = TRUE

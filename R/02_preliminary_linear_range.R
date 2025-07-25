@@ -62,7 +62,7 @@ calcContPrelimRanges <- function(index) {
 #'
 #' @examples
 #' data(D_MFAP4)
-#' D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+#' D_MFAP4_cleaned <- cleanData(D_MFAP4, minReplicates = 3)
 #' calculate_PLR(D_MFAP4_cleaned,
 #'     cv_thres = 10,
 #'     calcContinuousPrelimRanges = TRUE
@@ -86,11 +86,13 @@ calculate_PLR <- function(dataCleaned,
 
     ### calculate CV for each concentration level
     concLevelsCV <- sapply(dataCleaned, calcCV)
+
+    #print(concLevelsCV)
     ## which concentration levels have a CV lower than the threshold?
     index <- which(concLevelsCV <= cv_thres)
 
     if (length(index) <= 1) {
-        stop(paste0("No preliminary linear range with CV <= ", cv_thres, " could be calculated. Please check your data or increase the CV threshold."))
+        stop("No preliminary linear range with CV <= ", cv_thres, " could be calculated. Please check your data or increase the CV threshold.")
     }
 
     ### calculate candidates for the PLR (parts where CV < threshold)

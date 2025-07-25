@@ -28,6 +28,8 @@ This is important to ensure that the predictions are reliable and within the lin
 }
 \examples{
 
+TODO: adapt examples
+
 data(RES_MFAP4)
 newdata <- c(5, 0.2, 10)
 predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)

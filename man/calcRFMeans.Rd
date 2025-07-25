@@ -17,7 +17,7 @@ The function returns mean response factor values
 }
 \examples{
 #' data(D_MFAP4)
-D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
+D_MFAP4_cleaned <- cleanData(D_MFAP4, minReplicates = 3)
 RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
     cv_thres = 10,
     calcContinuousPrelimRanges = TRUE
