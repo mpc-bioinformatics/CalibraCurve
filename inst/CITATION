@@ -1,0 +1,26 @@
+pkgVer <- function(pkg) {
+    if (!exists("meta") || is.null(meta)) meta <- packageDescription(pkg)
+    ver <- meta$Version
+    paste0('https://github.com/mpc-bioinformatics/CalibraCurve/', pkg, ' - R package version ', ver)
+}
+
+c(
+    bibentry(bibtype="article",
+        title = "CalibraCurve: A Tool for Calibration of Targeted MS-Based Measurements",
+        author = c(
+            person("Michael", "Kohl"),
+            person("Markus", "Stepath"),
+            person("Thilo", "Bracht"),
+            person("Dominik A", "Megger"),
+            person("Barbara", "Sitek"),
+            person("Katrin", "Marcus"),
+            person("Martin", "Eisenacher")
+        ),
+        year = 2020,
+        journal = "Proteomics",
+        volumne = 20,
+        pages = 1900143,
+        doi = "https://doi.org/10.1002/pmic.201900143",
+        url = "https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/10.1002/pmic.201900143"
+    )
+)
