@@ -7,7 +7,7 @@
 #' @param substance **character(1)** \cr Name of the substance (default is "substance1"). Will be added to the result files and may be used when plotting multiple calibration curves in one plot.
 #' @param minReplicates **integer(1)** \cr Minimal number of replicates/data points per concentration level.
 #'                                          Concentration levels with too few data points will be removed.
-#' @param cv_thres **numeric(1)** \cr Threshold for CV per concentration level in percent (default is 20).
+#' @param cvThres **numeric(1)** \cr Threshold for CV per concentration level in percent (default is 20).
 #' @param calcContinuousPrelimRanges **logical(1)** \cr If TRUE, the longest continuous range is selected (default is TRUE).
 #'                                                      If FALSE, gaps with CVs larger than the threshold may be included.
 #' @param weightingMethod **character(1)** \cr Method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is 1/x^2).
@@ -41,6 +41,7 @@
 #' @param RF_plot_width **numeric(1)** \cr Plot width in cm (default is 10).
 #' @param RF_plot_height **numeric(1)** \cr Plot height in cm (default is 10).
 #' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
+#' @param verbose **logical(1)** \cr If FALSE, no messages will be printed.
 #' @returns List with the following elements:
 #' - \code{RES}: List of CalibraCurve results (one item per substance, output from \code{\link{calc_single_curve}}).
 #' - \code{summary_tab}: Data.frame with summary information about the calibration curves, one row per substance.
@@ -74,7 +75,7 @@ CalibraCurve <- function(D_list,
     output_path = NULL,
     substance = "substance",
     minReplicates = 3,
-    cv_thres = 20,
+    cvThres = 20,
     calcContinuousPrelimRanges = FALSE,
     weightingMethod = "1/x^2",
     centralTendencyMeasure = "mean",
@@ -83,7 +84,6 @@ CalibraCurve <- function(D_list,
     perBiasDistThres = 10,
     RfThresL = 80,
     RfThresU = 120,
-    ### parameters for plotting
     ylab = "Intensity",
     xlab = "Concentration",
     plot_type = "single_plots",
@@ -104,9 +104,11 @@ CalibraCurve <- function(D_list,
     CC_plot_height = 10,
     RF_plot_width = 15,
     RF_plot_height = 10,
-    plot_dpi = 300) {
+    plot_dpi = 300,
+    verbose = TRUE) {
     ### check arguments (only those that are not already checked inside one of the low-level functions)
-    checkmate::assert_choice(device, c("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg", "wmf"))
+    checkmate::assert_choice(device, c("eps", "ps", "tex", "pdf", "jpeg",
+                                       "tiff", "png", "bmp", "svg", "wmf"))
     checkmate::assert_numeric(CC_plot_width, lower = 0, len = 1)
     checkmate::assert_numeric(CC_plot_height, lower = 0, len = 1)
     checkmate::assert_numeric(RF_plot_width, lower = 0, len = 1)
@@ -123,21 +125,21 @@ CalibraCurve <- function(D_list,
     for (i in seq_along(D_list)) {
         D_tmp <- D_list[[i]]
         substance <- names(D_list)[i]
-        print(paste0("Calculating calibration curve for ", substance, " ..."))
+
+        if (verbose) {
+            message("Calculating calibration curve for ", substance, " ...")
+        }
 
         RES_tmp <- try({calc_single_curve(D = D_tmp, substance = substance,
-          minReplicates = minReplicates, cv_thres = cv_thres,
-          calcContinuousPrelimRanges = calcContinuousPrelimRanges,
-          weightingMethod = weightingMethod,
-          centralTendencyMeasure = centralTendencyMeasure,
-          perBiasThres = perBiasThres, considerPerBiasCV = considerPerBiasCV,
-          perBiasDistThres = perBiasDistThres,
-          RfThresL = RfThresL, RfThresU = RfThresU
+            minReplicates = minReplicates, cvThres = cvThres,
+            calcContinuousPrelimRanges = calcContinuousPrelimRanges,
+            weightingMethod = weightingMethod,
+            centralTendencyMeasure = centralTendencyMeasure,
+            perBiasThres = perBiasThres, considerPerBiasCV = considerPerBiasCV,
+            perBiasDistThres = perBiasDistThres,
+            RfThresL = RfThresL, RfThresU = RfThresU
         )}, silent = TRUE)
-        ## TODO: mute error message?
-        ## TODO: following error message when something fails:
-        #Error in summary(RES[[i]]$mod)$r.squared :
-        #  $ operator is invalid for atomic vectors
+
         if (inherits(RES_tmp, "try-error")) {
             warning("Error while calculating calibration curve for ",
                     substance, ": ", RES_tmp)
@@ -165,61 +167,39 @@ CalibraCurve <- function(D_list,
             names(RES_tmp) <- names(RES)[i]
 
             ## generate and ave the calibration curve plot
-            pl_CC <- plotCalibraCurve(
-                RES = RES_tmp,
-                ylab = ylab,
-                xlab = xlab,
+            pl_CC <- plotCalibraCurve(RES = RES_tmp, ylab = ylab, xlab = xlab,
                 plot_type = "multiplot",
                 show_regression_info = show_regression_info,
                 show_linear_range = show_linear_range,
                 show_data_points = show_data_points,
-                point_colour = point_colour,
-                curve_colour = curve_colour,
-                linear_range_colour = linear_range_colour
-            )
+                point_colour = point_colour, curve_colour = curve_colour,
+                linear_range_colour = linear_range_colour)
             pl_CC_list[[i]] <- pl_CC$CC_plot
 
             if (!is.null(output_path)) {
-                ggplot2::ggsave(
-                    filename = paste0(output_path, "/CalibraCurve_", names(RES)[i], ".", device),
-                    plot = pl_CC$CC_plot,
-                    device = device,
-                    width = CC_plot_width,
-                    height = CC_plot_height,
-                    units = "cm",
-                    dpi = plot_dpi
-                )
+                ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve_",
+                                      names(RES)[i], ".", device),
+                    plot = pl_CC$CC_plot, device = device, width = CC_plot_width,
+                    height = CC_plot_height, units = "cm", dpi = plot_dpi)
             }
             annotation_dat <- rbind(annotation_dat, pl_CC$annotation_dat)
         }
     } else { # plot_type == "allinone" or "multiplot"
-        pl_CC <- plotCalibraCurve(
-            RES = RES,
-            ylab = ylab,
-            xlab = xlab,
-            plot_type = plot_type,
-            show_regression_info = show_regression_info,
+        pl_CC <- plotCalibraCurve(RES = RES, ylab = ylab, xlab = xlab,
+            plot_type = plot_type, show_regression_info = show_regression_info,
             show_linear_range = show_linear_range,
             show_data_points = show_data_points,
-            point_colour = point_colour,
-            curve_colour = curve_colour,
+            point_colour = point_colour, curve_colour = curve_colour,
             linear_range_colour = linear_range_colour,
-            multiplot_nrow = multiplot_nrow,
-            multiplot_ncol = multiplot_ncol,
-            multiplot_scales = multiplot_scales
-        )
+            multiplot_nrow = multiplot_nrow, multiplot_ncol = multiplot_ncol,
+            multiplot_scales = multiplot_scales)
         pl_CC_list <- pl_CC$CC_plot
         if (!is.null(output_path)) {
             suppressWarnings({
                 ggplot2::ggsave(
                     filename = paste0(output_path, "/CalibraCurve", ".", device),
-                    plot = pl_CC$CC_plot,
-                    device = device,
-                    width = CC_plot_width,
-                    height = CC_plot_height,
-                    units = "cm",
-                    dpi = plot_dpi
-                )
+                    plot = pl_CC$CC_plot, device = device, width = CC_plot_width,
+                    height = CC_plot_height, units = "cm", dpi = plot_dpi)
             })
         }
         annotation_dat <- pl_CC$annotation_dat
@@ -249,7 +229,8 @@ CalibraCurve <- function(D_list,
             file = paste0(output_path, "/summarytable_calibration_models.xlsx"))
     }
     suppressWarnings({
-        return(list(RES = RES, summary_tab = summary_tab, plot_CC_list = pl_CC_list, plot_RF_list = pl_RF_list))
+        return(list(RES = RES, summary_tab = summary_tab,
+                    plot_CC_list = pl_CC_list, plot_RF_list = pl_RF_list))
     })
 }
 
@@ -267,7 +248,7 @@ CalibraCurve <- function(D_list,
 #' @param minReplicates **integer(1)** \cr Minimal number of replicates per
 #'      concentration level. Concentration levels with too few data points will
 #'      be removed.
-#' @param cv_thres **numeric(1)** \cr Threshold for CV per concentration level
+#' @param cvThres **numeric(1)** \cr Threshold for CV per concentration level
 #'      in percent (default is 20).
 #' @param calcContinuousPrelimRanges **logical(1)** \cr If TRUE, the longest
 #'      continuous range is selected (default is TRUE). If FALSE, gaps with CVs
@@ -306,9 +287,9 @@ CalibraCurve <- function(D_list,
 #' data_path <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx",
 #'         package = "CalibraCurve")
 #' D <- readDataTable(dataPath = data_path, concCol = 6, measCol = 7, fileType = "xlsx")
-#' calc_single_curve(D = D,)
+#' calc_single_curve(D = D)
 calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
-                              cv_thres = 20, calcContinuousPrelimRanges = TRUE,
+                              cvThres = 20, calcContinuousPrelimRanges = TRUE,
                               weightingMethod = "1/x^2",
                               centralTendencyMeasure = "mean",
                               perBiasThres = 30, considerPerBiasCV = TRUE,
@@ -319,7 +300,7 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 
     ## calculate preliminary linear range
     PLR_res <- CalibraCurve::calculate_PLR(dataCleaned = dataCleaned,
-        cv_thres = cv_thres,
+        cvThres = cvThres,
         calcContinuousPrelimRanges = calcContinuousPrelimRanges)
 
     ## calculate final linear range
@@ -335,7 +316,7 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 
     #### generate result tables
     tables <- CalibraCurve::assemble_results(X = D, dataCleaned = dataCleaned,
-        cv_thres = cv_thres, PLR_res = PLR_res, resFacDataV = resFacDataV,
+        cvThres = cvThres, PLR_res = PLR_res, resFacDataV = resFacDataV,
         avgResFacDataV = avgResFacDataV, FLR_res = FLR_res, mod = FLR_res$mod,
         RfThresL = RfThresL, RfThresU = RfThresU, substance = substance)
     RES <- list(mod = FLR_res$mod,
