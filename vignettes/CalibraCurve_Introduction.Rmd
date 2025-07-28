@@ -156,7 +156,10 @@ RES <- CalibraCurve(D)
 
 CalibraCurve outputs several tables and two kinds of plots: the calibration curve and the response factor plots.
 The calibration curves are stort in the list entry `plot_CC_list` of the result object.
-By default, each calibration curve is plotted separately. As an example, we plot here
+By default, each calibration curve is plotted separately. 
+Please be aware that by default the plots are not exported (you have to specifiy an `output_path` for that).
+
+As an example, we plot here
 the calibration curve for the fourth analyte: 
 
 
