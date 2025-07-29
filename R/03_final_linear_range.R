@@ -33,8 +33,8 @@
 #' @examples
 #' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
 #'         package = "CalibraCurve")
-#' D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-#'                    assayNumber = 1)
+#' D_list <- readDataSE(file, concColName = "amount_fmol",
+#'         substColName = "Substance", assayNumber = 1)
 #' data_cleaned <- cleanData(D_list[[1]])
 #' RES_PLR <- calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 #'
@@ -43,8 +43,10 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
                           centralTendencyMeasure = "mean", perBiasThres = 20,
                           considerPerBiasCV = TRUE, perBiasDistThres = 10) {
     ### check input arguments
-    checkmate::assertChoice(weightingMethod, choices = c("1/x", "1/x^2", "None"))
-    checkmate::assertChoice(centralTendencyMeasure, choices = c("mean", "median"))
+    checkmate::assertChoice(weightingMethod,
+                            choices = c("1/x", "1/x^2", "None"))
+    checkmate::assertChoice(centralTendencyMeasure,
+                            choices = c("mean", "median"))
     checkmate::assertNumeric(perBiasThres, lower = 0, len = 1)
     checkmate::assertFlag(considerPerBiasCV)
     checkmate::assertNumeric(perBiasDistThres, lower = 0, len = 1)
@@ -57,44 +59,30 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
             stop("Only one concentration level left in linear range. Increasing
                  perBiasThres may help, but makes results less accurate.")
         }
-
         ## calculate the weights for each concentration:
         if (weightingMethod != "None") {
             allWeights <- unlist(lapply(dataFinal, FUN = .calcWeights,
                                            weightingMethod = weightingMethod))
         } else {
-            allWeights <- NULL # if weightingMethod == "None"
+            allWeights <- NULL
         }
-
-        ## calculate linear model
         mod <- .calcLinearModel(dataFinal, weights = allWeights)
-
-        ## calculate the percent bias for each data point
         perBias <- .calcPerBiasLevels(dataFinal, LMfit = mod)
-
-        ## calculate the average percent bias, standard deviation and CV for
-        ## each concentration level
         perBiasAvgSDCV <- .calcPerBiasAvgSDCV(perBias,
                                              method = centralTendencyMeasure)
-
-        ## check if final linear range is reached (is lowest and highest
-        ## concentration level within the percent bias threshold?).
         checkFLR <- .checkFinalRange(perBiasInfo = perBiasAvgSDCV,
                                     perBiasThres = perBiasThres)
-
         if (checkFLR) {
             finalRangeReached <- TRUE
         } else {
             # Final linear range is not reached yet, so it is decided if the
             # lowest or highest concentration level will be removed
-            removeLow <- .selctConcLevel(perBiasAvgSDCV, perBiasT = perBiasThres,
+            removeLow <- .selctConcLevel(perBiasAvgSDCV,
+                                        perBiasT = perBiasThres,
                                         consPerBiasCV = considerPerBiasCV,
                                         perBiasDistT = perBiasDistThres)
-
-            # setting the list element to NULL removes the concentration level
-            # from the list
             if (removeLow) {
-                dataFinal[[1]] <- NULL
+                dataFinal[[1]] <- NULL # removes the concentration level
             } else {
                 dataFinal[[length(dataFinal)]] <- NULL
             }
@@ -217,12 +205,13 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #' FLR: checks if final linear range has been reached (compare average percent
 #'      bias with threshold)
 #'
-#' @param perBiasInfo **data.frame** Result of \code{\link{.calcPerBiasAvgSDCV}}.
+#' @param perBiasInfo **data.frame** Result of
+#'      \code{\link{.calcPerBiasAvgSDCV}}.
 #' @param perBiasThres **numeric(1)** **numeric(1)** \cr Threshold for average
 #'      percent bias in percent, default is 20.
 #'
-#' @returns  TRUE if both lowest and highest concentration level passed the check
-#'          (and the final linear range is reached), FALSE otherwise
+#' @returns  TRUE if both lowest and highest concentration level passed the
+#'      check (and the final linear range is reached), FALSE otherwise
 .checkFinalRange <- function(perBiasInfo, perBiasThres = 20) {
     bothLevelsPassed <- FALSE
     lowLevelPassed <- FALSE

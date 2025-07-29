@@ -13,7 +13,8 @@
 #'
 #' @returns List with the following elements:
 #' - \code{RFs}: List with response factors for each concentration level.
-#' - \code{meanRFs}: Vector with mean response factors for each concentration level.
+#' - \code{meanRFs}: Vector with mean response factors for each concentration
+#'      level.
 #'
 #'
 #' response factor values for each concentration level.
@@ -22,8 +23,8 @@
 #' @examples
 #' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
 #' package = "CalibraCurve")
-#' D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-#'                     assayNumber = 1)
+#' D_list <- readDataSE(file, concColName = "amount_fmol",
+#'         substColName = "Substance", assayNumber = 1)
 #' data_cleaned <- cleanData(D_list[[1]])
 #' RES_PLR <- calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 #' RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
@@ -49,13 +50,15 @@ calcRF <- function(x, mod) {
 #'
 #'
 #' @details
-#' Formula obtained from:  Green, J. M., A practical guide to analytical method validation.
-#                         Analytical Chemistry 1996, 68, 305A-309A.
+#' Formula obtained from:  Green, J. M., A practical guide to analytical method
+#'      validation. Analytical Chemistry 1996, 68, 305A-309A.
 #'
 #'
-#' @param x *data.frame** \cr Data.frame containing data for a specific concentration level.
+#' @param x *data.frame** \cr Data.frame containing data for a specific
+#'      concentration level.
 #' @param intercept  **numeric(1)** \cr Intercept of the linear model.
-#' @param expConc **numeric(1)** \cr  Expected concentration (known concentration value).
+#' @param expConc **numeric(1)** \cr  Expected concentration (known
+#'      concentration value).
 #'
 #' @returns vector of response factors for this specific concentration level
 .calcResponseFactors <- function(x, intercept, expConc) {

@@ -37,24 +37,16 @@
 #' @examples
 #' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
 #' package = "CalibraCurve")
-#' D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-#'                      assayNumber = 1)
+#' D_list <- readDataSE(file, concColName = "amount_fmol",
+#'     substColName = "Substance", assayNumber = 1)
 #' CC_RES <- calc_single_curve(D_list[[1]], calcContinuousPrelimRanges = FALSE)
 #'
 #' plotCalibraCurve(list(substance = CC_RES))
-plotCalibraCurve <- function(CC_RES,
-    ylab = "Intensity",
-    xlab = "Concentration",
-    show_regression_info = FALSE,
-    show_linear_range = TRUE,
-    show_data_points = TRUE,
-    plot_type = "multiplot",
-    point_colour = "black",
-    curve_colour = "red",
-    linear_range_colour = "black",
-    multiplot_nrow = NULL,
-    multiplot_ncol = NULL,
-    multiplot_scales = "free") {
+plotCalibraCurve <- function(CC_RES, ylab = "Intensity", xlab = "Concentration",
+    show_regression_info = FALSE, show_linear_range = TRUE,
+    show_data_points = TRUE, plot_type = "multiplot", point_colour = "black",
+    curve_colour = "red", linear_range_colour = "black", multiplot_nrow = NULL,
+    multiplot_ncol = NULL, multiplot_scales = "free") {
     checkmate::assertCharacter(ylab, len = 1)
     checkmate::assertCharacter(xlab, len = 1)
     checkmate::assertFlag(show_regression_info)
@@ -63,67 +55,56 @@ plotCalibraCurve <- function(CC_RES,
     checkmate::assertCharacter(point_colour, len = 1)
     checkmate::assertCharacter(curve_colour, len = 1)
     checkmate::assertCharacter(linear_range_colour, len = 1)
-    # silence notes when checking the package
     concentration <- measurement <- final_linear_range <- predicted <- NULL
-    LLOQ <- ULOQ <- eq <- substance <- NULL
+    LLOQ <- ULOQ <- eq <- substance <- NULL # silence notes when checking
 
     D_calib <- .prepareCalibData(CC_RES)
     annotation_dat <- .prepareAnnotationData(D_calib)
     curve_dat <- .prepareCurveData(CC_RES, D_calib)
 
-    ### initialize plot
-    pl <- ggplot2::ggplot(D_calib, ggplot2::aes(x = concentration, y = measurement, alpha = final_linear_range))
-
-    ### log10-transformation of axis
-    pl <- pl + ggplot2::scale_x_continuous(trans = "log10", labels = scales::label_comma(drop0trailing = TRUE)) +
+    pl <- ggplot2::ggplot(D_calib, ggplot2::aes(x = concentration,
+                              y = measurement, alpha = final_linear_range))
+    pl <- pl + ggplot2::scale_x_continuous(trans = "log10",
+                        labels = scales::label_comma(drop0trailing = TRUE)) +
         ggplot2::scale_y_continuous(trans = "log10")
 
-
-    ##################################################################################################
-    ###### all in one plot
     if (plot_type == "all_in_one") {
-        ### add data points
         if (show_data_points) {
             pl <- pl +
-                ggplot2::geom_point(size = 1.7, ggplot2::aes(group = substance, colour = substance), show.legend = c(alpha = TRUE, colour = FALSE)) +
-                ggplot2::scale_alpha_manual(values = c("Yes" = 1, "No" = 0.1), name = "Linear range", drop = FALSE)
+                ggplot2::geom_point(size = 1.7,
+                    ggplot2::aes(group = substance, colour = substance),
+                          show.legend = c(alpha = TRUE, colour = FALSE)) +
+                ggplot2::scale_alpha_manual(values = c("Yes" = 1, "No" = 0.1),
+                                            name = "Linear range", drop = FALSE)
         }
-
-        ### add calibration curve
         pl <- pl +
             ggplot2::geom_line(
                 data = curve_dat,
-                ggplot2::aes(x = concentration, y = predicted, color = substance, group = substance),
+                ggplot2::aes(x = concentration, y = predicted,
+                             color = substance, group = substance),
                 inherit.aes = FALSE,
                 show.legend = c(colour = TRUE, alpha = FALSE)
             )
     }
 
-
-    ##################################################################################################
-    ###### multiplot (with facets)
     if (plot_type == "multiplot") {
-        ### add data points
         if (show_data_points) {
             pl <- pl +
-                ggplot2::geom_point(size = 1.7, color = point_colour, show.legend = c(alpha = TRUE, colour = FALSE)) +
-                ggplot2::scale_alpha_manual(values = c("Yes" = 1, "No" = 0.1), name = "Linear range", drop = FALSE) +
-                ggplot2::facet_wrap(substance ~ ., scales = multiplot_scales, nrow = multiplot_nrow, ncol = multiplot_ncol)
+                ggplot2::geom_point(size = 1.7, color = point_colour,
+                              show.legend = c(alpha = TRUE, colour = FALSE)) +
+                ggplot2::scale_alpha_manual(values = c("Yes" = 1, "No" = 0.1),
+                                          name = "Linear range", drop = FALSE) +
+                ggplot2::facet_wrap(substance ~ ., scales = multiplot_scales,
+                                  nrow = multiplot_nrow, ncol = multiplot_ncol)
         }
-
-        ### add calibration curve
-        pl <- pl +
-            ggplot2::geom_line(color = curve_colour, data = curve_dat,
+        pl <- pl + ggplot2::geom_line(color = curve_colour, data = curve_dat,
                 ggplot2::aes(x = concentration, y = predicted),
                 inherit.aes = FALSE, show.legend = FALSE)
-
         if (show_linear_range) {
                 pl <- pl + ggplot2::geom_rect(data = annotation_dat,
                     ggplot2::aes(xmin = LLOQ, xmax = ULOQ, ymin = 0, ymax = Inf),
                     alpha = 0.1, inherit.aes = FALSE, fill = linear_range_colour)
         }
-
-
         if (show_regression_info) {
                 pl <- pl + ggplot2::geom_text(data = annotation_dat,
                     mapping = ggplot2::aes(y = Inf, x = 0, label = eq),
@@ -132,11 +113,10 @@ plotCalibraCurve <- function(CC_RES,
         }
     }
 
-
-    ## theme, guides and labels
     pl <- pl +
         ggplot2::guides(
-            alpha = ggplot2::guide_legend(title = "Linear range", reverse = TRUE, order = 2),
+            alpha = ggplot2::guide_legend(title = "Linear range",
+                                          reverse = TRUE, order = 2),
             colour = ggplot2::guide_legend(title = "Substance", order = 1)
         ) +
         ggplot2::theme_bw() + ggplot2::ylab(ylab) + ggplot2::xlab(xlab) +
@@ -165,8 +145,9 @@ plotCalibraCurve <- function(CC_RES,
     return(tmp)
   }
   D_calib <- do.call(rbind, lapply(CC_RES, f))
-  D_calib$measurement[D_calib$measurement == 0] <- NA # set 0s to NA to avoid log10(0) for the plot
-  D_calib$final_linear_range <- factor(D_calib$final_linear_range, levels = c(FALSE, TRUE), labels = c("No", "Yes")) # convert to logical for ggplot2 aesthetics
+  D_calib$measurement[D_calib$measurement == 0] <- NA # avoid log10(0)
+  D_calib$final_linear_range <- factor(D_calib$final_linear_range,
+                          levels = c(FALSE, TRUE), labels = c("No", "Yes"))
   return(D_calib)
 }
 
@@ -178,18 +159,18 @@ plotCalibraCurve <- function(CC_RES,
     intercept <- X$intercept[1]
     coeff <- X$coeff[1]
     r2 <- X$r2[1]
-    eq <- paste0("y = ", format(intercept, scientific = TRUE, digits = 2), " + ",
-                 format(coeff, scientific = TRUE, digits = 2), " * x",
+    eq <- paste0("y = ", format(intercept, scientific = TRUE, digits = 2),
+                 " + ", format(coeff, scientific = TRUE, digits = 2), " * x",
                  " (R2 = ", round(r2, 3), ")")
 
 
     tmp <- data.frame(substance = X$substance[1],
-                      intercept = intercept,
-                      coeff = coeff,
-                      r2 = r2,
-                      LLOQ = min(X$concentration[X$final_linear_range == "Yes"]),
-                      ULOQ = max(X$concentration[X$final_linear_range == "Yes"]),
-                      eq = eq)
+                  intercept = intercept,
+                  coeff = coeff,
+                  r2 = r2,
+                  LLOQ = min(X$concentration[X$final_linear_range == "Yes"]),
+                  ULOQ = max(X$concentration[X$final_linear_range == "Yes"]),
+                  eq = eq)
     return(tmp)
   }
 
@@ -207,16 +188,17 @@ plotCalibraCurve <- function(CC_RES,
 
 
   f <- function(X, Y, Z) { #X = CC_RES, Y = D_calib, Z = substances
-    grid <- seq(log10(min(Y$concentration)), log10(max(Y$concentration)), length.out = 1000)
+    grid <- seq(log10(min(Y$concentration)), log10(max(Y$concentration)),
+                length.out = 1000)
     pred <- stats::predict(X$mod, newdata = data.frame(Concentration = 10^grid))
-    curve_dat_tmp <- data.frame(substance = Z, concentration = 10^grid, predicted = pred)
-    curve_dat_tmp <- curve_dat_tmp[curve_dat_tmp$predicted > 0, ] # remove negative values in prediction (causes problems in log10-transformation later)
-    #curve_dat <- rbind(curve_dat, curve_dat_tmp)
+    curve_dat_tmp <- data.frame(substance = Z, concentration = 10^grid,
+                                predicted = pred)
+    # remove negative values in prediction (causes problems in log10-trans)
+    curve_dat_tmp <- curve_dat_tmp[curve_dat_tmp$predicted > 0, ]
   }
 
-
-
-  curve_dat <- do.call(rbind, mapply(f, CC_RES, D_calib_split, substances, SIMPLIFY = FALSE))
+  curve_dat <- do.call(rbind, mapply(f, CC_RES, D_calib_split, substances,
+                                     SIMPLIFY = FALSE))
   return(curve_dat)
 }
 
@@ -226,13 +208,18 @@ plotCalibraCurve <- function(CC_RES,
 #' Plot response factors
 #'
 #' @param RES **list** \cr Results of \code{\link{calc_single_curve}}.
-#' @param RfThresL **numeric(1)** \cr Lower threshold for response factor in percent (default is 80).
-#' @param RfThresU **numeric(1)** \cr Upper threshold for response factor in percent (default is 120).
+#' @param RfThresL **numeric(1)** \cr Lower threshold for response factor in
+#'    percent (default is 80).
+#' @param RfThresU **numeric(1)** \cr Upper threshold for response factor in
+#'    percent (default is 120).
 #' @param ylab **character(1)** \cr y-axis label.
 #' @param xlab **character(1)** \cr x-axis label.
-#' @param colour_threshold **character(1)** \cr Colour for horizontal threshold lines, default is "orange".
-#' @param colour_within **character(1)** \cr Colour for points and lines within the threshold, default is "#00BFC4" (default ggplot colour).
-#' @param colour_outside **character(1)** \cr Colour for horizontal outside of the threshold, default is "#F8766D" (default ggplot colour).
+#' @param colour_threshold **character(1)** \cr Colour for horizontal threshold
+#'    lines, default is "orange".
+#' @param colour_within **character(1)** \cr Colour for points and lines within
+#'    the threshold, default is "#00BFC4" (default ggplot colour).
+#' @param colour_outside **character(1)** \cr Colour for horizontal outside of
+#'    the threshold, default is "#F8766D" (default ggplot colour).
 #'
 #' @returns
 #' A ggplot2 object containing the response factor plot.
@@ -241,8 +228,8 @@ plotCalibraCurve <- function(CC_RES,
 #' @examples
 #' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
 #' package = "CalibraCurve")
-#' D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-#'                      assayNumber = 1)
+#' D_list <- readDataSE(file, concColName = "amount_fmol",
+#'     substColName = "Substance", assayNumber = 1)
 #' CC_RES <- calc_single_curve(D_list[[1]], calcContinuousPrelimRanges = FALSE)
 #'
 #' plotResponseFactors(RES = CC_RES)
@@ -270,11 +257,12 @@ plotResponseFactors <- function(RES, RfThresL = 80, RfThresU = 120,
 
     ### initialize plot
     pl <- ggplot2::ggplot(range_dat, mapping = ggplot2::aes(x = concentration,
-            y = response_factor, color = RF_within_thres, fill = RF_within_thres,
-            alpha = RF_within_thres, group = 1))
+            y = response_factor, color = RF_within_thres,
+            fill = RF_within_thres, alpha = RF_within_thres, group = 1))
 
     ### log10 transformation of x-axis
-    pl <- pl + ggplot2::scale_x_continuous(trans = "log10", labels = scales::comma)
+    pl <- pl + ggplot2::scale_x_continuous(trans = "log10",
+                      labels = scales::comma)
 
     ### add data points + mean response factors per concentration level
     pl <- pl + ggplot2::geom_point(size = 1.7, shape = 21) +
@@ -285,9 +273,10 @@ plotResponseFactors <- function(RES, RfThresL = 80, RfThresU = 120,
     ### adjust colour of lines (only within_colour for consecutive mean response
     ### factors within the threshold)
     sum_dat2 <- sum_dat
-    for(i in 1:(nrow(sum_dat)-1)) {
+    for (i in seq_len(nrow(sum_dat) - 1)) {
       ### if the mean RF is within the threshold and the next one is too:
-      if (sum_dat$RF_within_thres[i] == TRUE & sum_dat$RF_within_thres[i+1] == TRUE) {
+      if (sum_dat$RF_within_thres[i] == TRUE &
+          sum_dat$RF_within_thres[i + 1] == TRUE) {
         sum_dat2$RF_within_thres[i] <- TRUE
       } else {
         sum_dat2$RF_within_thres[i] <- FALSE
@@ -301,8 +290,10 @@ plotResponseFactors <- function(RES, RfThresL = 80, RfThresU = 120,
     ## scaling of alpha and colours
     pl <- pl +
         ggplot2::scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.3)) +
-        ggplot2::scale_colour_manual(values = c("TRUE" = colour_within, "FALSE" = colour_outside)) +
-        ggplot2::scale_fill_manual(values = c("TRUE" = colour_within, "FALSE" = colour_outside))
+        ggplot2::scale_colour_manual(values = c("TRUE" = colour_within,
+                                                "FALSE" = colour_outside)) +
+        ggplot2::scale_fill_manual(values = c("TRUE" = colour_within,
+                                              "FALSE" = colour_outside))
 
     ### add horizontal lines for response factor thresholds
     pl <- pl +

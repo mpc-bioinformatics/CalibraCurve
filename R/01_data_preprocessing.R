@@ -50,7 +50,6 @@ readDataTable <- function(dataPath, fileType, concCol, measCol, sep = ",",
         rawData <- openxlsx::read.xlsx(dataPath, colNames = header,
                                        sheet = sheet, na.strings = naStrings)
     }
-
     ### check if column numbers are valid
     if (measCol > ncol(rawData)) {
         stop("Number of measurement column cannot be larger than number of
@@ -60,7 +59,6 @@ readDataTable <- function(dataPath, fileType, concCol, measCol, sep = ",",
         stop("Number of concentration column cannot be larger than number of
              columns in data set.")
     }
-
     ### extract relevant columns:
     rawData <- data.frame("Concentration" = rawData[, concCol],
                           "Measurement" = rawData[, measCol])
@@ -70,17 +68,16 @@ readDataTable <- function(dataPath, fileType, concCol, measCol, sep = ",",
         stop("Concentration and measurement columns must be numeric.
              Issue may come from non-fitting decimal separator or na.strings.")
     }
-
     ### sort by concentration level (from lowest to highest)
     rawData <- rawData[order(rawData$Concentration), ]
-
     return(rawData)
 }
 
 
 #'Read folder of files in different table input formats (xlsx, csv or txt).
 #'
-#' @param dataFolder **character(1)** \cr Folder containing either xlsx, csv or txt files
+#' @param dataFolder **character(1)** \cr Folder containing either xlsx, csv or
+#'    txt files
 #' @param fileType **character(1)** \cr Type of file: "csv", "txt" or "xlsx".
 #' @param concCol **integer(1)** \cr Column number of the concentration values.
 #' @param measCol **integer** \cr Column number of the concentration values.
@@ -109,8 +106,8 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
   ### filter files for correct filetype
   fileTable <- fileTable[fileTable$fileExt == fileType, ]
 
-  rawDataList <- lapply(fileTable$fullPath, FUN = readDataTable, fileType = fileType,
-         concCol = concCol, measCol = measCol, ...)
+  rawDataList <- lapply(fileTable$fullPath, FUN = readDataTable,
+                fileType = fileType, concCol = concCol, measCol = measCol, ...)
 
   names(rawDataList) <- fileTable$substanceName
   return(rawDataList)
@@ -143,8 +140,9 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 #' the substance name (must be a unique value in each row)
 #' @param assayNumber **integer(1)** \cr Number of assay to be extracted
 #'    from the SummarizedExperiment object
-#' @param rowNumbers **integer** \cr Row numbers to extract from the SummarizedExperiment
-#'    object. Default is NULL, which means that all rows in the object will be used.
+#' @param rowNumbers **integer** \cr Row numbers to extract from the
+#'    SummarizedExperiment object. Default is NULL, which means that all rows
+#'    in the object will be used.
 #'
 #' @returns List of data.frame, each with two numeric columns:
 #'    Concentration and Measurement
@@ -153,8 +151,8 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 #' @examples
 #' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
 #'     package = "CalibraCurve")
-#' D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-#'     assayNumber = 1)
+#' D_list <- readDataSE(file, concColName = "amount_fmol",
+#'     substColName = "Substance", assayNumber = 1)
 readDataSE <- function(dataPath, concColName, substColName, assayNumber = 1,
                        rowNumbers = NULL) {
   rawDataSE <- readRDS(dataPath)
@@ -170,7 +168,8 @@ readDataSE <- function(dataPath, concColName, substColName, assayNumber = 1,
   rawData <- tidyr::pivot_longer(Data, cols = !tidyr::last_col(),
                                  names_to = "Concentration",
                                  values_to = "Measurement")
-  rawData$Concentration <- concentrations[match(rawData$Concentration, colNames)]
+  rawData$Concentration <- concentrations[match(rawData$Concentration,
+                                                colNames)]
   rawData <- as.data.frame(rawData)
 
   rawData <- rawData[order(rawData$Concentration), ]
@@ -232,8 +231,8 @@ cleanData <- function(rawData, minReplicates = 3) {
            " replicates found. Please check your data or lower minReplicates.")
     }
 
-    concLevelsCleaned <- vapply(dataCleaned, FUN = function(x) x$Concentration[1],
-                                numeric(1))
+    concLevelsCleaned <- vapply(dataCleaned,
+                            FUN = function(x) x$Concentration[1], numeric(1))
     names(dataCleaned) <- concLevelsCleaned
 
     return(dataCleaned)
