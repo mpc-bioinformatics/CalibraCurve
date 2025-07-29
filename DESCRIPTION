@@ -8,8 +8,12 @@ Authors@R: c(
     person("Michael", "Kohl", , , role = c("aut")),
     person("Markus", "Stepath", , , role = c("aut")),
     person("Martin", "Eisenacher", , "martin.eisenacher@rub.de", role = c("aut", "fnd")))
-Description: Calibration curves for targeted proteomics, lipidomics and metabolomics data.
-License: BSD_3_clause + file LICENSE
+Description: CalibraCurve is a computational tool designed to generate calibration 
+    curves for targeted mass spectrometry-based quantitative data. It is applicable 
+    to various omics disciplines, including proteomics, lipidomics, and metabolomics. 
+    The package also offers functionalities for data and calibration curve visualization
+    and concentration prediction from new datasets based on the established curves.
+License: BSD 3-clause License + file LICENSE 
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
@@ -31,10 +35,10 @@ Suggests:
     sessioninfo,
     testthat,
     vdiffr
+biocViews: Proteomics, Lipidomics, Metabolomics, Regression, MassSpectrometry, Visualization
 URL: https://github.com/mpc-bioinformatics/CalibraCurve
 BugReports: https://github.com/mpc-bioinformatics/CalibraCurve/issues
 Depends: 
-    R (>= 3.5)
-LazyData: true
+    R (>= 4.5.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr

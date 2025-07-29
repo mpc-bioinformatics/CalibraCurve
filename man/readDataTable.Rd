@@ -51,13 +51,8 @@ orders the data by increasing concentration.
 }
 \examples{
 ### xlsx file:
-file <- system.file("extdata", "xlsx/MFAP4_WTVFQK_y4.xlsx",
+file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
   package = "CalibraCurve")
-D <- readDataTable(file, fileType = "xlsx", concCol = 6, measCol = 7)
+D <- readDataTable(file, fileType = "xlsx", concCol = 16, measCol = 12)
 
-### csv file:
-file2 <- system.file("extdata", "csv/ALB_LVNEVTEFAK_y8.csv",
-  package = "CalibraCurve")
-D <- readDataTable(file2, fileType = "csv", concCol = 6, measCol = 7,
-  dec = ".", sep = ",")
 }

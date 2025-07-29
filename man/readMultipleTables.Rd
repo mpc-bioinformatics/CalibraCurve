@@ -25,5 +25,7 @@ Concentration and Measurement
 Read folder of files in different table input formats (xlsx, csv or txt).
 }
 \examples{
- # TODO
+data_folder <- system.file("extdata", "MSQC1_xlsx", package = "CalibraCurve")
+D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx",
+    concCol = 16, measCol = 12)
 }

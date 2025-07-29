@@ -28,9 +28,9 @@ plotResponseFactors(
 
 \item{colour_threshold}{\strong{character(1)} \cr Colour for horizontal threshold lines, default is "orange".}
 
-\item{colour_within}{\strong{character(1)} \cr Colour for points and lines within the final linear range, default is "#00BFC4" (default ggplot colour).}
+\item{colour_within}{\strong{character(1)} \cr Colour for points and lines within the threshold, default is "#00BFC4" (default ggplot colour).}
 
-\item{colour_outside}{\strong{character(1)} \cr Colour for horizontal outside of the final linear range, default is "#F8766D" (default ggplot colour).}
+\item{colour_outside}{\strong{character(1)} \cr Colour for horizontal outside of the threshold, default is "#F8766D" (default ggplot colour).}
 }
 \value{
 A ggplot2 object containing the response factor plot.
@@ -39,7 +39,11 @@ A ggplot2 object containing the response factor plot.
 Plot response factors
 }
 \examples{
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+package = "CalibraCurve")
+D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
+                     assayNumber = 1)
+CC_RES <- calc_single_curve(D_list[[1]], calcContinuousPrelimRanges = FALSE)
 
-data(RES_ALB)
-plotResponseFactors(RES_ALB)
+plotResponseFactors(RES = CC_RES)
 }

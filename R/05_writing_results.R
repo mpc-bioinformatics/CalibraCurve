@@ -1,70 +1,71 @@
 #' Assemble result tables
 #'
-#' @param X **data.frame** \cr Original data set, e.g. result of \code{\link{readDataTable}}.
-#' @param dataCleaned **list of data.frames** \cr Cleaned data, result of \code{\link{cleanData}}.
-#' @param cv_thres **numeric(1)** \cr Threshold for CV per concentration level in percent (default is 20).
+#' @param X **data.frame** \cr Original data set, e.g. result of
+#'      \code{\link{readDataTable}}.
+#' @param dataCleaned **list of data.frames** \cr Cleaned data, result of
+#'      \code{\link{cleanData}}.
 #' @param PLR_res **list** \cr Result object of \code{\link{calculate_PLR}}.
-#' @param resFacDataV  **list** \cr Result of \code{\link{calcRFLevels}}. List of response factor values for each
-#' @param avgResFacDataV **numeric** \cr Result of \code{\link{calcRFMeans}}. Vector of mean response factor values for the different concentration levels.
+#' @param resFacDataV  **list** \cr  List of response factor values for each
+#'      concentration level.
+#' @param avgResFacDataV **numeric** \cr Vector of mean response factor values
+#'      for the different concentration levels.
 #' @param FLR_res **list** Result object of \code{\link{calculate_FLR}}.
-#' @param mod **lm object** \cr Final linear model fit (object "mod" from results of \code{\link{calculate_FLR}}).
-#' @param RfThresL **numeric(1)** \cr Lower threshold for response factor in percent (default is 80).
-#' @param RfThresU **numeric(1)** \cr Upper threshold for response factor in percent (default is 120).
-#' @param substance **character(1)** \cr Name of the substance (default is "substance1").
+#' @param mod **lm object** \cr Final linear model fit (object "mod" from
+#'      results of \code{\link{calculate_FLR}}).
+#' @param cvThres **numeric(1)** \cr Threshold for CV per concentration level
+#'      in percent (default is 20).
+#' @param RfThresL **numeric(1)** \cr Lower threshold for response factor in
+#'      percent (default is 80).
+#' @param RfThresU **numeric(1)** \cr Upper threshold for response factor in
+#'      percent (default is 120).
+#' @param substance **character(1)** \cr Name of the substance (default is
+#'      "substance1").
 #'
 #' @returns List with the following elements:
-#' - \code{result_table_conc_levels}: Result table with one line for each concentration level.
-#' - \code{result_table_obs}: Result table with one line per observation (e.g. individual response factors for each data point).
+#' - \code{result_table_conc_levels}: Result table with one line for each
+#'      concentration level.
+#' - \code{result_table_obs}: Result table with one line per observation (e.g.
+#'      individual response factors for each data point).
 #' @export
 #'
 #' @examples
-#' data(D_MFAP4)
-#' D_MFAP4_cleaned <- cleanData(D_MFAP4, minReplicates = 3)
-#' RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
-#'     cv_thres = 10,
-#'     calcContinuousPrelimRanges = TRUE
-#' )
+#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+#' package = "CalibraCurve")
+#' D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
+#'                      assayNumber = 1)
+#' data_cleaned <- cleanData(D_list[[1]])
+#'
+#' RES_PLR <- calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 #' RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
-#'
-#' resFacDataV <- calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
-#'
-#' avgResFacDataV <- calcRFMeans(resFacDataV)
+#' RFs <- calcRF(data_cleaned, mod = RES_FLR$mod)
 #'
 #' assemble_results(
-#'     X = D_MFAP4,
-#'     dataCleaned = D_MFAP4_cleaned,
+#'     X = D_list[[1]],
+#'     dataCleaned = data_cleaned,
 #'     PLR_res = RES_PLR,
-#'     resFacDataV = resFacDataV,
-#'     avgResFacDataV = avgResFacDataV,
+#'     resFacDataV = RFs$RFs,
+#'     avgResFacDataV = RFs$meanRFs,
 #'     FLR_res = RES_FLR,
 #'     mod = RES_FLR$mod
 #' )
-#'
-assemble_results <- function(X,
-    dataCleaned,
-    cv_thres = 20,
-    PLR_res,
-    resFacDataV,
-    avgResFacDataV,
-    FLR_res,
-    mod,
-    RfThresL = 80,
-    RfThresU = 120,
+assemble_results <- function(X, dataCleaned,  PLR_res, resFacDataV,
+    avgResFacDataV, FLR_res, mod, cvThres = 20, RfThresL = 80, RfThresU = 120,
     substance = "substance1") {
-
     checkmate::assertNumeric(RfThresL, lower = 0, upper = 100, finite = TRUE)
-    checkmate::assertNumeric(RfThresU, lower = 100)
+    checkmate::assertNumeric(RfThresU, lower = 100, finite = TRUE)
     checkmate::assertCharacter(substance, len = 1)
-
 
     concentrations <- as.numeric(sort(unique(X$Concentration)))
     concentrations_after_cleaning <- as.numeric(names(dataCleaned))
 
     # mean measurement for each concentration value
-    mean_measurement <- sapply(split(X, X$Concentration), function(x) mean(x$Measurement))
+    mean_measurement <- stats::aggregate(X$Measurement,
+                            by = list(Conc = X$Concentration),
+                            FUN = mean)$x
 
     # predict measurements for each concentration using the final linear model
-    estimated_measurement <- stats::predict(object = mod, newdata = data.frame(Concentration = concentrations))
+    estimated_measurement <- stats::predict(object = mod,
+                        newdata = data.frame(Concentration = concentrations))
 
     ### thresholds for response factor
     RfThresUFactor <- RfThresU / 100
@@ -107,9 +108,8 @@ assemble_results <- function(X,
         }
     }
 
-    result_table_conc_levels$CV_within_thres <- result_table_conc_levels$CV <= cv_thres
+    result_table_conc_levels$CV_within_thres <- result_table_conc_levels$CV <= cvThres
     result_table_conc_levels$RF_within_thres <- result_table_conc_levels$mean_response_factor <= hLineUpper & result_table_conc_levels$mean_response_factor >= hLineLow
-
 
     # fill table with percent bias information (only within final linear range) and
     # if the concentration level is within the final linear range
@@ -124,9 +124,6 @@ assemble_results <- function(X,
             result_table_conc_levels$final_linear_range[i] <- FALSE
         }
     }
-
-
-
 
     # initialize second result table (one line per observation)
     result_table_obs <- data.frame(
@@ -144,10 +141,8 @@ assemble_results <- function(X,
 
     ## result only for concentrations that were not removed during cleaning:
 
-
     result_table_obs$response_factor[!result_table_obs$removed_while_cleaning] <- unlist(resFacDataV)
     result_table_obs$RF_within_thres <- result_table_obs$response_factor <= hLineUpper & result_table_obs$response_factor >= hLineLow
-
 
     # fill table with percent bias information (only within final linear range)
     perBias <- FLR_res$perBias
@@ -158,8 +153,6 @@ assemble_results <- function(X,
             result_table_obs$percentage_bias[ind2] <- perBias[[ind1]]
         }
     }
-
-
 
     return(list(
         result_table_conc_levels = result_table_conc_levels,
@@ -175,9 +168,11 @@ assemble_results <- function(X,
 #'
 #' @param CC_res **list** Result object of \code{\link{CalibraCurve}}.
 #' @param output_path **character(1)** \cr Path to the output directory.
-#' @param suffix **character(1)** \cr Suffix for the output files, ideally starting with "_" (default is "").
+#' @param suffix **character(1)** \cr Suffix for the output files, ideally
+#'      starting with "_" (default is "").
 #'
-#' @returns Returns nothing, but the function saves the results to the specified output path.
+#' @returns Returns nothing, but the function saves the results to the specified
+#'      output path.
 #' @export
 saveCCResult <- function(CC_res, output_path, suffix = "") {
     # save result tables
@@ -189,7 +184,6 @@ saveCCResult <- function(CC_res, output_path, suffix = "") {
         file = paste0(output_path, "/result_table_obs", suffix, ".xlsx"),
         rowNames = FALSE, keepNA = TRUE
     )
-
     # save whole result object
     saveRDS(CC_res, file = paste0(output_path, "/CC_res", suffix, ".rds"))
     return(invisible(NULL))

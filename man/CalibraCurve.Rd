@@ -9,7 +9,7 @@ CalibraCurve(
   output_path = NULL,
   substance = "substance",
   minReplicates = 3,
-  cv_thres = 20,
+  cvThres = 20,
   calcContinuousPrelimRanges = FALSE,
   weightingMethod = "1/x^2",
   centralTendencyMeasure = "mean",
@@ -38,7 +38,8 @@ CalibraCurve(
   CC_plot_height = 10,
   RF_plot_width = 15,
   RF_plot_height = 10,
-  plot_dpi = 300
+  plot_dpi = 300,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -53,7 +54,7 @@ Concentration and Measurement)}
 \item{minReplicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
 Concentration levels with too few data points will be removed.}
 
-\item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
+\item{cvThres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
 
 \item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest continuous range is selected (default is TRUE).
 If FALSE, gaps with CVs larger than the threshold may be included.}
@@ -116,6 +117,8 @@ or "all_in_one" (generate a single plot with all substances).}
 \item{RF_plot_height}{\strong{numeric(1)} \cr Plot height in cm (default is 10).}
 
 \item{plot_dpi}{\strong{numeric(1)} \cr Plot resolution in dpi (default is 300).}
+
+\item{verbose}{\strong{logical(1)} \cr If FALSE, no messages will be printed.}
 }
 \value{
 List with the following elements:
@@ -133,22 +136,28 @@ CalibraCurve
 ### NOTE: as output_path is not specified here, no files will be saved. Set output_path to a folder
 ### of your choice to save the results.
 
-### single file:
-data_path <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
-D <- readDataTable(dataPath = data_path, concCol = 6, measCol = 7, fileType = "xlsx")
+### single xlsx file:
+data_path <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+    package = "CalibraCurve")
+D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
+    fileType = "xlsx")
 RES <- CalibraCurve(D_list = D)
 RES$plot_CC_list
 RES$plot_RF_list
 
-### multiple files (in a folder) as multiplot:
-data_folder <- system.file("extdata", "xlsx", package = "CalibraCurve")
-D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx", concCol = 6, measCol = 7)
+### multiple xlsx files (in a folder) as multiplot:
+data_folder <- system.file("extdata", "MSQC1_xlsx", package = "CalibraCurve")
+D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx",
+    concCol = 16, measCol = 12)
 RES <- CalibraCurve(D_list = D_list, plot_type = "multiplot")
+RES$plot_CC_list
 
-### single rds file (SummarizedExperiment) in an all in one plot:
-file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", package = "CalibraCurve")
+### single rds file (SummarizedExperiment) as an all-in-one plot:
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+    package = "CalibraCurve")
 D_list <- readDataSE(dataPath = file, concColName = "amount_fmol",
         substColName = "Substance", assayNumber = 1)
 RES <- CalibraCurve(D_list, plot_type = "all_in_one")
+RES$plot_CC_list
 
 }

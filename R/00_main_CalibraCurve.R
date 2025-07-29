@@ -53,23 +53,29 @@
 #' ### NOTE: as output_path is not specified here, no files will be saved. Set output_path to a folder
 #' ### of your choice to save the results.
 #'
-#' ### single file:
-#' data_path <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
-#' D <- readDataTable(dataPath = data_path, concCol = 6, measCol = 7, fileType = "xlsx")
+#' ### single xlsx file:
+#' data_path <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+#'     package = "CalibraCurve")
+#' D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
+#'     fileType = "xlsx")
 #' RES <- CalibraCurve(D_list = D)
 #' RES$plot_CC_list
 #' RES$plot_RF_list
 #'
-#' ### multiple files (in a folder) as multiplot:
-#' data_folder <- system.file("extdata", "xlsx", package = "CalibraCurve")
-#' D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx", concCol = 6, measCol = 7)
+#' ### multiple xlsx files (in a folder) as multiplot:
+#' data_folder <- system.file("extdata", "MSQC1_xlsx", package = "CalibraCurve")
+#' D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx",
+#'     concCol = 16, measCol = 12)
 #' RES <- CalibraCurve(D_list = D_list, plot_type = "multiplot")
+#' RES$plot_CC_list
 #'
-#' ### single rds file (SummarizedExperiment) in an all in one plot:
-#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", package = "CalibraCurve")
+#' ### single rds file (SummarizedExperiment) as an all-in-one plot:
+#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+#'     package = "CalibraCurve")
 #' D_list <- readDataSE(dataPath = file, concColName = "amount_fmol",
 #'         substColName = "Substance", assayNumber = 1)
 #' RES <- CalibraCurve(D_list, plot_type = "all_in_one")
+#' RES$plot_CC_list
 #'
 CalibraCurve <- function(D_list,
     output_path = NULL,
@@ -163,11 +169,13 @@ CalibraCurve <- function(D_list,
 
         for (i in seq_along(RES)) {
             if (is.null(RES[[i]])) next
+
+            ### make a list out of it!
             RES_tmp <- list(RES[[i]])
             names(RES_tmp) <- names(RES)[i]
 
             ## generate and ave the calibration curve plot
-            pl_CC <- plotCalibraCurve(RES = RES_tmp, ylab = ylab, xlab = xlab,
+            pl_CC <- plotCalibraCurve(CC_RES = RES_tmp, ylab = ylab, xlab = xlab,
                 plot_type = "multiplot",
                 show_regression_info = show_regression_info,
                 show_linear_range = show_linear_range,
@@ -185,7 +193,7 @@ CalibraCurve <- function(D_list,
             annotation_dat <- rbind(annotation_dat, pl_CC$annotation_dat)
         }
     } else { # plot_type == "allinone" or "multiplot"
-        pl_CC <- plotCalibraCurve(RES = RES, ylab = ylab, xlab = xlab,
+        pl_CC <- plotCalibraCurve(CC_RES = RES, ylab = ylab, xlab = xlab,
             plot_type = plot_type, show_regression_info = show_regression_info,
             show_linear_range = show_linear_range,
             show_data_points = show_data_points,
@@ -221,6 +229,8 @@ CalibraCurve <- function(D_list,
                 height = RF_plot_height, units = "cm", dpi = plot_dpi)
         }
     }
+
+    #### TODO: hier am Ende das Speichern von plots und Tabellen bündeln!
 
     ### TODO? wieso letzte Spalte löschen?
     summary_tab <- annotation_dat#[, -ncol(annotation_dat)]
@@ -284,15 +294,16 @@ CalibraCurve <- function(D_list,
 #' @export
 #' @examples
 #'
-#' data_path <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx",
+#' data_path <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
 #'         package = "CalibraCurve")
-#' D <- readDataTable(dataPath = data_path, concCol = 6, measCol = 7, fileType = "xlsx")
+#' D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
+#'         fileType = "xlsx")
 #' calc_single_curve(D = D)
 calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
-                              cvThres = 20, calcContinuousPrelimRanges = TRUE,
+                              cvThres = 20, calcContinuousPrelimRanges = FALSE,
                               weightingMethod = "1/x^2",
                               centralTendencyMeasure = "mean",
-                              perBiasThres = 30, considerPerBiasCV = TRUE,
+                              perBiasThres = 20, considerPerBiasCV = TRUE,
                               perBiasDistThres = 10, RfThresL = 80,
                               RfThresU = 120) {
     ## clean data
@@ -311,13 +322,12 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
         perBiasDistThres = perBiasDistThres)
 
     ### calculate response factors
-    resFacDataV <- CalibraCurve::calcRFLevels(dataCleaned, mod = FLR_res$mod)
-    avgResFacDataV <- CalibraCurve::calcRFMeans(resFacDataV)
+    RFs <- CalibraCurve::calcRF(dataCleaned, mod = FLR_res$mod)
 
     #### generate result tables
     tables <- CalibraCurve::assemble_results(X = D, dataCleaned = dataCleaned,
-        cvThres = cvThres, PLR_res = PLR_res, resFacDataV = resFacDataV,
-        avgResFacDataV = avgResFacDataV, FLR_res = FLR_res, mod = FLR_res$mod,
+        cvThres = cvThres, PLR_res = PLR_res, resFacDataV = RFs$RFs,
+        avgResFacDataV = RFs$meanRFs, FLR_res = FLR_res, mod = FLR_res$mod,
         RfThresL = RfThresL, RfThresU = RfThresU, substance = substance)
     RES <- list(mod = FLR_res$mod,
         final_linear_range = as.numeric(names(FLR_res$dataFinal)),

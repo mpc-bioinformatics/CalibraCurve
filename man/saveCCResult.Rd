@@ -11,10 +11,12 @@ saveCCResult(CC_res, output_path, suffix = "")
 
 \item{output_path}{\strong{character(1)} \cr Path to the output directory.}
 
-\item{suffix}{\strong{character(1)} \cr Suffix for the output files, ideally starting with "_" (default is "").}
+\item{suffix}{\strong{character(1)} \cr Suffix for the output files, ideally
+starting with "_" (default is "").}
 }
 \value{
-Returns nothing, but the function saves the results to the specified output path.
+Returns nothing, but the function saves the results to the specified
+output path.
 }
 \description{
 Save results of CalibraCurve

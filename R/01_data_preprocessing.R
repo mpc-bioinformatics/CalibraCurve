@@ -21,15 +21,10 @@
 #'
 #' @examples
 #' ### xlsx file:
-#' file <- system.file("extdata", "xlsx/MFAP4_WTVFQK_y4.xlsx",
+#' file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
 #'   package = "CalibraCurve")
-#' D <- readDataTable(file, fileType = "xlsx", concCol = 6, measCol = 7)
+#' D <- readDataTable(file, fileType = "xlsx", concCol = 16, measCol = 12)
 #'
-#' ### csv file:
-#' file2 <- system.file("extdata", "csv/ALB_LVNEVTEFAK_y8.csv",
-#'   package = "CalibraCurve")
-#' D <- readDataTable(file2, fileType = "csv", concCol = 6, measCol = 7,
-#'   dec = ".", sep = ",")
 readDataTable <- function(dataPath, fileType, concCol, measCol, sep = ",",
     dec = ".", header = TRUE, naStrings = c("NA", "NaN", "Filtered", "#NV"),
     sheet = 1) {
@@ -95,7 +90,10 @@ readDataTable <- function(dataPath, fileType, concCol, measCol, sep = ",",
 #'    Concentration and Measurement
 #' @export
 #'
-#' @examples  # TODO
+#' @examples
+#' data_folder <- system.file("extdata", "MSQC1_xlsx", package = "CalibraCurve")
+#' D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx",
+#'     concCol = 16, measCol = 12)
 readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
   allFiles <- setdiff(list.files(path = dataFolder),
           list.dirs(path = dataFolder, recursive = FALSE, full.names = FALSE))
@@ -153,10 +151,10 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 #' @export
 #'
 #' @examples
-#' file <- system.file("extdata", "MSQC1/msqc1_dil_ALIVLAHSER.rds",
-#'    package = "CalibraCurve")
-#' D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-#' assayNumber = 1)
+#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+#'     package = "CalibraCurve")
+#' D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
+#'     assayNumber = 1)
 readDataSE <- function(dataPath, concColName, substColName, assayNumber = 1,
                        rowNumbers = NULL) {
   rawDataSE <- readRDS(dataPath)
@@ -199,12 +197,11 @@ readDataSE <- function(dataPath, concColName, substColName, assayNumber = 1,
 #' @export
 #'
 #' @examples
-#' data(D_ALB)
-#'
-#' cleanData(D_ALB, minReplicates = 3)
-#' ## Returns original data because it doesn't contain 0s or NAs and it has
-#' ## enough replicates. Data is now given as a list, each element containing
-#' ## the data of one specific concentration level.
+#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+#'     package = "CalibraCurve")
+#' D_list <- readDataSE(file, concColName = "amount_fmol",
+#'     substColName = "Substance", assayNumber = 1)
+#' cleanData(D_list[[1]])
 cleanData <- function(rawData, minReplicates = 3) {
     ### check input arguments
     checkmate::assert_int(minReplicates, lower = 1)
@@ -226,8 +223,8 @@ cleanData <- function(rawData, minReplicates = 3) {
                           data = dataCleaned)
 
     # Deleting concentration levels with insufficient number of replicates
-    ind <- sapply(seq_along(dataCleaned), FUN = .checkNumberReplicates,
-                  data = dataCleaned, minReplicates = minReplicates)
+    ind <- vapply(seq_along(dataCleaned), FUN = .checkNumberReplicates,
+                  logical(1), data = dataCleaned, minReplicates = minReplicates)
     dataCleaned <- dataCleaned[ind]
 
     if (length(dataCleaned) <= 1) {
@@ -235,7 +232,8 @@ cleanData <- function(rawData, minReplicates = 3) {
            " replicates found. Please check your data or lower minReplicates.")
     }
 
-    concLevelsCleaned <- sapply(dataCleaned, FUN = function(x) x$Concentration[1])
+    concLevelsCleaned <- vapply(dataCleaned, FUN = function(x) x$Concentration[1],
+                                numeric(1))
     names(dataCleaned) <- concLevelsCleaned
 
     return(dataCleaned)

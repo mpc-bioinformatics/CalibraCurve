@@ -8,11 +8,11 @@ calc_single_curve(
   D,
   substance = "substance",
   minReplicates = 3,
-  cv_thres = 20,
-  calcContinuousPrelimRanges = TRUE,
+  cvThres = 20,
+  calcContinuousPrelimRanges = FALSE,
   weightingMethod = "1/x^2",
   centralTendencyMeasure = "mean",
-  perBiasThres = 30,
+  perBiasThres = 20,
   considerPerBiasCV = TRUE,
   perBiasDistThres = 10,
   RfThresL = 80,
@@ -32,7 +32,7 @@ plotting multiple calibration curves in one plot.}
 concentration level. Concentration levels with too few data points will
 be removed.}
 
-\item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level
+\item{cvThres}{\strong{numeric(1)} \cr Threshold for CV per concentration level
 in percent (default is 20).}
 
 \item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest
@@ -82,8 +82,9 @@ Calculate all necessary steps for a single calibration curve
 }
 \examples{
 
-data_path <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx",
+data_path <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
         package = "CalibraCurve")
-D <- readDataTable(dataPath = data_path, concCol = 6, measCol = 7, fileType = "xlsx")
-calc_single_curve(D = D,)
+D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
+        fileType = "xlsx")
+calc_single_curve(D = D)
 }

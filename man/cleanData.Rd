@@ -24,10 +24,9 @@ Clean data (remove 0s and NAs, remove concentration levels with insufficient
 number of replicates)
 }
 \examples{
-data(D_ALB)
-
-cleanData(D_ALB, minReplicates = 3)
-## Returns original data because it doesn't contain 0s or NAs and it has
-## enough replicates. Data is now given as a list, each element containing
-## the data of one specific concentration level.
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+    package = "CalibraCurve")
+D_list <- readDataSE(file, concColName = "amount_fmol",
+    substColName = "Substance", assayNumber = 1)
+cleanData(D_list[[1]])
 }

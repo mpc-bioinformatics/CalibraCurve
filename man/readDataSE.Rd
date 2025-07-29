@@ -47,8 +47,8 @@ The rowData has to contain a column with the substance names (e.g. peptide
 sequence, name of lipid or metabolite etc).
 }
 \examples{
-file <- system.file("extdata", "MSQC1/msqc1_dil_ALIVLAHSER.rds",
-   package = "CalibraCurve")
-D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-assayNumber = 1)
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+    package = "CalibraCurve")
+D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
+    assayNumber = 1)
 }

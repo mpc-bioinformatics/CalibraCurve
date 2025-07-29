@@ -2,8 +2,7 @@
 
 export(CalibraCurve)
 export(assemble_results)
-export(calcRFLevels)
-export(calcRFMeans)
+export(calcRF)
 export(calc_single_curve)
 export(calculate_FLR)
 export(calculate_PLR)

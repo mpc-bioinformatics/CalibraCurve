@@ -2,6 +2,8 @@
 #'
 #' @param CC_res **list** \cr Results of \code{\link{CalibraCurve}}.
 #' @param newdata **numeric** \cr A vector of intensity values for which to predict concentrations.
+#' @param verbose **logical(1)** \cr If TRUE, a wanring message is given if estimated concentrations
+#'      are outside of the linear range.
 #'
 #' @returns A data frame with the following columns:
 #' - `intensity`: The input intensity values.
@@ -14,18 +16,12 @@
 #' This is important to ensure that the predictions are reliable and within the linear range of the calibration curve.
 #'
 #' @examples
-#'
-#' TODO: adapt examples
-#'
-#' data(RES_MFAP4)
-#' newdata <- c(5, 0.2, 10)
-#' predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
-#'
-#' ## concentration that leads to predictions outside of the linear range -> warning
-#' newdata2 <- c(100)
-#' predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
-#'
-predictConcentration <- function(CC_res, newdata) {
+#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", package = "CalibraCurve")
+#' D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance")
+#' RES <- CalibraCurve(D)
+#' newdata <- c(1000000, 10000000, 100000000) # 1e6, 1e7, 1e8
+#' predictConcentration(RES$RES[[4]], newdata = newdata)
+predictConcentration <- function(CC_res, newdata, verbose = TRUE) {
     #RES <- CC_res$RES[[1]]
 
     mod <- CC_res$mod
@@ -44,7 +40,7 @@ predictConcentration <- function(CC_res, newdata) {
 
     # check if predicted concentration is within the final linear range
     linear_range <- predictedConcentration >= min_FLR & predictedConcentration <= max_FLR
-    if (any(!linear_range)) {
+    if (any(!linear_range) & verbose) {
         warning("At least one predicted concentration is outside the final linear range. Results may be unreliable.")
     }
 
