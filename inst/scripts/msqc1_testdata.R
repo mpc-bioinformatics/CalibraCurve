@@ -1,69 +1,17 @@
 
-library(tidyverse)
-library(openxlsx)
+# As test data we use data from the msqc1 R package. More precisely, we use the
+# dilution series stored in the msqc1_dil object.
 
-instruments <- c("QTRAP", "TSQVantage", "QExactive") # unique(msqc1_dil$instrument)
-peptides <- unique(msqc1_dil$Peptide.Sequence)
-isotope <- c("light", "heavy")
+# We filter this data in the following way:
+# - using only QTRAP, TSQVantage and QExactive instruments (PRM or SRM method)
+# - use only data on the level of y-ions, no precursors
+# - use only the heavy isotope version of the peptide
 
-### remove iRT peptides
-D <- filter(msqc1_dil, Protein.Name != "iRT-C18 Standard Peptides")
+# We generate a SummarizedExperiment object for each Peptide sequence and store
+# them as .rds files.
 
-for (instr in instruments) {
-  for (peptide in peptides) {
-    D_tmp <- dplyr::filter(D,
-                           instrument == instr,
-                           Peptide.Sequence == peptide)
-    fragments_tmp <- as.character(unique(D_tmp$Fragment.Ion))
-    print(fragments_tmp)
-    ### remove data from the precursors:
-    fragments_tmp <- fragments_tmp[!(fragments_tmp %in% c("precursor", "precursor [M+1]", "precursor [M+2]"))]
-
-    #print(paste(instrument, peptide))
-    #print(fragments_tmp)
-    for (fragment in fragments_tmp) {
-      for (isotope_type in isotope) {
-        print(fragment)
-        print(isotope_type)
-        D_tmp2 <- dplyr::filter(D_tmp,
-                                Fragment.Ion == fragment,
-                                Isotope.Label.Type == isotope_type)
-
-        if (nrow(D_tmp2) > 0) {
-          file_name <- paste0("../example_data/MSQC1/msqc1_dil_", instr, "_", peptide, "_", fragment, "_", isotope_type, ".xlsx")
-          write.xlsx(D_tmp2, file = file_name, rowNames = FALSE)
-        }
-      }
-    }
-
-
-  }
-}
-
-
-instr = "QExactive"
-peptide = "ALIVLAHSER"
-
-
-
-library(CalibraCurve)
-CalibraCurve(data_folder = "../example_data/MSQC1/",
-             output_path = "../example_data/MSQC1/results/",
-             conc_col = 14,
-             meas_col = 12,
-             plot_type = "single_plots")
-
-
-
-### TODO:response factor plot komisch???
-library(CalibraCurve)
-CalibraCurve(data_path = "../example_data/MSQC1/msqc1_dil_QExactive_AVQQPDGLAVLGIFLK_y10_light.xlsx",
-             output_path = "../example_data/MSQC1/results/",
-             conc_col = 14,
-             meas_col = 12,
-             plot_type = "single_plots")
-
-
+# Additionally, for the peptide sequence "GGPFSDSYR" we store the data as xlsx
+# tables, separated by instrument and ion type.
 
 
 
@@ -72,14 +20,14 @@ CalibraCurve(data_path = "../example_data/MSQC1/msqc1_dil_QExactive_AVQQPDGLAVLG
 ### SummarizedExperiment
 
 library(msqc1)
-library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(openxlsx)
 library(SummarizedExperiment)
 data(msqc1_dil)
 
 ### from supplement of paper:
 ### Info about the heavy peptide amount (in fmol) in the samples with relative.amount == 1
-
-
 peptide_amounts <- c(
   "ALIVLAHSER" = 100,
   "AVQQPDGLAVLGIFLK" = 100,
@@ -122,10 +70,8 @@ D$replicate <- replicate
 D$replicate[D$Replicate.Name == "20140818_004_MSQC1_1_40dil_1"] <- "2"
 
 
-#D$amount_replicate <- paste(D$relative.amount, D$replicate, sep = "_")
-
-
 ################
+## extract relevant data and save them as SummarizedExperiments-object in rds files (one per peptide sequence)
 
 peptides <- unique(D$Peptide.Sequence)
 
@@ -133,12 +79,12 @@ for (i in seq_along(peptides)) {
 
   peptide <- peptides[i]
 
-  D_tmp <- filter(D, Peptide.Sequence == peptide)
+  D_tmp <- dplyr::filter(D, Peptide.Sequence == peptide)
   D_tmp$amount <- peptide_amounts[peptide] * D_tmp$relative.amount
   D_tmp$amount_replicate <- paste(D_tmp$amount, D_tmp$replicate, sep = "_")
 
 
-  D_tmp_wide <- pivot_wider(D_tmp,
+  D_tmp_wide <- tidyr::pivot_wider(D_tmp,
                             id_cols = c("instrument", "Fragment.Ion", "Isotope.Label.Type"),
                             names_from = amount_replicate,
                             values_from = Area)
@@ -151,7 +97,7 @@ for (i in seq_along(peptides)) {
 
   D_SE <- SummarizedExperiment(assays=list(Area=as.data.frame(D_tmp_wide[,-c(1:3)])),
                                rowData=rowData, colData=colData)
-  metadata(D_SE) <- list(peptide = peptide)
+  SummarizedExperiment::metadata(D_SE) <- list(peptide = peptide)
 
   saveRDS(D_SE, file = paste0("inst/extdata/MSQC1/msqc1_dil_", peptide, ".rds"))
 
@@ -159,34 +105,29 @@ for (i in seq_along(peptides)) {
 
 
 
-DATA <- readRDS("inst/extdata/MSQC1/msqc1_dil_ALIVLAHSER.rds")
+#######################
+## for one Peptide, save data as xlsx files, separately for each ion and instrument
 
-assays(DATA)$Area
-rowData(DATA)
-colData(DATA)
+D <- filter(msqc1_dil,
+            instrument %in% instruments,
+            Peptide.Sequence == "GGPFSDSYR",
+            Fragment.Ion %in% ions,
+            Isotope.Label.Type == "heavy"
+)
+
+ions_GGPFSDSYR <- unique(D$Fragment.Ion)
+
+for (inst in instruments) {
+  for (ion in ions_GGPFSDSYR) {
+    D_tmp <- filter(D, instrument == inst, Fragment.Ion == ion)
+    D_tmp$amount <- peptide_amounts["GGPFSDSYR"] * D_tmp$relative.amount
+    openxlsx::write.xlsx(D_tmp, paste0("inst/extdata/MSQC1_xlsx/GGPFSDSYR_", inst, "_", ion, ".xlsx"))
+  }
+}
 
 
 
 
 
 
-################################################################################
-################################################################################
-################################################################################
 
-
-
-# ALIVLAHSER: QExactive hat zu hohe CVs, TSQ kleine linear ranges, QTRAP ganz ok
-#X AVQQPDGLAVLGIFLK: QExactive teils kleine ranges, TSQ y9 geht nicht, QTRAp kleine ranges
-# EGHLSPDIVAEQK: QExactive geht nicht, TSQ ok, QTRAP ok
-# ESDTSYVSLK QExactive y9 geht nicht, TSQ teils kleinen range, QTRAP teils kleinen range
-# FEDENFILK: sieht alles gut aus, fast perfekte ranges
-# FSTVAGESGSADTVR: QExactive geht nicht, sonst alles ok
-#X GAGAFGYFEVTHDITK: TSQ ist komisch
-# GGPFSDSYR: sieht alles sehr gut aus!
-#X GYSIFSYATK: QTRAP teils etwas komisch
-#X NLSVEDAAR: QExactive geht kaputt, sonst sehr kleine ranges
-#X SADFTNFDPR:
-#X TAENFR
-# VLDALQAIK: sieht alles ok aus
-# VSFELFADK
