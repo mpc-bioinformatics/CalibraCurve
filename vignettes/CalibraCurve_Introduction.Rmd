@@ -67,7 +67,7 @@ already established as a KNIME workflow based on an R script
 `r Citep(bib[["CalibraCurve"]])` and a service in 
 [de.NBI](https://www.denbi.de/) 
 and [ELIXIR Germany](https://elixir-europe.org/). The code base was re-worked 
-into an R package without changing the underlying algorith. Several improvements
+into an R package without changing the underlying algorithm. Several improvements
 were made:
 
 - allowing xlsx files and SummarizedExperiment objects as input
