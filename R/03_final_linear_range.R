@@ -40,8 +40,8 @@
 #'
 #' calculate_FLR(RES_PLR$dataPrelim)
 calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
-                          centralTendencyMeasure = "mean", perBiasThres = 20,
-                          considerPerBiasCV = TRUE, perBiasDistThres = 10) {
+                        centralTendencyMeasure = "mean", perBiasThres = 20,
+                        considerPerBiasCV = TRUE, perBiasDistThres = 10) {
     ### check input arguments
     checkmate::assertChoice(weightingMethod,
                             choices = c("1/x", "1/x^2", "None"))
@@ -50,26 +50,24 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
     checkmate::assertNumeric(perBiasThres, lower = 0, len = 1)
     checkmate::assertFlag(considerPerBiasCV)
     checkmate::assertNumeric(perBiasDistThres, lower = 0, len = 1)
-
     dataFinal <- dataPrelim
     finalRangeReached <- FALSE
-
     while (!finalRangeReached) {
         if (length(dataFinal) < 2) {
             stop("Only one concentration level left in linear range. Increasing
-                 perBiasThres may help, but makes results less accurate.")
+                perBiasThres may help, but makes results less accurate.")
         }
         ## calculate the weights for each concentration:
         if (weightingMethod != "None") {
             allWeights <- unlist(lapply(dataFinal, FUN = .calcWeights,
-                                           weightingMethod = weightingMethod))
+                                        weightingMethod = weightingMethod))
         } else {
             allWeights <- NULL
         }
         mod <- .calcLinearModel(dataFinal, weights = allWeights)
         perBias <- .calcPerBiasLevels(dataFinal, LMfit = mod)
         perBiasAvgSDCV <- .calcPerBiasAvgSDCV(perBias,
-                                             method = centralTendencyMeasure)
+                                            method = centralTendencyMeasure)
         checkFLR <- .checkFinalRange(perBiasInfo = perBiasAvgSDCV,
                                     perBiasThres = perBiasThres)
         if (checkFLR) {
@@ -132,7 +130,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
     ## combine list elements to a data set
     dataSetDF <- do.call(rbind, x)
     lmfit <- stats::lm(Measurement ~ Concentration, data = dataSetDF,
-                       weights = weights)
+                        weights = weights)
     return(lmfit)
 }
 
@@ -220,7 +218,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
     if (perBiasInfo$avgPerBias[1] <= perBiasThres) {
         lowLevelPassed <- TRUE
     }
-    if (perBiasInfo$avgPerBias[length(perBiasInfo$avgPerBias)] <= perBiasThres) {
+    if (perBiasInfo$avgPerBias[length(perBiasInfo$avgPerBias)] <= perBiasThres){
         highLevelPassed <- TRUE
     }
 
@@ -269,10 +267,11 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
             if (dist <= perBiasDistT) {
                 # CV values are considered because distance between the two
                 # percent bias values is low
-                removeLow <- ifelse(featuresLowestLevel$CV >= featuresHighestLevel$CV,
+                removeLow <-
+                    ifelse(featuresLowestLevel$CV >= featuresHighestLevel$CV,
                                     TRUE, FALSE)
             } else {
-                # only percent bias values are considered because distance is high
+                # only percent bias values are used because distance is high
                 removeLow <- ifelse(lowPerBias >= highPerBias, TRUE, FALSE)
             }
         }

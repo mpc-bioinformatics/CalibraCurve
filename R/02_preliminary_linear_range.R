@@ -24,12 +24,12 @@
 #' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
 #' package = "CalibraCurve")
 #' D_list <- readDataSE(file, concColName = "amount_fmol",
-#'         ubstColName = "Substance", assayNumber = 1)
+#'         substColName = "Substance", assayNumber = 1)
 #' data_cleaned <- cleanData(D_list[[1]])
 #'
 #' calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 calculate_PLR <- function(dataCleaned, cvThres = 20,
-                          calcContinuousPrelimRanges = TRUE) {
+                        calcContinuousPrelimRanges = TRUE) {
     checkmate::assert_numeric(cvThres, len = 1, lower = 0)
     checkmate::assert_flag(calcContinuousPrelimRanges)
     ### calculate CV for each concentration level and check if < threshold
@@ -37,7 +37,7 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
     index <- which(concLevelsCV <= cvThres)
     if (length(index) <= 1) {
         stop("No preliminary linear range with CV <= ", cvThres, " could be
-             calculated. Please check your data or increase the CV threshold.")
+            calculated. Please check your data or increase the CV threshold.")
     }
     ranges <- .calcContPrelimRanges(index)
     indexStart <- min(ranges[, 1])
@@ -56,8 +56,8 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
         } else {
             if (longestRange$extent == 0) {
                 stop("No preliminary linear range with CV <= ", cvThres,
-                     " could be calculated. Please check your data or increase
-                     the CV threshold.")
+                    " could be calculated. Please check your data or increase
+                    the CV threshold.")
             }
             dataPrelim <- dataCleaned[longestRange$start:longestRange$end]
         }
@@ -65,7 +65,7 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
     # get concentration levels of the preliminary linear range and use them as
     # names of the new, filtered data list
     prelimConcLevels <- vapply(dataPrelim, FUN = function(x) x$Concentration[1],
-                               numeric(1))
+                            numeric(1))
     names(prelimConcLevels) <- NULL
     names(dataPrelim) <- prelimConcLevels
 
@@ -73,7 +73,7 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
     # which pass the CV value threshold
     if (length(prelimConcLevels) < 2) {
         stop("Less than two concentration levels with CV <= ", cvThres, " exist.
-             Please check your data or increase the CV threshold.")
+            Please check your data or increase the CV threshold.")
     }
     return(list(dataPrelim = dataPrelim, concLevelsCV = concLevelsCV,
         prelimConcLevels = prelimConcLevels))

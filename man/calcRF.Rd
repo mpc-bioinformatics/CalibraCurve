@@ -17,7 +17,8 @@ results of \code{\link{calculate_FLR}}).}
 List with the following elements:
 \itemize{
 \item \code{RFs}: List with response factors for each concentration level.
-\item \code{meanRFs}: Vector with mean response factors for each concentration level.
+\item \code{meanRFs}: Vector with mean response factors for each concentration
+level.
 }
 
 response factor values for each concentration level.
@@ -29,8 +30,8 @@ values for a data set (given as list)
 \examples{
 file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
 package = "CalibraCurve")
-D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-                    assayNumber = 1)
+D_list <- readDataSE(file, concColName = "amount_fmol",
+        substColName = "Substance", assayNumber = 1)
 data_cleaned <- cleanData(D_list[[1]])
 RES_PLR <- calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)

@@ -24,7 +24,9 @@ vignette: >
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>",
-    crop = NULL ## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
+    crop = NULL 
+    ## Related to 
+    ## https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
 )
 ```
 
@@ -42,8 +44,12 @@ bib <- c(
     rmarkdown = citation("rmarkdown")[1],
     sessioninfo = citation("sessioninfo")[1],
     testthat = citation("testthat")[1],
-    CalibraCurve = citation("CalibraCurve")[1]
+    CalibraCurve = citation("CalibraCurve")[1],
+    ggplot2 = citation("ggplot2")[1]
 )
+
+BibOptions(max.names = 2, bib.style = "authoryear", style = "citation")
+
 ```
 
 
@@ -58,18 +64,23 @@ concentrations from measured intensities (absolute quantification).
 
 CalibraCurve is a tool to generate and visualize calibration curves. The tool is
 already established as a KNIME workflow based on an R script 
-`r Citep(bib[["BiocStyle"]])` and a service in [de.NBI](https://www.denbi.de/) 
+`r Citep(bib[["CalibraCurve"]])` and a service in 
+[de.NBI](https://www.denbi.de/) 
 and [ELIXIR Germany](https://elixir-europe.org/). The code base was re-worked 
 into an R package without changing the underlying algorith. Several improvements
 were made:
+
 - allowing xlsx files and SummarizedExperiment objects as input
-- generate plots with `ggplot2` for nicer, publication-ready visualization 
+- generate plots with `ggplot2` `r Citep(bib[["ggplot2"]])` for nicer, 
+publication-ready visualization 
 - more customization possibilities for the plots (colours etc.)
 - added possibility to generate multiple curves in one graph
 - re-worked and improved error messages
 - added a function to predict concentrations based on the model
 - additional 
-[nextflow workflow](https://github.com/mpc-bioinformatics/CalibraCurve_NF)
+[nextflow workflow](https://github.com/mpc-bioinformatics/CalibraCurve_NF), 
+which can be integrated into other workflows or platforms like 
+[MAcWorP](https://github.com/cubimedrub/macworp)
 
 
 
@@ -119,8 +130,8 @@ areas as a measurement.
 To calculate the calibration curve, two pieces of information are needed: The 
 known concentration levels and the measured intensities for each sample.
 
-There are two options to provide this information for CalibraCurve. First, a set 
-of Excel files may be provided that contain at least a Concentration and a 
+There are two options to provide this information for CalibraCurve. First, a 
+set of Excel files may be provided that contain at least a Concentration and a 
 Measurement column each. 
 Second, a SummarizedExperiment object may be provided. This object may contain 
 measurements for different analytes, one analyte per row. Information about the 
@@ -166,9 +177,9 @@ D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance")
 
 ## Apply CalibraCurve
 
-As soon as the data have been imported using X, Y or Z, they can directly be 
-used inside the CalibraCurve function. CalibraCurve has a lot of options, e.g. 
-thresholds or customizing options for the graphics. All of these options
+As soon as the data have been imported, they can directly be 
+used inside the `CalibraCurve` function. CalibraCurve has a lot of options, 
+e.g. thresholds or customizing options for the graphics. All of these options
 have sensible default values, so you can just try out CalibraCurve without 
 thinking about these. However for optimal results or publication-ready 
 visualizations some adjustments may be necessary. 
@@ -187,7 +198,7 @@ CalibraCurve outputs several tables and two kinds of plots: the calibration
 curve and the response factor plots. The calibration curves are stort in the 
 list entry `plot_CC_list` of the result object.
 By default, each calibration curve is plotted separately. 
-Please be aware that by default the plots are not exported (you have to specifiy 
+Please be aware that by default the plots are not exported (you have to specify 
 an `output_path` for that).
 
 As an example, we plot here
@@ -215,7 +226,7 @@ point $i$ it is defined as
 (intensity - y intercept)/concentration.
 
 The nominator describes the signal produced by the analyte (intensity minus the 
-intersect) and the denominator the concentration or amount of the analyte. [cite Green]
+intersect) and the denominator the concentration or amount of the analyte.
 Ideally the mean response factors for each concentration level (shown as the 
 larger dots) would lie in a straight line and not vary much for the different 
 concentration levels. In orange, thresholds based on 80\% and 120\% of the 
@@ -233,12 +244,12 @@ results on the level of concentration levels:
 print(RES$RES[[4]]$result_table_conc_levels)
 ```
 
-There is one row for each concentration level. It contains the mean measurement, 
-the estimated measurement by the linear model and further information on the 
-different steps of the algorithm (e.g. if the concentration level was removed 
-during the cleaning step or if it was resent in the preliminary linear range). 
-The last column shows which concentration levels ended up in the final linear 
-range.
+There is one row for each concentration level. It contains the mean 
+measurement, the estimated measurement by the linear model and further 
+information on the different steps of the algorithm (e.g. if the concentration 
+level was removed during the cleaning step or if it was resent in the 
+preliminary linear range). The last column shows which concentration levels 
+ended up in the final linear range.
 
 For this specific analyte, no concentration level was removed during the 
 cleaning step and all levels fulfilled the CV criterion and where included in 
@@ -294,14 +305,7 @@ predictConcentration(CC_res = RES$RES[[4]], newdata = newdata)
 In the table, the predicted concentrations based on the linear model are given.
 Please note the warning message: The predicted concentration for the intensity 
 1e8 falls outside of the linear range for this analyte. Therefore this value 
-may be unreliable.
-
-
-
-
-
-
-
+may be unreliable, like is shown by the warning message.
 
 
 
@@ -310,37 +314,46 @@ may be unreliable.
 - information on customizing the graphics can be found in vignette 
 "Customizing the visualizations of CalibraCurve"
 - more detailed information on the parameters and settings can be found 
-in the publication `r Citep(bib[["BiocStyle"]])`
+in the publication `r Citep(bib[["CalibraCurve"]])`
 
 
 # Comparison with other related packages
 
-There are not many R packages that have functionality for the analysis of targeted mass spectrometry based data, in particular for calculating and visualizing calibration curves. Therefore, `CalibraCurve` complements other existing packages in this research area and is a valuable addition for the field of targeted proteomics, metabolomics and lipidomics. There are some packages with functionalities for targeted proteomics data that cover different parts of the whole workflow. These may be used in combination with `CalibraCurve`, e.g. to handle the raw data, process them or to do further statistical analysis on the predicted concentrations (e.g. group comparisons).
+There are not many R packages that have functionality for the analysis of 
+targeted mass spectrometry based data, in particular for calculating and 
+visualizing calibration curves. Therefore, `CalibraCurve` complements other 
+existing packages in this research area and is a valuable addition for the 
+field of targeted proteomics, metabolomics and lipidomics. There are some 
+packages with functionalities for targeted proteomics data that cover different 
+parts of the whole workflow. These may be used in combination with 
+`CalibraCurve`, e.g. to handle the raw data, process them or to do further 
+statistical analysis on the predicted concentrations (e.g. group comparisons).
 
-- `MSStatsLOBD` [REF] estimates the limit of detection and limit of blank (LoB) for targeted experiments. In contrast to `CalibraCurve` it does not estimate the lower and upper limit of quantification (linear range) and does only provide minimal functionality for visualizing calibration curves. Response factor plots or the ability to predict concentrations are also not provided.
-- The package `msqc1` [REF] is a data package containing targeted proteomics data from the MSQC1 standard samples for benchmarking of different machines and methods. We will use parts of the dilution series data in the following as an example (see also section "Example data set"). 
-- The package `specL` [REF] produces spectra libraries that can be used to identify peptides in targeted proteomics data and therefore covers the very beginning of the targeted data analysis workflow.
-- The package `MSStats` [REF] contains a lot of functionality for the statistical analysis of proteomics data (targeted and untargeted). For example, estimate the required sample size for an experiment, summarizing data to protein level, visualizations and statistical analysis (group comparisons). 
-- `mzR` [REF] provides parsing for differnt standard file formats used for mass spectrometry data.
-- The packages `xcms` [REF] and `MSnbase` provide functionality for processing and visualizing mass spectrometry based (proteomics) data.
+- `MSstatsLOBD` estimates the limit of 
+detection and limit of blank (LoB) for targeted experiments. In contrast to 
+`CalibraCurve` it does not estimate the lower and upper limit of quantification 
+(linear range) and does only provide minimal functionality for visualizing 
+calibration curves. Response factor plots or the ability to predict 
+concentrations are also not provided.
+- The package `msqc1` is a data package containing 
+targeted proteomics data from the MSQC1 standard samples for benchmarking of 
+different machines and methods. We will use parts of the dilution series data 
+in the following as an example (see also section "Example data set"). 
+- The package `specL` produces spectra libraries that 
+can be used to identify peptides in targeted proteomics data and therefore 
+covers the very beginning of the targeted data analysis workflow.
+- The package `MSstats` contains a lot of 
+functionality for the statistical analysis of proteomics data (targeted and 
+untargeted). For example, estimate the required sample size for an experiment, 
+summarizing data to protein level, visualizations and statistical analysis 
+(group comparisons). 
+- `mzR` provides parsing for differnt standard file 
+formats used for mass spectrometry data.
+- The packages `xcms`  and `MSnbase`provide functionality for processing 
+and visualizing mass spectrometry based (proteomics) data.
 
 
-# Reproducibility
-
-The `r Biocpkg("CalibraCurve")` package 
-was made possible thanks to:
-
-* R `r Citep(bib[["R"]])`
-* `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
-* `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])`
-* `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`
-* `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])`
-* `r CRANpkg("sessioninfo")` `r Citep(bib[["sessioninfo"]])`
-* `r CRANpkg("testthat")` `r Citep(bib[["testthat"]])`
-
-This package was developed using `r BiocStyle::Biocpkg("biocthis")`.
-
-`R` session information.
+# R session information
 
 ```{r reproduce3, echo=FALSE}
 ## Session info
@@ -353,12 +366,14 @@ session_info()
 
 # Bibliography
 
-This vignette was generated using `r Biocpkg("BiocStyle")` `r Citep(bib[["BiocStyle"]])`
-with `r CRANpkg("knitr")` `r Citep(bib[["knitr"]])` and `r CRANpkg("rmarkdown")` `r Citep(bib[["rmarkdown"]])` running behind the scenes.
+This vignette was generated using `r Biocpkg("BiocStyle")` 
+`r Citep(bib[["BiocStyle"]])` with `r CRANpkg("knitr")` 
+`r Citep(bib[["knitr"]])` and `r CRANpkg("rmarkdown")` 
+`r Citep(bib[["rmarkdown"]])` running behind the scenes.
 
 Citations made with `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`.
 
-```{r vignetteBiblio, results = "asis", echo = FALSE, warning = FALSE, message = FALSE}
+```{r Biblio, results = "asis", echo = FALSE, warning = FALSE, message = FALSE}
 ## Print bibliography
 PrintBibliography(bib, .opts = list(hyperlink = "to.doc", style = "html"))
 ```

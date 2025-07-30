@@ -54,8 +54,8 @@ Calculate the final linear range
 \examples{
 file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
         package = "CalibraCurve")
-D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-                   assayNumber = 1)
+D_list <- readDataSE(file, concColName = "amount_fmol",
+        substColName = "Substance", assayNumber = 1)
 data_cleaned <- cleanData(D_list[[1]])
 RES_PLR <- calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 

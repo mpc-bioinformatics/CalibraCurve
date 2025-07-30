@@ -10,6 +10,6 @@ test_that("prediction", {
 
     expect_equal(nrow(pred), 3)
     expect_equal(ncol(pred), 3)
-    expect_equal(colnames(pred), c("intensity", "predicted_concentrations", "linear_range"))
+    expect_equal(colnames(pred), c("intensity", "predConc", "linear_range"))
     expect_equal(pred$linear_range, c(TRUE, TRUE, FALSE))
 })

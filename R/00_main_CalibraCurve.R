@@ -54,7 +54,7 @@
 #' @param RF_plot_height **numeric(1)** \cr Plot height in cm (default is 10).
 #' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
 #' @param verbose **logical(1)** \cr If FALSE, no messages will be printed.
-#' @param ... additional parameters for \code\link{{plotCalibraCurve}}
+#' @param ... additional parameters for \code{\link{plotCalibraCurve}}
 #' @returns List with the following elements:
 #' - \code{RES}: List of CalibraCurve results (one item per substance, output
 #'      from \code{\link{calc_single_curve}}).
@@ -177,8 +177,9 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     }
     if (!is.null(output_path)) {
         .saveTablesAndPlots(RES, output_path, pl_CC_list, pl_RF_list,
-                                CC_plot_width, summary_tab, CC_plot_height,
-                                plot_dpi, device)
+                            CC_plot_width, summary_tab, CC_plot_height,
+                            RF_plot_width, RF_plot_height, substance,
+                            plot_type, plot_dpi, device)
     }
         return(list(RES = RES, summary_tab = summary_tab,
                     plot_CC_list = pl_CC_list, plot_RF_list = pl_RF_list))
@@ -283,11 +284,12 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 
 .saveTablesAndPlots <- function(RES, output_path, pl_CC_list, pl_RF_list,
                                 CC_plot_width, summary_tab, CC_plot_height,
-                                plot_dpi, device) {
+                                RF_plot_width, RF_plot_height, substance,
+                                plot_type, plot_dpi, device) {
 
     for (i in seq_along(RES)) {
-        CalibraCurve::saveCCResult(CC_res = RES[[i]],
-                output_path = output_path, suffix = paste0("_", substance))
+        .saveCCResult(CC_res = RES[[i]], output_path = output_path,
+                    suffix = paste0("_", substance))
         if (plot_type == "single_plots") {
             ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve_",
                                             names(RES)[i], ".", device),
@@ -296,7 +298,7 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
         }
         ggplot2::ggsave(
             filename = paste0(output_path, "/ResponseFactors_",
-                              names(RES)[i], ".", device),
+                            names(RES)[i], ".", device),
             plot = pl_RF_list[[i]], device = device, width = RF_plot_width,
             height = RF_plot_height, units = "cm", dpi = plot_dpi)
     }
@@ -308,8 +310,8 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
             height = CC_plot_height, units = "cm", dpi = plot_dpi)
     }
     openxlsx::write.xlsx(summary_tab,
-                         file = paste0(output_path,
-                                       "/summarytable_calibration_models.xlsx"))
+                        file = paste0(output_path,
+                                    "/summarytable_calibration_models.xlsx"))
 }
 
 

@@ -7,11 +7,13 @@
 .calcResponseFactors(x, intercept, expConc)
 }
 \arguments{
-\item{x}{\emph{data.frame}* \cr Data.frame containing data for a specific concentration level.}
+\item{x}{\emph{data.frame}* \cr Data.frame containing data for a specific
+concentration level.}
 
 \item{intercept}{\strong{numeric(1)} \cr Intercept of the linear model.}
 
-\item{expConc}{\strong{numeric(1)} \cr  Expected concentration (known concentration value).}
+\item{expConc}{\strong{numeric(1)} \cr  Expected concentration (known
+concentration value).}
 }
 \value{
 vector of response factors for this specific concentration level
@@ -20,5 +22,6 @@ vector of response factors for this specific concentration level
 Function, which calculates a response factor for a single data point
 }
 \details{
-Formula obtained from:  Green, J. M., A practical guide to analytical method validation.
+Formula obtained from:  Green, J. M., A practical guide to analytical method
+validation. Analytical Chemistry 1996, 68, 305A-309A.
 }

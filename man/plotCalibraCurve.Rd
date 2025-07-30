@@ -69,9 +69,12 @@ Plot the calibration curve
 }
 \examples{
 file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
-package = "CalibraCurve")
-D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-                     assayNumber = 1)
+    package = "CalibraCurve"
+)
+D_list <- readDataSE(file,
+    concColName = "amount_fmol",
+    substColName = "Substance", assayNumber = 1
+)
 CC_RES <- calc_single_curve(D_list[[1]], calcContinuousPrelimRanges = FALSE)
 
 plotCalibraCurve(list(substance = CC_RES))

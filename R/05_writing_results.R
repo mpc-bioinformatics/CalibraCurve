@@ -107,8 +107,7 @@ assemble_results <- function(X, dataCleaned,  PLR_res, resFacDataV,
 #'
 #' @returns Returns nothing, but the function saves the results to the specified
 #'      output path.
-#' @export
-saveCCResult <- function(CC_res, output_path, suffix = "") {
+.saveCCResult <- function(CC_res, output_path, suffix = "") {
     # save result tables
     openxlsx::write.xlsx(CC_res$result_table_conc_levels,
         file = paste0(output_path, "/result_table_conc_levels", suffix,
@@ -170,8 +169,10 @@ saveCCResult <- function(CC_res, output_path, suffix = "") {
     for (i in seq_along(concentrations)) {
         ind <- which(concentrations[i] == concentrations_FLR)
         if (length(ind) >= 1) {
-            tab$mean_percentage_bias[i] <- FLR_res$perBiasAvgSDCV$avgPerBias[ind]
-            tab$SD_percentage_bias[i] <- FLR_res$perBiasAvgSDCV$stdDevPerBias[ind]
+            tab$mean_percentage_bias[i] <-
+                FLR_res$perBiasAvgSDCV$avgPerBias[ind]
+            tab$SD_percentage_bias[i] <-
+                FLR_res$perBiasAvgSDCV$stdDevPerBias[ind]
             tab$CV_percentage_bias[i] <- FLR_res$perBiasAvgSDCV$CV_PerBias[ind]
             tab$final_linear_range[i] <- TRUE
         } else {
@@ -188,8 +189,8 @@ saveCCResult <- function(CC_res, output_path, suffix = "") {
 
 
 .makeResult_table_obs <- function(X, concentrations, concentrations_FLR,
-                                  conce_after_cleaning, hLineUpper,
-                                  hLineLow, FLR_res, resFacDataV, substance) {
+                                conce_after_cleaning, hLineUpper,
+                                hLineLow, FLR_res, resFacDataV, substance) {
     tab <- data.frame(
         substance = rep(substance, nrow(X)),
         concentration = X$Concentration,
@@ -206,7 +207,8 @@ saveCCResult <- function(CC_res, output_path, suffix = "") {
     ## result only for concentrations that were not removed during cleaning:
 
     tab$response_factor[!tab$removed_while_cleaning] <- unlist(resFacDataV)
-    tab$RF_within_thres <- tab$response_factor <= hLineUpper & tab$response_factor >= hLineLow
+    tab$RF_within_thres <- tab$response_factor <= hLineUpper &
+        tab$response_factor >= hLineLow
 
     # fill table with percent bias information (only within final linear range)
     perBias <- FLR_res$perBias

@@ -35,7 +35,7 @@ calcRF <- function(x, mod) {
     concentrations <- as.numeric(names(x))
 
     RFs <- mapply(FUN = .calcResponseFactors, x = x, expConc = concentrations,
-           MoreArgs = list(intercept = interc), SIMPLIFY = FALSE)
+            MoreArgs = list(intercept = interc), SIMPLIFY = FALSE)
     names(RFs) <- concentrations
 
     meanRFs <- vapply(RFs, mean, numeric(1))

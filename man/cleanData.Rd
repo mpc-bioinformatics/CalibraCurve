@@ -25,8 +25,11 @@ number of replicates)
 }
 \examples{
 file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
-    package = "CalibraCurve")
-D_list <- readDataSE(file, concColName = "amount_fmol",
-    substColName = "Substance", assayNumber = 1)
+    package = "CalibraCurve"
+)
+D_list <- readDataSE(file,
+    concColName = "amount_fmol",
+    substColName = "Substance", assayNumber = 1
+)
 cleanData(D_list[[1]])
 }

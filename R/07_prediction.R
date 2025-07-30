@@ -19,7 +19,8 @@
 #' @details
 #' The function will give a warning if any of the predicted concentrations are
 #' outside the final linear range. This is important to ensure that the
-#' predictions are reliable and within the linear range of the calibration curve.
+#' predictions are reliable and within the linear range of the calibration
+#' curve.
 #'
 #' @examples
 #' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
@@ -43,7 +44,7 @@ predictConcentration <- function(CC_res, newdata, verbose = TRUE) {
     slope <- coeffs[2]
 
     # linear model: intensity = intercept + slope * concentration + e
-    # prediction of concentration: concentration = (intensity - intercept) / slope
+    # prediction of concentration: concentration = (intensity-intercept)/slope
     predConc <- (newdata - intercept) / slope
 
     # check if predicted concentration is within the final linear range

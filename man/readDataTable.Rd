@@ -52,7 +52,8 @@ orders the data by increasing concentration.
 \examples{
 ### xlsx file:
 file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
-  package = "CalibraCurve")
+    package = "CalibraCurve"
+)
 D <- readDataTable(file, fileType = "xlsx", concCol = 16, measCol = 12)
 
 }

@@ -7,14 +7,16 @@
 calculate_PLR(dataCleaned, cvThres = 20, calcContinuousPrelimRanges = TRUE)
 }
 \arguments{
-\item{dataCleaned}{\strong{data.frame} \cr Data cleaned by \code{\link{cleanData}}.}
+\item{dataCleaned}{\strong{data.frame} \cr Data cleaned by
+\code{\link{cleanData}}.}
 
 \item{cvThres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in
 percent (default is 20).}
 
 \item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest
 continuous range fulfilling the CV threshold is selected (default is
-TRUE). If FALSE, gaps with CVs larger than the threshold may be included.}
+TRUE). If FALSE, gaps with CVs larger than the threshold may be
+included.}
 }
 \value{
 List with the following elements:
@@ -34,8 +36,8 @@ Calculate preliminary linear range (PLR)
 
 file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
 package = "CalibraCurve")
-D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-                     assayNumber = 1)
+D_list <- readDataSE(file, concColName = "amount_fmol",
+        substColName = "Substance", assayNumber = 1)
 data_cleaned <- cleanData(D_list[[1]])
 
 calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)

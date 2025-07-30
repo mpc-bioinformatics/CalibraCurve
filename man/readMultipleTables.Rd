@@ -7,7 +7,8 @@
 readMultipleTables(dataFolder, fileType, concCol, measCol, ...)
 }
 \arguments{
-\item{dataFolder}{\strong{character(1)} \cr Folder containing either xlsx, csv or txt files}
+\item{dataFolder}{\strong{character(1)} \cr Folder containing either xlsx, csv or
+txt files}
 
 \item{fileType}{\strong{character(1)} \cr Type of file: "csv", "txt" or "xlsx".}
 
@@ -25,7 +26,10 @@ Concentration and Measurement
 Read folder of files in different table input formats (xlsx, csv or txt).
 }
 \examples{
-data_folder <- system.file("extdata", "MSQC1_xlsx", package = "CalibraCurve")
-D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx",
-    concCol = 16, measCol = 12)
+data_folder <- system.file("extdata", "MSQC1_xlsx",
+    package = "CalibraCurve")
+D_list <- readMultipleTables(
+    dataFolder = data_folder, fileType = "xlsx",
+    concCol = 16, measCol = 12
+)
 }

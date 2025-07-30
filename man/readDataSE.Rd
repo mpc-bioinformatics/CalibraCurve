@@ -26,8 +26,9 @@ the substance name (must be a unique value in each row)}
 \item{assayNumber}{\strong{integer(1)} \cr Number of assay to be extracted
 from the SummarizedExperiment object}
 
-\item{rowNumbers}{\strong{integer} \cr Row numbers to extract from the SummarizedExperiment
-object. Default is NULL, which means that all rows in the object will be used.}
+\item{rowNumbers}{\strong{integer} \cr Row numbers to extract from the
+SummarizedExperiment object. Default is NULL, which means that all rows
+in the object will be used.}
 }
 \value{
 List of data.frame, each with two numeric columns:
@@ -48,7 +49,10 @@ sequence, name of lipid or metabolite etc).
 }
 \examples{
 file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
-    package = "CalibraCurve")
-D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-    assayNumber = 1)
+    package = "CalibraCurve"
+)
+D_list <- readDataSE(file,
+    concColName = "amount_fmol",
+    substColName = "Substance", assayNumber = 1
+)
 }

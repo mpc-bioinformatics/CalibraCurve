@@ -18,19 +18,24 @@ plotResponseFactors(
 \arguments{
 \item{RES}{\strong{list} \cr Results of \code{\link{calc_single_curve}}.}
 
-\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in percent (default is 80).}
+\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in
+percent (default is 80).}
 
-\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in percent (default is 120).}
+\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in
+percent (default is 120).}
 
 \item{ylab}{\strong{character(1)} \cr y-axis label.}
 
 \item{xlab}{\strong{character(1)} \cr x-axis label.}
 
-\item{colour_threshold}{\strong{character(1)} \cr Colour for horizontal threshold lines, default is "orange".}
+\item{colour_threshold}{\strong{character(1)} \cr Colour for horizontal threshold
+lines, default is "orange".}
 
-\item{colour_within}{\strong{character(1)} \cr Colour for points and lines within the threshold, default is "#00BFC4" (default ggplot colour).}
+\item{colour_within}{\strong{character(1)} \cr Colour for points and lines within
+the threshold, default is "#00BFC4" (default ggplot colour).}
 
-\item{colour_outside}{\strong{character(1)} \cr Colour for horizontal outside of the threshold, default is "#F8766D" (default ggplot colour).}
+\item{colour_outside}{\strong{character(1)} \cr Colour for horizontal outside of
+the threshold, default is "#F8766D" (default ggplot colour).}
 }
 \value{
 A ggplot2 object containing the response factor plot.
@@ -40,9 +45,12 @@ Plot response factors
 }
 \examples{
 file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
-package = "CalibraCurve")
-D_list <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance",
-                     assayNumber = 1)
+    package = "CalibraCurve"
+)
+D_list <- readDataSE(file,
+    concColName = "amount_fmol",
+    substColName = "Substance", assayNumber = 1
+)
 CC_RES <- calc_single_curve(D_list[[1]], calcContinuousPrelimRanges = FALSE)
 
 plotResponseFactors(RES = CC_RES)
