@@ -4,7 +4,7 @@
 #' @param CC_res **list** \cr Results of \code{\link{CalibraCurve}}.
 #' @param newdata **numeric** \cr A vector of intensity values for which to
 #'      predict concentrations.
-#' @param verbose **logical(1)** \cr If TRUE, a wanring message is given if
+#' @param verbose **logical(1)** \cr If TRUE, a warning message is given if
 #'      estimated concentrations
 #'      are outside of the linear range.
 #'
