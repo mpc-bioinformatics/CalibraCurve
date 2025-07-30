@@ -5,21 +5,11 @@
 \title{CalibraCurve}
 \usage{
 CalibraCurve(
-  data_path = NULL,
-  data_folder = NULL,
+  D_list,
   output_path = NULL,
-  conc_col,
-  meas_col,
-  substance = "substance1",
-  suffix = paste0("_", substance),
-  filetype = "xlsx",
-  sep = ",",
-  dec = ".",
-  header = TRUE,
-  na.strings = c("NA", "NaN", "Filtered", "#NV"),
-  sheet = 1,
-  min_replicates = 1,
-  cv_thres = 20,
+  substance = "substance",
+  minReplicates = 3,
+  cvThres = 20,
   calcContinuousPrelimRanges = FALSE,
   weightingMethod = "1/x^2",
   centralTendencyMeasure = "mean",
@@ -28,18 +18,7 @@ CalibraCurve(
   perBiasDistThres = 10,
   RfThresL = 80,
   RfThresU = 120,
-  ylab = "Intensity",
-  xlab = "Concentration",
   plot_type = "single_plots",
-  show_regression_info = FALSE,
-  show_linear_range = TRUE,
-  show_data_points = TRUE,
-  point_colour = "black",
-  curve_colour = "red",
-  linear_range_colour = "black",
-  multiplot_nrow = NULL,
-  multiplot_ncol = NULL,
-  multiplot_scales = "free",
   RF_colour_threshold = "orange",
   RF_colour_within = "#00BFC4",
   RF_colour_outside = "#F8766D",
@@ -48,92 +27,77 @@ CalibraCurve(
   CC_plot_height = 10,
   RF_plot_width = 15,
   RF_plot_height = 10,
-  plot_dpi = 300
+  plot_dpi = 300,
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
-\item{data_path}{\strong{character(1)} \cr Path to the data file (.csv, .txt or .xlsx file).}
+\item{D_list}{\strong{data.frame/list} \cr Data.frame or list of data.frames
+(one for one specific substance, each must contain two columns:
+Concentration and Measurement)}
 
-\item{data_folder}{\strong{character(1)} \cr Path to the folder containing multiple files (.csv, .txt or .xlsx file).}
+\item{output_path}{\strong{character(1)} \cr Folder to save results (table and
+plots). If NULL (default), results are not saved.}
 
-\item{output_path}{\strong{character(1)} \cr Folder to save results (table and plots). If NULL (default), results are not saved.}
+\item{substance}{\strong{character(1)} \cr Name of the substance (default is
+"substance1"). Will be added to the result files and may be used when
+plotting multiple calibration curves in one plot.}
 
-\item{conc_col}{\strong{integer(1)} \cr Column number of the concentration values.}
+\item{minReplicates}{\strong{integer(1)} \cr Minimal number of replicates/data
+points per concentration level. Concentration levels with too few data
+points will be removed.}
 
-\item{meas_col}{\strong{integer(1)} \cr Column number of the concentration values.}
+\item{cvThres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in
+percent (default is 20).}
 
-\item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1"). Will be added to the result files and may be used when plotting multiple calibration curves in one plot.}
+\item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest
+continuous range is selected (default is TRUE). If FALSE, gaps with CVs
+larger than the threshold may be included.}
 
-\item{suffix}{\strong{character(1)} \cr Suffix for the output files, ideally starting with "\emph{" (default is substance with a "}" in front).}
+\item{weightingMethod}{\strong{character(1)} \cr Method for weighting (currently
+"1/x", "1/x^2" and "None" are supported, default is 1/x^2).}
 
-\item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
+\item{centralTendencyMeasure}{\strong{character(1)} \cr Method for calculating
+average percent bias, "mean" (default) or "median".}
 
-\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. Default is ",".}
+\item{perBiasThres}{\strong{numeric(1)} \cr Threshold for average percent bias in
+percent, default is 20.}
 
-\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot. Default is ".".}
+\item{considerPerBiasCV}{\strong{logical(1)} \cr If TRUE, CV is considered for the
+elimination of the concentration level (default). CV will only be
+considered if the difference in percent bias values is lower than
+perBiasDistThres.}
 
-\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names.}
+\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in
+average percent bias in percent (for lower differences, CV will be
+considered), default is 10.}
 
-\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA.}
+\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in
+percent (default is 80).}
 
-\item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
+\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in
+percent (default is 120).}
 
-\item{min_replicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
-Concentration levels with too few data points will be removed.}
+\item{plot_type}{\strong{character(1)} \cr Type of plot for calibration curves:
+"single_plots" (default, generate a separate plot for each substance),
+"multiplot" (generate a graphic with subplots for each substance) or
+"all_in_one" (generate a single plot with all substances).}
 
-\item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
+\item{RF_colour_threshold}{\strong{character(1)} \cr Response factor plot: Colour
+for horizontal threshold lines, default is "orange".}
 
-\item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest continuous range is selected (default is TRUE).
-If FALSE, gaps with CVs larger than the threshold may be included.}
+\item{RF_colour_within}{\strong{character(1)} \cr Response factor plot: Colour
+for points and lines within the final linear range, default is "#00BFC4"
+(default ggplot colour).}
 
-\item{weightingMethod}{\strong{character(1)} \cr Method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is 1/x^2).}
+\item{RF_colour_outside}{\strong{character(1)} \cr Response factor plot: Colour
+for horizontal outside of the final linear range, default is "#F8766D"
+(default ggplot colour).}
 
-\item{centralTendencyMeasure}{\strong{character(1)} \cr Method for calculating average percent bias, "mean" (default) or "median".}
-
-\item{perBiasThres}{\strong{numeric(1)} \cr Threshold for average percent bias in percent, default is 20.}
-
-\item{considerPerBiasCV}{\strong{logical(1)} \cr If TRUE, CV is considered for the elimination of the concentration level (default). CV will only be considered if the difference in
-percent bias values is lower than perBiasDistThres.}
-
-\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10.}
-
-\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in percent (default is 80).}
-
-\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in percent (default is 120).}
-
-\item{ylab}{\strong{character(1)} \cr y-axis label.}
-
-\item{xlab}{\strong{character(1)} \cr x-axis label.}
-
-\item{plot_type}{\strong{character(1)} \cr Type of plot for calibration curves: "single_plots" (default, generate a separate plot for each substance),
-"multiplot" (generate a graphic with subplots for each substance)
-or "all_in_one" (generate a single plot with all substances).}
-
-\item{show_regression_info}{\strong{logical(1)} \cr If TRUE, show regression information (R2, slope, intercept) on the plot.}
-
-\item{show_linear_range}{\strong{logical(1)} \cr If TRUE, show the linear range of the calibration curve as a rectangle in the plot.}
-
-\item{show_data_points}{\strong{logical(1)} \cr If TRUE, show the data points on the plot.}
-
-\item{point_colour}{\strong{character(1)} \cr Colour of the data points, default is "black".}
-
-\item{curve_colour}{\strong{character(1)} \cr Colour of the calibration curve, default is "red".}
-
-\item{linear_range_colour}{\strong{character(1)} \cr Colour of the linear range background, default is "black" (colour is weakened by alpha = 0.1).}
-
-\item{multiplot_nrow}{\strong{integer(1)} \cr Number of rows for the multiplot layout (default is NULL, which means that there is only one row).}
-
-\item{multiplot_ncol}{\strong{integer(1)} \cr Number of columns for the multiplot layout (default is NULL, which means that the number of columns is determined automatically based on the number of curves).}
-
-\item{multiplot_scales}{\strong{character(1)} \cr Scales for the multiplot layout, default is "fixed" (which means that each plot has the same scale). Other options are "free", "free_x", "free_y".}
-
-\item{RF_colour_threshold}{\strong{character(1)} \cr Response factor plot: Colour for horizontal threshold lines, default is "orange".}
-
-\item{RF_colour_within}{\strong{character(1)} \cr Response factor plot: Colour for points and lines within the final linear range, default is "#00BFC4" (default ggplot colour).}
-
-\item{RF_colour_outside}{\strong{character(1)} \cr Response factor plot: Colour for horizontal outside of the final linear range, default is "#F8766D" (default ggplot colour).}
-
-\item{device}{\strong{character(1)} \cr Device for saving the plot (default is "png"). Other options include "pdf", "jpeg", "tiff", "svg" etc. For details see \code{\link[ggplot2]{ggsave}}.}
+\item{device}{\strong{character(1)} \cr Device for saving the plot (default is
+"png"). Other options include "pdf", "jpeg", "tiff", "svg" etc. For
+details see \code{\link[ggplot2]{ggsave}}.}
 
 \item{CC_plot_width}{\strong{numeric(1)} \cr Plot width in cm (default is 10).}
 
@@ -144,33 +108,53 @@ or "all_in_one" (generate a single plot with all substances).}
 \item{RF_plot_height}{\strong{numeric(1)} \cr Plot height in cm (default is 10).}
 
 \item{plot_dpi}{\strong{numeric(1)} \cr Plot resolution in dpi (default is 300).}
+
+\item{verbose}{\strong{logical(1)} \cr If FALSE, no messages will be printed.}
+
+\item{...}{additional parameters for \code{\link{plotCalibraCurve}}}
 }
 \value{
 List with the following elements:
 \itemize{
-\item \code{RES}: List of CalibraCurve results (one item per substance, output from \code{\link{calc_single_curve}}).
-\item \code{summary_tab}: Data.frame with summary information about the calibration curves, one row per substance.
-\item \code{plot_CC_list}: List of ggplot2 objects of the calibration curves (one per substance for "single_plots", otherwise only one item).
-\item \code{plot_RF_list}: List of ggplot2 objects of the response factor plots (one item).
+\item \code{RES}: List of CalibraCurve results (one item per substance, output
+from \code{\link{calc_single_curve}}).
+\item \code{summary_tab}: Data.frame with summary information about the
+calibration curves, one row per substance.
+\item \code{plot_CC_list}: List of ggplot2 objects of the calibration curves
+(one per substance for "single_plots", otherwise only one item).
+\item \code{plot_RF_list}: List of ggplot2 objects of the response factor plots
+(one item).
 }
 }
 \description{
 CalibraCurve
 }
 \examples{
+### NOTE: as output_path is not specified here, no files will be saved.
+### Set output_path to a folder of your choice to save the results.
 
-### NOTE: as output_path is not specified here, no files will be saved. Set output_path to a folder
-### of your choice to save the results.
+### single xlsx file:
+data_path <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+    package = "CalibraCurve")
+D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
+    fileType = "xlsx")
+RES <- CalibraCurve(D_list = D)
+RES$plot_CC_list
+RES$plot_RF_list
 
-### single file:
-data_path <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
-RES <- CalibraCurve(data_path = data_path, conc_col = 6, meas_col = 7)
-#'
-### multiple files (in a folder) as multiplot:
-data_folder <- system.file("extdata", "xlsx", package = "CalibraCurve")
-RES <- CalibraCurve(data_folder = data_folder, conc_col = 6, meas_col = 7, plot_type = "multiplot")
+### multiple xlsx files (in a folder) as multiplot:
+data_folder <- system.file("extdata", "MSQC1_xlsx", package = "CalibraCurve")
+D_list <- readMultipleTables(dataFolder = data_folder, fileType = "xlsx",
+    concCol = 16, measCol = 12)
+RES <- CalibraCurve(D_list = D_list, plot_type = "multiplot")
+RES$plot_CC_list
 
-### multiple files (in a folder) as all in one plot:
-data_folder <- system.file("extdata", "xlsx", package = "CalibraCurve")
-RES <- CalibraCurve(data_folder = data_folder, conc_col = 6, meas_col = 7, plot_type = "all_in_one")
+### single rds file (SummarizedExperiment) as an all-in-one plot:
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+    package = "CalibraCurve")
+D_list <- readDataSE(dataPath = file, concColName = "amount_fmol",
+        substColName = "Substance", assayNumber = 1)
+RES <- CalibraCurve(D_list, plot_type = "all_in_one")
+RES$plot_CC_list
+
 }

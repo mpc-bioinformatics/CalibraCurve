@@ -7,71 +7,79 @@
 assemble_results(
   X,
   dataCleaned,
-  cv_thres = 20,
   PLR_res,
   resFacDataV,
   avgResFacDataV,
   FLR_res,
   mod,
+  cvThres = 20,
   RfThresL = 80,
   RfThresU = 120,
   substance = "substance1"
 )
 }
 \arguments{
-\item{X}{\strong{data.frame} \cr Original data set, result of \code{\link{readData}}.}
+\item{X}{\strong{data.frame} \cr Original data set, e.g. result of
+\code{\link{readDataTable}}.}
 
-\item{dataCleaned}{\strong{list of data.frames} \cr Cleaned data, result of \code{\link{cleanData}}.}
-
-\item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
+\item{dataCleaned}{\strong{list of data.frames} \cr Cleaned data, result of
+\code{\link{cleanData}}.}
 
 \item{PLR_res}{\strong{list} \cr Result object of \code{\link{calculate_PLR}}.}
 
-\item{resFacDataV}{\strong{list} \cr Result of \code{\link{calcRFLevels}}. List of response factor values for each}
+\item{resFacDataV}{\strong{list} \cr  List of response factor values for each
+concentration level.}
 
-\item{avgResFacDataV}{\strong{numeric} \cr Result of \code{\link{calcRFMeans}}. Vector of mean response factor values for the different concentration levels.}
+\item{avgResFacDataV}{\strong{numeric} \cr Vector of mean response factor values
+for the different concentration levels.}
 
 \item{FLR_res}{\strong{list} Result object of \code{\link{calculate_FLR}}.}
 
-\item{mod}{\strong{lm object} \cr Final linear model fit (object "mod" from results of \code{\link{calculate_FLR}}).}
+\item{mod}{\strong{lm object} \cr Final linear model fit (object "mod" from
+results of \code{\link{calculate_FLR}}).}
 
-\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in percent (default is 80).}
+\item{cvThres}{\strong{numeric(1)} \cr Threshold for CV per concentration level
+in percent (default is 20).}
 
-\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in percent (default is 120).}
+\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in
+percent (default is 80).}
 
-\item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1").}
+\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in
+percent (default is 120).}
+
+\item{substance}{\strong{character(1)} \cr Name of the substance (default is
+"substance1").}
 }
 \value{
 List with the following elements:
 \itemize{
-\item \code{result_table_conc_levels}: Result table with one line for each concentration level.
-\item \code{result_table_obs}: Result table with one line per observation (e.g. individual response factors for each data point).
+\item \code{result_table_conc_levels}: Result table with one line for each
+concentration level.
+\item \code{result_table_obs}: Result table with one line per observation (e.g.
+individual response factors for each data point).
 }
 }
 \description{
 Assemble result tables
 }
 \examples{
-data(D_MFAP4)
-D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
-RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
-    cv_thres = 10,
-    calcContinuousPrelimRanges = TRUE
-)
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+package = "CalibraCurve")
+D_list <- readDataSE(file, concColName = "amount_fmol",
+        substColName = "Substance", assayNumber = 1)
+data_cleaned <- cleanData(D_list[[1]])
+
+RES_PLR <- calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
-
-resFacDataV <- calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
-
-avgResFacDataV <- calcRFMeans(resFacDataV)
+RFs <- calcRF(data_cleaned, mod = RES_FLR$mod)
 
 assemble_results(
-    X = D_MFAP4,
-    dataCleaned = D_MFAP4_cleaned,
+    X = D_list[[1]],
+    dataCleaned = data_cleaned,
     PLR_res = RES_PLR,
-    resFacDataV = resFacDataV,
-    avgResFacDataV = avgResFacDataV,
+    resFacDataV = RFs$RFs,
+    avgResFacDataV = RFs$meanRFs,
     FLR_res = RES_FLR,
     mod = RES_FLR$mod
 )
-
 }

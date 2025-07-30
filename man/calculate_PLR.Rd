@@ -4,42 +4,41 @@
 \alias{calculate_PLR}
 \title{Calculate preliminary linear range (PLR)}
 \usage{
-calculate_PLR(dataCleaned, cv_thres = 20, calcContinuousPrelimRanges = TRUE)
+calculate_PLR(dataCleaned, cvThres = 20, calcContinuousPrelimRanges = TRUE)
 }
 \arguments{
-\item{dataCleaned}{\strong{data.frame} \cr Data cleaned by \code{\link{cleanData}}.}
+\item{dataCleaned}{\strong{data.frame} \cr Data cleaned by
+\code{\link{cleanData}}.}
 
-\item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
+\item{cvThres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in
+percent (default is 20).}
 
-\item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest continuous range is selected (default is TRUE).
-If FALSE, gaps with CVs larger than the threshold may be included.}
+\item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest
+continuous range fulfilling the CV threshold is selected (default is
+TRUE). If FALSE, gaps with CVs larger than the threshold may be
+included.}
 }
 \value{
 List with the following elements:
 \itemize{
-\item \code{dataPrelim}: List of data.frames containing data only within the preliminary linear range.
-\item \code{concLevelsCV}: Vector with the calculated CV for each concentration level.
-\item \code{prelimConcLevels}: Vector with the concentration levels within the preliminary linear range.
+\item \code{dataPrelim}: List of data.frames containing data only within the
+preliminary linear range.
+\item \code{concLevelsCV}: Vector with the calculated CV for each concentration
+level.
+\item \code{prelimConcLevels}: Vector with the concentration levels within the
+preliminary linear range.
 }
 }
 \description{
 Calculate preliminary linear range (PLR)
 }
 \examples{
-data(D_MFAP4)
-D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
-calculate_PLR(D_MFAP4_cleaned,
-    cv_thres = 10,
-    calcContinuousPrelimRanges = TRUE
-)
-## With calcContinuousPrelimRanges = TRUE, only concentration levels 0.025-2.5
-## are part of the preliminary linear range.
 
-calculate_PLR(D_MFAP4_cleaned,
-    cv_thres = 10,
-    calcContinuousPrelimRanges = FALSE
-)
-## With calcContinuousPrelimRanges = FALSE, gaps are allowed, so the preliminary
-## linear range is 0.025-25 (although 5 has a CV larger than the threshold 10).
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+package = "CalibraCurve")
+D_list <- readDataSE(file, concColName = "amount_fmol",
+        substColName = "Substance", assayNumber = 1)
+data_cleaned <- cleanData(D_list[[1]])
 
+calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 }

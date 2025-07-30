@@ -5,23 +5,14 @@
 \title{Calculate all necessary steps for a single calibration curve}
 \usage{
 calc_single_curve(
-  data_path,
-  output_path = NULL,
-  conc_col,
-  meas_col,
-  substance = "substance1",
-  filetype = "xlsx",
-  sep = ",",
-  dec = ".",
-  header = TRUE,
-  na.strings = c("NA", "NaN", "Filtered", "#NV"),
-  sheet = 1,
-  min_replicates = 3,
-  cv_thres = 20,
-  calcContinuousPrelimRanges = TRUE,
+  D,
+  substance = "substance",
+  minReplicates = 3,
+  cvThres = 20,
+  calcContinuousPrelimRanges = FALSE,
   weightingMethod = "1/x^2",
   centralTendencyMeasure = "mean",
-  perBiasThres = 30,
+  perBiasThres = 20,
   considerPerBiasCV = TRUE,
   perBiasDistThres = 10,
   RfThresL = 80,
@@ -29,59 +20,61 @@ calc_single_curve(
 )
 }
 \arguments{
-\item{data_path}{\strong{character(1)} \cr Path to the data file (.csv, .txt or .xlsx file).}
+\item{D}{\strong{data.frame} data set, e.g. result of \code{\link{readDataTable}}
+or \code{\link{readDataSE}}. Has to include exactly two columns:
+"Concentration" and "Measurement".}
 
-\item{output_path}{\strong{character(1)} \cr Folder to save results (table and plots). If NULL (default), results are not saved.}
+\item{substance}{\strong{character(1)} \cr Name of the substance (default is
+"substance"). Will be added to the result files and may be used when
+plotting multiple calibration curves in one plot.}
 
-\item{conc_col}{\strong{integer(1)} \cr Column number of the concentration values.}
+\item{minReplicates}{\strong{integer(1)} \cr Minimal number of replicates per
+concentration level. Concentration levels with too few data points will
+be removed.}
 
-\item{meas_col}{\strong{integer(1)} \cr Column number of the concentration values.}
+\item{cvThres}{\strong{numeric(1)} \cr Threshold for CV per concentration level
+in percent (default is 20).}
 
-\item{substance}{\strong{character(1)} \cr Name of the substance (default is "substance1"). Will be added to the result files and may be used when plotting multiple calibration curves in one plot.}
+\item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest
+continuous range is selected (default is TRUE). If FALSE, gaps with CVs
+larger than the threshold may be included.}
 
-\item{filetype}{\strong{character(1)} \cr Type of input file: "csv" or "txt" or "xlsx".}
+\item{weightingMethod}{\strong{character(1)} \cr Method for weighting (currently
+"1/x", "1/x^2" and "None" are supported, default is 1/x^2).}
 
-\item{sep}{\strong{character(1)} \cr The field separator, e.g. " " for blanks, "," for comma or "\\t" for tab. Default is ",".}
+\item{centralTendencyMeasure}{\strong{character(1)} \cr Method for calculating
+average percent bias, "mean" (default) or "median".}
 
-\item{dec}{\strong{character(1)} \cr Decimal separator, e.g. "," for comma or "." for dot. Default is ".".}
+\item{perBiasThres}{\strong{numeric(1)} \cr Threshold for average percent bias
+in percent, default is 20.}
 
-\item{header}{\strong{logical(1)} \cr If TRUE, first line is counted as column names.}
+\item{considerPerBiasCV}{\strong{logical(1)} \cr If TRUE, CV is considered for the
+elimination of the concentration level (default). CV will only be
+considered if the difference in percent bias values is lower than
+perBiasDistThres.}
 
-\item{na.strings}{\strong{character} \cr Character vector of strings which are to be interpreted as NA.}
+\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in
+average percent bias in percent (for lower differences, CV will be
+considered), default is 10.}
 
-\item{sheet}{\strong{integer(1)} \cr Sheet number (only needed for xlsx files, default is to use the first sheet).}
+\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in
+percent (default is 80).}
 
-\item{min_replicates}{\strong{integer(1)} \cr Minimal number of replicates/data points per concentration level.
-Concentration levels with too few data points will be removed.}
-
-\item{cv_thres}{\strong{numeric(1)} \cr Threshold for CV per concentration level in percent (default is 20).}
-
-\item{calcContinuousPrelimRanges}{\strong{logical(1)} \cr If TRUE, the longest continuous range is selected (default is TRUE).
-If FALSE, gaps with CVs larger than the threshold may be included.}
-
-\item{weightingMethod}{\strong{character(1)} \cr Method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is 1/x^2).}
-
-\item{centralTendencyMeasure}{\strong{character(1)} \cr Method for calculating average percent bias, "mean" (default) or "median".}
-
-\item{perBiasThres}{\strong{numeric(1)} \cr Threshold for average percent bias in percent, default is 20.}
-
-\item{considerPerBiasCV}{\strong{logical(1)} \cr If TRUE, CV is considered for the elimination of the concentration level (default). CV will only be considered if the difference in
-percent bias values is lower than perBiasDistThres.}
-
-\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10.}
-
-\item{RfThresL}{\strong{numeric(1)} \cr Lower threshold for response factor in percent (default is 80).}
-
-\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in percent (default is 120).}
+\item{RfThresU}{\strong{numeric(1)} \cr Upper threshold for response factor in
+percent (default is 120).}
 }
 \value{
 List with the following elements:
 \itemize{
 \item \code{mod}: lm-object containing the final linear model.
-\item \code{final_linear_range}: vector of concentration levels that are part of the final linear range.
-\item \code{weightingMethod}: weighting method that was used for the linear model.
-\item \code{result_table_conc_levels}: Result table with one line for each concentration level (generated by \code{\link{assemble_results}}).
-\item \code{result_table_obs}: Result table with one line per observation (e.g. individual response factors for each data point) (generated by \code{\link{assemble_results}}).
+\item \code{final_linear_range}: vector of concentration levels that are part of
+the final linear range.
+\item \code{weightingMethod}: weighting method used for the linear model.
+\item \code{result_table_conc_levels}: Result table with one line for each
+concentration level (generated by \code{\link{assemble_results}}).
+\item \code{result_table_obs}: Result table with one line per observation (e.g.
+individual response factors for each data point) (generated by
+\code{\link{assemble_results}}).
 }
 }
 \description{
@@ -89,6 +82,9 @@ Calculate all necessary steps for a single calibration curve
 }
 \examples{
 
-data_path <- system.file("extdata", "xlsx/ALB_LVNEVTEFAK_y8.xlsx", package = "CalibraCurve")
-calc_single_curve(data_path = data_path, conc_col = 6, meas_col = 7)
+data_path <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+        package = "CalibraCurve")
+D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
+        fileType = "xlsx")
+calc_single_curve(D = D)
 }

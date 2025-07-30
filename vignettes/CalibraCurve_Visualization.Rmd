@@ -1,0 +1,248 @@
+---
+title: "Customizing the visualizations of CalibraCurve"
+author: 
+  - name: Karin Schork
+    affiliation:
+    - Medizinisches Proteom-Center, Ruhr-Universität Bochum
+    email: karin.schork@rub.de
+output: 
+  BiocStyle::html_document:
+    self_contained: yes
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: show
+date: "`r doc_date()`"
+package: "`r pkg_ver('CalibraCurve')`"
+vignette: >
+  %\VignetteIndexEntry{2. Customizing the visualizations of CalibraCurve}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    crop = NULL 
+## Related to https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016656.html
+)
+```
+
+
+```{r vignetteSetup, echo=FALSE, message=FALSE, warning = FALSE}
+## Bib setup
+library("RefManageR")
+
+## Write bibliography information
+bib <- c(
+    R = citation(),
+    BiocStyle = citation("BiocStyle")[1],
+    knitr = citation("knitr")[1],
+    RefManageR = citation("RefManageR")[1],
+    rmarkdown = citation("rmarkdown")[1],
+    sessioninfo = citation("sessioninfo")[1],
+    testthat = citation("testthat")[1],
+    CalibraCurve = citation("CalibraCurve")[1]
+)
+```
+
+
+# Introduction
+
+```{r "start", message=FALSE}
+library("CalibraCurve")
+
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", 
+                    package = "CalibraCurve")
+
+D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance")
+
+RES <- CalibraCurve(D)
+
+```
+
+
+# Handling multiple calibration curves
+
+If multiple analytes are present in the data, `CalibraCurve` by default plots 
+each calibration curve separately and saves them in separate files. 
+There are, however, two possibilities to combine the calibration curves.
+
+### Multiplot
+
+The multiplot option allows to arrange the different curves in a grid. This 
+functionality is based on the `facet_wrap` function from `ggplot2`.
+
+```{r "multiplot", message=FALSE}
+RES <- CalibraCurve(D, plot_type = "multiplot")
+RES$plot_CC_list
+
+```
+
+The single plots are arranged in a grid. The number of rows and columns is 
+chosen automatically by default, but can be changed by using the 
+`multiplot_nrow` and `multiplot_ncol` parameters:
+
+```{r "multiplot_nrow_ncol", message=FALSE, out.width="100%"}
+RES <- CalibraCurve(D, plot_type = "multiplot", multiplot_nrow = 3, 
+                    multiplot_ncol = 4)
+RES$plot_CC_list
+
+```
+
+
+By default, the x and y-axis ranges are individual per plot 
+`multiplot_scales = "fixed"`. 
+Sometimes it makes sense to fix both axis or only one of them for better 
+comparability. For this, the `multiplot_scales` parameter
+can be set to `fixed`, `fixed_y` or `fixed_x`: 
+
+```{r "multiplot_fixed", message=FALSE, out.width="100%"}
+RES <- CalibraCurve(D, plot_type = "multiplot", multiplot_scales = "fixed")
+RES$plot_CC_list
+
+```
+
+Now, the x- and y-axes are scaled the same for each plot, so the intensity 
+values can be directly compared between plots.
+
+
+### All-in-one plot
+
+As a second option, the `"all_in_one"` option allows to plot all curves into 
+the same graphic, so a more direct comparison is possible:
+
+```{r "multiplot_allin1", message=FALSE, out.width="100%"}
+RES <- CalibraCurve(D, plot_type = "all_in_one")
+RES$plot_CC_list
+
+```
+
+Each of the 9 calibration curves is presented in the same plot in different 
+colours (see legend). Please note that for better visability, the 
+linear ranges are not indicated by the grey background anymore. However, data 
+points outside of the linear range are still plotted with a higher transparency 
+(alpha-value).
+
+
+# Changing colours
+
+Different colours can be changed in the plots. For the calibration curves, the 
+colour of the data points (`point_colour`), the colour of the curve 
+(`curve_colour`) and of the linear range (`linear_range_colour`) can be 
+customized. The colours can be given as the colour name or the hexadecimal 
+colour code:
+
+
+```{r "CC_colours", message=FALSE}
+RES <- CalibraCurve(D, point_colour = "blue", curve_colour = "black", 
+                    linear_range_colour = "red")
+RES$plot_CC_list[[1]]
+
+```
+
+
+For the response factor plots, the colour of data points and corresponding 
+connection lines within and outside of the thresholds (`RF_colour_within` and 
+`RF_colour_outside`) can be adapted. Furthermore, the colour of the threshold 
+lines can be changed (`RF_colour_threshold`).
+
+
+```{r "RF_colours", message=FALSE}
+RES <- CalibraCurve(D, RF_colour_threshold = "grey", 
+                    RF_colour_within = "purple", 
+                    RF_colour_outside = "darkgreen")
+RES$plot_RF_list[[1]]
+
+```
+
+
+
+
+# Other plot elements
+
+The plotting of the data points can be omitted. This makes sense especially 
+when multiple curves are plotted in the same plot. As a downside, information 
+on the linear ranges is lost:
+
+
+```{r "data_points", message=FALSE}
+RES <- CalibraCurve(D, plot_type = "all_in_one", show_data_points = FALSE)
+RES$plot_CC_list
+
+```
+
+
+It is also possible to remove the background that indicates the linear range. 
+Also, it is possible to write the regression curve equation (upper left corner 
+of the plot) and the R squared value into the plot, which is turned off by 
+default:
+
+```{r "regression_info", message=FALSE}
+RES <- CalibraCurve(D, show_linear_range = FALSE, show_regression_info = TRUE)
+RES$plot_CC_list[[1]]
+
+```
+
+
+Furthermore, the axis labels can be changed, in this example we specify the 
+labels to match the underlying data set:
+
+
+```{r "axis labels", message=FALSE}
+RES <- CalibraCurve(D, xlab = "Amount (fmol)", ylab = "Area")
+RES$plot_CC_list[[1]]
+
+```
+
+
+
+
+It has to be noted that the plots are returned as ggplot2 objects by the 
+respective functions. Therefore, even more customizations can be done by using 
+the ggplot2 functionality. For example, we can give the plot a title and use a 
+different theme which does not contain a grid in the background:
+
+
+```{r "ggplot_object", message=FALSE}
+RES <- CalibraCurve(D)
+pl <- RES$plot_CC_list[[1]]
+
+library(ggplot2)
+pl <- pl + ggtitle("Calibration Curve") + theme_classic()
+pl
+
+```
+
+
+
+
+
+
+# R session information
+
+`R` session information.
+
+```{r reproduce3, echo=FALSE}
+## Session info
+library("sessioninfo")
+options(width = 120)
+session_info()
+```
+
+
+
+# Bibliography
+
+This vignette was generated using `r Biocpkg("BiocStyle")` 
+`r Citep(bib[["BiocStyle"]])` with `r CRANpkg("knitr")` 
+`r Citep(bib[["knitr"]])` and `r CRANpkg("rmarkdown")` 
+`r Citep(bib[["rmarkdown"]])` running behind the scenes.
+
+Citations made with `r CRANpkg("RefManageR")` `r Citep(bib[["RefManageR"]])`.
+
+```{r Biblio, results = "asis", echo = FALSE, warning = FALSE, message = FALSE}
+## Print bibliography
+PrintBibliography(bib, .opts = list(hyperlink = "to.doc", style = "html"))
+```

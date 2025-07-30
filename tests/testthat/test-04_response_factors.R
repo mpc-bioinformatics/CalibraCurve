@@ -1,19 +1,16 @@
 test_that("response factors", {
-    data(D_MFAP4)
-    D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
-    RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
-        cv_thres = 20,
-        calcContinuousPrelimRanges = TRUE
-    )
+    file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+                        package = "CalibraCurve")
+    D <- readDataTable(file, fileType = "xlsx", concCol = 16,
+                       measCol = 12)
+    D_cleaned <- cleanData(D)
+    RES_PLR <- calculate_PLR(D_cleaned, cvThres = 10,
+                             calcContinuousPrelimRanges = TRUE)
     RES_FLR <- calculate_FLR(RES_PLR$dataPrelim)
 
-    resFacDataV <- CalibraCurve::calcRFLevels(D_MFAP4_cleaned, mod = RES_FLR$mod)
+    RFs <- CalibraCurve::calcRF(D_cleaned, mod = RES_FLR$mod)
 
-    expect_equal(length(resFacDataV), 11)
-    expect_equal(class(resFacDataV), "list")
-
-    # Calculation of mean response factor values
-    avgResFacDataV <- CalibraCurve::calcRFMeans(resFacDataV)
-
-    expect_equal(length(avgResFacDataV), 11)
+    expect_equal(length(RFs$RFs), 6)
+    expect_equal(class(RFs$RFs), "list")
+    expect_equal(length(RFs$meanRFs), 6)
 })

@@ -2,38 +2,47 @@
 % Please edit documentation in R/07_prediction.R
 \name{predictConcentration}
 \alias{predictConcentration}
-\title{Predict concentrations from intensity values based on a given calibration curve}
+\title{Predict concentrations from intensity values based on a given calibration
+curve}
 \usage{
-predictConcentration(CC_res, newdata)
+predictConcentration(CC_res, newdata, verbose = TRUE)
 }
 \arguments{
 \item{CC_res}{\strong{list} \cr Results of \code{\link{CalibraCurve}}.}
 
-\item{newdata}{\strong{numeric} \cr A vector of intensity values for which to predict concentrations.}
+\item{newdata}{\strong{numeric} \cr A vector of intensity values for which to
+predict concentrations.}
+
+\item{verbose}{\strong{logical(1)} \cr If TRUE, a wanring message is given if
+estimated concentrations
+are outside of the linear range.}
 }
 \value{
 A data frame with the following columns:
 \itemize{
 \item \code{intensity}: The input intensity values.
-\item \code{predicted_concentrations}: The predicted concentrations based on the calibration curve.
-\item \code{linear_range}: A logical vector indicating whether the predicted concentrations are within the final linear range.
+\item \code{predicted_concentrations}: The predicted concentrations based on the
+calibration curve.
+\item \code{linear_range}: A logical vector indicating whether the predicted
+concentrations are within the final linear range.
 }
 }
 \description{
-Predict concentrations from intensity values based on a given calibration curve
+Predict concentrations from intensity values based on a given calibration
+curve
 }
 \details{
-The function will give a warning if any of the predicted concentrations are outside the final linear range.
-This is important to ensure that the predictions are reliable and within the linear range of the calibration curve.
+The function will give a warning if any of the predicted concentrations are
+outside the final linear range. This is important to ensure that the
+predictions are reliable and within the linear range of the calibration
+curve.
 }
 \examples{
-
-data(RES_MFAP4)
-newdata <- c(5, 0.2, 10)
-predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
-
-## concentration that leads to predictions outside of the linear range -> warning
-newdata2 <- c(100)
-predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
-
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+        package = "CalibraCurve")
+D <- readDataSE(file, concColName = "amount_fmol",
+        substColName = "Substance")
+RES <- CalibraCurve(D)
+newdata <- c(1000000, 10000000, 100000000) # 1e6, 1e7, 1e8
+predictConcentration(RES$RES[[4]], newdata = newdata)
 }

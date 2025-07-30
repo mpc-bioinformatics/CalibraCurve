@@ -5,7 +5,7 @@
 \title{Plot the calibration curve}
 \usage{
 plotCalibraCurve(
-  RES,
+  CC_RES,
   ylab = "Intensity",
   xlab = "Concentration",
   show_regression_info = FALSE,
@@ -21,33 +21,45 @@ plotCalibraCurve(
 )
 }
 \arguments{
-\item{RES}{\strong{list} \cr Results of \code{\link{CalibraCurve}}.}
+\item{CC_RES}{\strong{list} \cr Results of \code{\link{CalibraCurve}}.}
 
 \item{ylab}{\strong{character(1)} \cr y-axis label.}
 
 \item{xlab}{\strong{character(1)} \cr x-axis label.}
 
-\item{show_regression_info}{\strong{logical(1)} \cr If TRUE, show regression information (R2, slope, intercept) on the plot.}
+\item{show_regression_info}{\strong{logical(1)} \cr If TRUE, show regression
+information (R2, slope, intercept) on the plot.}
 
-\item{show_linear_range}{\strong{logical(1)} \cr If TRUE, show the linear range of the calibration curve as a rectangle in the plot.}
+\item{show_linear_range}{\strong{logical(1)} \cr If TRUE, show the linear range
+of the calibration curve as a rectangle in the plot.}
 
-\item{show_data_points}{\strong{logical(1)} \cr If TRUE, show the data points on the plot.}
+\item{show_data_points}{\strong{logical(1)} \cr If TRUE, show the data points on
+the plot.}
 
-\item{plot_type}{\strong{character(1)} \cr Type of plot for calibration curves: "single_plots" (default, generate a separate plot for each substance),
+\item{plot_type}{\strong{character(1)} \cr Type of plot for calibration curves:
+"single_plots" (default, generate a separate plot for each substance),
 "multiplot" (generate a graphic with subplots for each substance)
 or "all_in_one" (generate a single plot with all substances).}
 
-\item{point_colour}{\strong{character(1)} \cr Colour of the data points, default is "black".}
+\item{point_colour}{\strong{character(1)} \cr Colour of the data points, default
+is "black".}
 
-\item{curve_colour}{\strong{character(1)} \cr Colour of the calibration curve, default is "red".}
+\item{curve_colour}{\strong{character(1)} \cr Colour of the calibration curve,
+default is "red".}
 
-\item{linear_range_colour}{\strong{character(1)} \cr Colour of the linear range background, default is "black" (colour is weakened by alpha = 0.1).}
+\item{linear_range_colour}{\strong{character(1)} \cr Colour of the linear range
+background, default is "black" (colour is weakened by alpha = 0.1).}
 
-\item{multiplot_nrow}{\strong{integer(1)} \cr Number of rows for the multiplot layout (default is NULL, which means that there is only one row).}
+\item{multiplot_nrow}{\strong{integer(1)} \cr Number of rows for the multiplot
+layout (default is NULL, which means that there is only one row).}
 
-\item{multiplot_ncol}{\strong{integer(1)} \cr Number of columns for the multiplot layout (default is NULL, which means that the number of columns is determined automatically based on the number of curves).}
+\item{multiplot_ncol}{\strong{integer(1)} \cr Number of columns for the multiplot
+layout (default is NULL, which means that the number of columns is
+determined automatically based on the number of curves).}
 
-\item{multiplot_scales}{\strong{character(1)} \cr Scales for the multiplot layout, default is "free" (which means that each plot has its own scales). Other options are "fixed", "free_x", "free_y".}
+\item{multiplot_scales}{\strong{character(1)} \cr Scales for the multiplot layout,
+default is "free" (which means that each plot has its own scales). Other
+options are "fixed", "free_x", "free_y".}
 }
 \value{
 A ggplot2 object containing the calibration curve plot.
@@ -56,26 +68,14 @@ A ggplot2 object containing the calibration curve plot.
 Plot the calibration curve
 }
 \examples{
-
-data(RES_ALB)
-data(RES_MFAP4)
-data(RES_Apolipoprotein)
-
-### default: single plot for each substance
-plotCalibraCurve(list("ALB" = RES_ALB, "MFAP4" = RES_MFAP4, "Apolipoprotein" = RES_Apolipoprotein))
-
-
-### multiplot: one plot with subplots for each substance
-plotCalibraCurve(list("ALB" = RES_ALB, "MFAP4" = RES_MFAP4, "Apolipoprotein" = RES_Apolipoprotein),
-    plot_type = "multiplot",
-    multiplot_nrow = 2,
-    multiplot_ncol = 2,
-    show_regression_info = TRUE
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+    package = "CalibraCurve"
 )
-
-
-### all in one plot: all substances in one plot
-plotCalibraCurve(list("ALB" = RES_ALB, "MFAP4" = RES_MFAP4, "Apolipoprotein" = RES_Apolipoprotein),
-    plot_type = "all_in_one"
+D_list <- readDataSE(file,
+    concColName = "amount_fmol",
+    substColName = "Substance", assayNumber = 1
 )
+CC_RES <- calc_single_curve(D_list[[1]], calcContinuousPrelimRanges = FALSE)
+
+plotCalibraCurve(list(substance = CC_RES))
 }

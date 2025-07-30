@@ -3,3 +3,5 @@ inst/doc
 CalibraCurve.Rproj
 dev
 *.Rproj
+vignettes/*.html
+vignettes/*.R

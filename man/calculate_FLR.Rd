@@ -14,37 +14,50 @@ calculate_FLR(
 )
 }
 \arguments{
-\item{dataPrelim}{\strong{list of data.frames} \cr List of data.frames containing data only within the preliminary linear range (result from \code{\link{calculate_PLR}}).}
+\item{dataPrelim}{\strong{list of data.frames} \cr List of data.frames containing
+data only within the preliminary linear range (result from
+\code{\link{calculate_PLR}}).}
 
-\item{weightingMethod}{\strong{character(1)} \cr Method for weighting (currently "1/x", "1/x^2" and "None" are supported, default is 1/x^2).}
+\item{weightingMethod}{\strong{character(1)} \cr Method for weighting (currently
+"1/x", "1/x^2" and "None" are supported, default is 1/x^2).}
 
-\item{centralTendencyMeasure}{\strong{character(1)} \cr Method for calculating average percent bias, "mean" (default) or "median".}
+\item{centralTendencyMeasure}{\strong{character(1)} \cr Method for calculating
+average percent bias, "mean" (default) or "median".}
 
-\item{perBiasThres}{\strong{numeric(1)} \cr Threshold for average percent bias in percent, default is 20.}
+\item{perBiasThres}{\strong{numeric(1)} \cr Threshold for average percent bias in
+percent, default is 20.}
 
-\item{considerPerBiasCV}{\strong{logical(1)} \cr If TRUE, CV is considered for the elimination of the concentration level (default). CV will only be considered if the difference in
-percent bias values is lower than perBiasDistThres.}
+\item{considerPerBiasCV}{\strong{logical(1)} \cr If TRUE, CV is considered for the
+elimination of the concentration level (default). CV will only be
+considered if the difference in percent bias values is lower than
+perBiasDistThres.}
 
-\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in average percent bias in percent (for lower differences, CV will be considered), default is 10. Only relevant if considerPerBiasCV = TRUE.}
+\item{perBiasDistThres}{\strong{numeric(1)} \cr Threshold for the difference in
+average percent bias in percent (for lower differences, CV will be
+considered), default is 10. Only relevant if considerPerBiasCV = TRUE.}
 }
 \value{
 List with the following elements:
 \itemize{
-\item \code{dataFinal}: List of data.frames containing data only within the final linear range.
-\item \code{mod}: lm-object containing the final linear model (weighted or unweighted, depending on weightingMethod).
-\item \code{perBias}: result list of \code{\link{calcPerBiasLevels}}.
-\item \code{perBiasAvgSDCV}: result data.frame of \code{\link{calcPerBiasAvgSDCV}}.
+\item \code{dataFinal}: List of data.frames containing data only within the
+final linear range.
+\item \code{mod}: lm-object containing the final linear model (weighted or
+unweighted, depending on weightingMethod).
+\item \code{perBias}: result list of \code{\link{.calcPerBiasLevels}}.
+\item \code{perBiasAvgSDCV}: result data.frame of
+\code{\link{.calcPerBiasAvgSDCV}}.
 }
 }
 \description{
 Calculate the final linear range
 }
 \examples{
-data(D_MFAP4)
-D_MFAP4_cleaned <- cleanData(D_MFAP4, min_replicates = 3)
-RES_PLR <- calculate_PLR(D_MFAP4_cleaned,
-    cv_thres = 10,
-    calcContinuousPrelimRanges = TRUE
-)
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+        package = "CalibraCurve")
+D_list <- readDataSE(file, concColName = "amount_fmol",
+        substColName = "Substance", assayNumber = 1)
+data_cleaned <- cleanData(D_list[[1]])
+RES_PLR <- calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
+
 calculate_FLR(RES_PLR$dataPrelim)
 }

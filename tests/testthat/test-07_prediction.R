@@ -1,20 +1,15 @@
 test_that("prediction", {
-    data(RES_MFAP4)
+    file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", package = "CalibraCurve")
+    D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance")
+    RES <- CalibraCurve(D, verbose = FALSE)
+    newdata <- c(1000000, #1e6
+                 10000000, #1e7
+                 100000000) # 2e7
 
-    newdata <- c(5, 0.2, 10)
-    pred <- predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata)
+    pred <- predictConcentration(RES$RES[[4]], newdata = newdata, verbose = FALSE)
 
     expect_equal(nrow(pred), 3)
     expect_equal(ncol(pred), 3)
-    expect_equal(colnames(pred), c("intensity", "predicted_concentrations", "linear_range"))
-
-
-    ## concentrations that lead to predictions outside of the linear range
-    newdata2 <- c(5, 0.02, 100)
-
-    ### TODO: rewrite test so that it checks output table of predictConcentration
-    ### or use purrr:quietly?
-    expect_warning(predictConcentration(CC_res = list(RES = list("MFAP4" = RES_MFAP4)), newdata = newdata2),
-                 regexp = "outside the final linear range", fixed = TRUE)
-
+    expect_equal(colnames(pred), c("intensity", "predConc", "linear_range"))
+    expect_equal(pred$linear_range, c(TRUE, TRUE, FALSE))
 })
