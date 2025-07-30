@@ -200,7 +200,7 @@ RES$plot_CC_list[[1]]
 
 
 It has to be noted that the plots are returned as ggplot2 objects by the 
-respective functions. Therefore, even more custumizations can be done by using 
+respective functions. Therefore, even more customizations can be done by using 
 the ggplot2 functionality. For example, we can give the plot a title and use a 
 different theme which does not contain a grid in the background:
 
