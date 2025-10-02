@@ -1,6 +1,7 @@
 #' Plot the calibration curve
 #'
-#' @param CC_RES **list** \cr Results of \code{\link{CalibraCurve}}.
+#' @param CC_RES **list** \cr Results of \code{\link{CalibraCurve}}. Each list
+#'      element is the result of \code{\link{calc_single_curve}}
 #' @param ylab **character(1)** \cr y-axis label.
 #' @param xlab **character(1)** \cr x-axis label.
 #' @param show_regression_info **logical(1)** \cr If TRUE, show regression
@@ -28,10 +29,17 @@
 #'    default is "free" (which means that each plot has its own scales). Other
 #'    options are "fixed", "free_x", "free_y".
 #'
+#'
+#' @importFrom checkmate assertCharacter assertFlag
 #' @importFrom magrittr %>%
+#' @importFrom ggplot2 ggplot aes scale_x_continuous scale_y_continuous
+#' geom_point scale_alpha_manual geom_line facet_wrap geom_rect geom_text
+#' guides guide_legend theme theme_bw xlab ylab unit
+#' @importFrom scales label_comma
 #'
 #' @returns
-#' A ggplot2 object containing the calibration curve plot.
+#' List of a ggplot2 object containing the calibration curve plot (CC_plot) and
+#' a data.frame containing summary data for annotations (annotation_dat).
 #' @export
 #'
 #' @examples
@@ -160,6 +168,11 @@ plotCalibraCurve <- function(
 
 
 
+#' Prepare calibration data
+#'
+#' @param CC_RES **list** Result object of \code{\link{CalibraCurve}}.
+#'
+#' @returns Dataframe with calibration data for plotting.
 .prepareCalibData <- function(CC_RES) {
     ## remove empty results from list (if calculation stopped)
     is_RES_null <- vapply(CC_RES, is.null, logical(1))
@@ -183,6 +196,11 @@ plotCalibraCurve <- function(
 }
 
 
+#' Prepare annotation data
+#'
+#' @param D_calib **data.frame** \cr Result of \code{\link{.prepareCalibData}}
+#'
+#' @returns Dataframe with annotation data for the plot.
 .prepareAnnotationData <- function(D_calib) {
     D_calib_split <- split(D_calib, D_calib$substance)
 
@@ -214,6 +232,15 @@ plotCalibraCurve <- function(
 }
 
 
+#' Prepare curve data
+#'
+#' @param CC_RES **list** \cr Results of \code{\link{CalibraCurve}}. Each list
+#'      element is the result of \code{\link{calc_single_curve}}
+#' @param D_calib **data.frame** \cr Result of \code{\link{.prepareCalibData}}
+#'
+#' @returns Dataframe with data points on a grid to plot the calibration curve.
+#'
+#' @importFrom stats predict
 .prepareCurveData <- function(CC_RES, D_calib) {
     ## remove empty results from list (if calculation stopped)
     is_RES_null <- vapply(CC_RES, is.null, logical(1))
@@ -263,6 +290,13 @@ plotCalibraCurve <- function(
 #'
 #' @returns
 #' A ggplot2 object containing the response factor plot.
+#'
+#' @importFrom checkmate assertNumeric assertCharacter
+#' @importFrom ggplot2 ggplot scale_x_continuous geom_point aes geom_line
+#' scale_alpha_manual scale_colour_manual scale_fill_manual geom_hline theme
+#' theme_bw xlab ylab unit
+#' @importFrom scales comma
+#'
 #' @export
 #'
 #' @examples

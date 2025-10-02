@@ -26,6 +26,10 @@
 #'      concentration level.
 #' - \code{result_table_obs}: Result table with one line per observation (e.g.
 #'      individual response factors for each data point).
+#'
+#' @importFrom checkmate assertNumeric assertCharacter
+#' @importFrom stats aggregate predict
+#'
 #' @export
 #'
 #' @examples
@@ -107,6 +111,9 @@ assemble_results <- function(X, dataCleaned,  PLR_res, resFacDataV,
 #'
 #' @returns Returns nothing, but the function saves the results to the specified
 #'      output path.
+#'
+#' @importFrom openxlsx write.xlsx
+#'
 .saveCCResult <- function(CC_res, output_path, suffix = "") {
     # save result tables
     openxlsx::write.xlsx(CC_res$result_table_conc_levels,

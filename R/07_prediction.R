@@ -14,7 +14,11 @@
 #'      calibration curve.
 #' - `linear_range`: A logical vector indicating whether the predicted
 #'      concentrations are within the final linear range.
+#'
+#' @importFrom stats coefficients
+#'
 #' @export
+#'
 #'
 #' @details
 #' The function will give a warning if any of the predicted concentrations are

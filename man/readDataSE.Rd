@@ -54,12 +54,11 @@ sequence, name of lipid or metabolite etc).
 }
 \examples{
 file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
-    package = "CalibraCurve"
-)
+    package = "CalibraCurve")
+
 D_list <- readDataSE(file,
     concColName = "amount_fmol",
-    substColName = "Substance", assayNumber = 1
-)
+    substColName = "Substance", assayNumber = 1)
 
 # Alternative: import SummarizedExperiment object directly
 rawDataSE <- readRDS(file)

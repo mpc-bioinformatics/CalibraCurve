@@ -17,6 +17,12 @@
 #'      default is to use the first sheet).
 #'
 #' @returns Data.frame with two numeric columns: Concentration and Measurement
+#'
+#' @importFrom checkmate assert_file_exists assert_character assert_choice
+#' assert_int assert_character assert_flag
+#' @importFrom openxlsx read.xlsx
+#' @importFrom utils read.table
+#'
 #' @export
 #'
 #' @examples
@@ -89,6 +95,11 @@ readDataTable <- function(
 #'
 #' @returns List of data.frame, each with two numeric columns:
 #'    Concentration and Measurement
+#'
+#' @importFrom magrittr %>%
+#' @importFrom dplyr rowwise mutate
+#' @importFrom tools file_ext
+#'
 #' @export
 #'
 #' @examples
@@ -127,11 +138,6 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 
 
 
-
-
-
-
-
 #' Read data stored as an SummarizedExperiment object (directly or stored in an
 #' .rds file).
 #' Extracts the two relevant columns (concentration and measurement) and
@@ -159,16 +165,20 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 #'
 #' @returns List of data.frame, each with two numeric columns:
 #'    Concentration and Measurement
+#'
+#' @importFrom checkmate assert_file_exists assert_class
+#' @importFrom SummarizedExperiment assays rowData colData
+#' @importFrom tidyr pivot_longer last_col
+#'
 #' @export
 #'
 #' @examples
 #' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
-#'     package = "CalibraCurve"
-#' )
+#'     package = "CalibraCurve")
+#'
 #' D_list <- readDataSE(file,
 #'     concColName = "amount_fmol",
-#'     substColName = "Substance", assayNumber = 1
-#' )
+#'     substColName = "Substance", assayNumber = 1)
 #'
 #' # Alternative: import SummarizedExperiment object directly
 #' rawDataSE <- readRDS(file)
@@ -178,7 +188,7 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 #'     substColName = "Substance", assayNumber = 1
 #' )
 readDataSE <- function(dataPath = NULL, rawDataSE = NULL, concColName,
-                       substColName, assayNumber = 1, rowNumbers = NULL) {
+                        substColName, assayNumber = 1, rowNumbers = NULL) {
     if (is.null(rawDataSE)) {
         checkmate::assert_file_exists(dataPath)
         rawDataSE <- readRDS(dataPath)
@@ -224,6 +234,9 @@ readDataSE <- function(dataPath = NULL, rawDataSE = NULL, concColName,
 #'
 #' @returns list of data.frames, each element contains data for a specific
 #'  concentration level
+#'
+#' @importFrom checkmate assert_int
+#'
 #' @export
 #'
 #' @examples

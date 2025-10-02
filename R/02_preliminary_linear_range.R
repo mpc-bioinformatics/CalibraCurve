@@ -17,6 +17,8 @@
 #' - \code{prelimConcLevels}: Vector with the concentration levels within the
 #'      preliminary linear range.
 #'
+#' @importFrom checkmate assert_numeric assert_flag
+#'
 #' @export
 #'
 #' @examples
@@ -91,6 +93,9 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
 #'
 #' @returns **numeric(1)** \cr Coefficient of variation (CV) for the given
 #'      concentration level.
+#'
+#' @importFrom stats sd
+#'
 .calcCV <- function(x) {
     SD <- stats::sd(x$Measurement)
     Mean <- mean(x$Measurement)

@@ -27,6 +27,7 @@
 #' - \code{perBiasAvgSDCV}: result data.frame of
 #'      \code{\link{.calcPerBiasAvgSDCV}}.
 #'
+#' @importFrom checkmate assertChoice assertNumeric assertFlag
 #'
 #' @export
 #'
@@ -126,6 +127,9 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #'      unweighted model).
 #'
 #' @returns Fit of the linear model as an object of class "lm".
+#'
+#' @importFrom stats lm
+#'
 .calcLinearModel <- function(x, weights = NULL) {
     ## combine list elements to a data set
     dataSetDF <- do.call(rbind, x)
@@ -183,6 +187,9 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #'
 #' @returns data frame with 3 columns: avgPerBias, stdDevPerBias, CV_PerBias
 #'          \cr each row is one concentration level
+#'
+#' @importFrom stats sd median
+#'
 .calcPerBiasAvgSDCV <- function(x, method = "mean") {
     if (method == "mean") {
         avgPerBias <- colMeans(x)

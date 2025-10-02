@@ -21,7 +21,8 @@ plotCalibraCurve(
 )
 }
 \arguments{
-\item{CC_RES}{\strong{list} \cr Results of \code{\link{CalibraCurve}}.}
+\item{CC_RES}{\strong{list} \cr Results of \code{\link{CalibraCurve}}. Each list
+element is the result of \code{\link{calc_single_curve}}}
 
 \item{ylab}{\strong{character(1)} \cr y-axis label.}
 
@@ -62,7 +63,8 @@ default is "free" (which means that each plot has its own scales). Other
 options are "fixed", "free_x", "free_y".}
 }
 \value{
-A ggplot2 object containing the calibration curve plot.
+List of a ggplot2 object containing the calibration curve plot (CC_plot) and
+a data.frame containing summary data for annotations (annotation_dat).
 }
 \description{
 Plot the calibration curve
