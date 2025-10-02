@@ -255,6 +255,27 @@ This list of dataframes can then be directly used in the main function
 `CalibraCurve` to generate and visualize the Calibration curve.
 
 
+Alternatively, also a SummarizedExperiment object, that was already imported
+in R, can be read in directly by `readDataSE`:
+
+```{r "start_SE2", message=FALSE}
+library("CalibraCurve")
+
+file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", 
+                    package = "CalibraCurve")
+
+SE_data <- readRDS(file)
+
+D <- readDataSE(rawDataSE = SE_data, 
+                concColName = "amount_fmol", 
+                substColName = "Substance")
+
+print(D)
+
+str(D)
+```
+
+
 ## Apply CalibraCurve
 
 As soon as the data have been imported, they can directly be 

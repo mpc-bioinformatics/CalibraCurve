@@ -2,12 +2,14 @@
 % Please edit documentation in R/01_data_preprocessing.R
 \name{readDataSE}
 \alias{readDataSE}
-\title{Read data stored as an SummarizedExperiment object in an .rds file.
+\title{Read data stored as an SummarizedExperiment object (directly or stored in an
+.rds file).
 Extracts the two relevant columns (concentration and measurement) and
-orders the data by increasing concentration.}
+orders the data by increasing concentration level.}
 \usage{
 readDataSE(
-  dataPath,
+  dataPath = NULL,
+  rawDataSE = NULL,
   concColName,
   substColName,
   assayNumber = 1,
@@ -16,6 +18,8 @@ readDataSE(
 }
 \arguments{
 \item{dataPath}{\strong{character(1)} \cr Path to the data file (.rds file)}
+
+\item{rawDataSE}{\strong{SummarizedExperiment} \cr SummarizedExperiment object}
 
 \item{concColName}{\strong{character(1)} \cr Name of the column in the colData()
 containing the concentration levels.}
@@ -35,12 +39,13 @@ List of data.frame, each with two numeric columns:
 Concentration and Measurement
 }
 \description{
-Read data stored as an SummarizedExperiment object in an .rds file.
+Read data stored as an SummarizedExperiment object (directly or stored in an
+.rds file).
 Extracts the two relevant columns (concentration and measurement) and
-orders the data by increasing concentration.
+orders the data by increasing concentration level.
 }
 \details{
-The SummarizedEsperiments object may contain quantitative values from
+The SummarizedExperiments object may contain quantitative values from
 targeted proteomics, lipidomics or metabolomics experiments.
 The colData has to contain a column with the concentration levels
 (concColName).
@@ -52,6 +57,14 @@ file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
     package = "CalibraCurve"
 )
 D_list <- readDataSE(file,
+    concColName = "amount_fmol",
+    substColName = "Substance", assayNumber = 1
+)
+
+# Alternative: import SummarizedExperiment object directly
+rawDataSE <- readRDS(file)
+
+D_list2 <- readDataSE(rawDataSE = rawDataSE,
     concColName = "amount_fmol",
     substColName = "Substance", assayNumber = 1
 )

@@ -132,12 +132,13 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 
 
 
-#' Read data stored as an SummarizedExperiment object in an .rds file.
+#' Read data stored as an SummarizedExperiment object (directly or stored in an
+#' .rds file).
 #' Extracts the two relevant columns (concentration and measurement) and
-#' orders the data by increasing concentration.
+#' orders the data by increasing concentration level.
 #'
 #' @details
-#' The SummarizedEsperiments object may contain quantitative values from
+#' The SummarizedExperiments object may contain quantitative values from
 #' targeted proteomics, lipidomics or metabolomics experiments.
 #' The colData has to contain a column with the concentration levels
 #' (concColName).
@@ -145,6 +146,7 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 #' sequence, name of lipid or metabolite etc).
 #'
 #' @param dataPath **character(1)** \cr Path to the data file (.rds file)
+#' @param rawDataSE **SummarizedExperiment** \cr SummarizedExperiment object
 #' @param concColName **character(1)** \cr Name of the column in the colData()
 #'    containing the concentration levels.
 #' @param substColName **character(1)** \cr column name of rowData() containing
@@ -167,10 +169,21 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 #'     concColName = "amount_fmol",
 #'     substColName = "Substance", assayNumber = 1
 #' )
-readDataSE <- function(dataPath, concColName, substColName, assayNumber = 1,
-    rowNumbers = NULL) {
-    rawDataSE <- readRDS(dataPath)
-
+#'
+#' # Alternative: import SummarizedExperiment object directly
+#' rawDataSE <- readRDS(file)
+#'
+#' D_list2 <- readDataSE(rawDataSE = rawDataSE,
+#'     concColName = "amount_fmol",
+#'     substColName = "Substance", assayNumber = 1
+#' )
+readDataSE <- function(dataPath = NULL, rawDataSE = NULL, concColName,
+                       substColName, assayNumber = 1, rowNumbers = NULL) {
+    if (is.null(rawDataSE)) {
+        checkmate::assert_file_exists(dataPath)
+        rawDataSE <- readRDS(dataPath)
+    }
+    checkmate::assert_class(rawDataSE, "SummarizedExperiment")
     if (!is.null(rowNumbers)) rawDataSE <- rawDataSE[rowNumbers, ]
 
     Data <- SummarizedExperiment::assays(rawDataSE)[[assayNumber]]
