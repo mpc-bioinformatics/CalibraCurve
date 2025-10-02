@@ -28,7 +28,7 @@ Final linear range: Function, which returns a list with response factor
 values for a data set (given as list)
 }
 \examples{
-file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 package = "CalibraCurve")
 D_list <- readDataSE(file, concColName = "amount_fmol",
         substColName = "Substance", assayNumber = 1)

@@ -21,7 +21,7 @@
 #'
 #' @examples
 #' ### xlsx file:
-#' file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+#' file <- system.file("extdata", "MSQC1_xlsx", "GGPFSDSYR_QTRAP_y5.xlsx",
 #'     package = "CalibraCurve"
 #' )
 #' D <- readDataTable(file, fileType = "xlsx", concCol = 16, measCol = 12)
@@ -162,7 +162,7 @@ readMultipleTables <- function(dataFolder, fileType, concCol, measCol, ...) {
 #' @export
 #'
 #' @examples
-#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+#' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 #'     package = "CalibraCurve"
 #' )
 #' D_list <- readDataSE(file,
@@ -227,7 +227,7 @@ readDataSE <- function(dataPath = NULL, rawDataSE = NULL, concColName,
 #' @export
 #'
 #' @examples
-#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+#' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 #'     package = "CalibraCurve"
 #' )
 #' D_list <- readDataSE(file,

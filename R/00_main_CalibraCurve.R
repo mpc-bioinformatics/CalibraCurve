@@ -71,7 +71,7 @@
 #' ### Set output_path to a folder of your choice to save the results.
 #'
 #' ### single xlsx file:
-#' data_path <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+#' data_path <- system.file("extdata", "MSQC1_xlsx", "GGPFSDSYR_QTRAP_y5.xlsx",
 #'     package = "CalibraCurve")
 #' D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
 #'     fileType = "xlsx")
@@ -87,7 +87,7 @@
 #' RES$plot_CC_list
 #'
 #' ### single rds file (SummarizedExperiment) as an all-in-one plot:
-#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+#' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 #'     package = "CalibraCurve")
 #' D_list <- readDataSE(dataPath = file, concColName = "amount_fmol",
 #'         substColName = "Substance", assayNumber = 1)
@@ -235,7 +235,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
 #' @export
 #' @examples
 #'
-#' data_path <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+#' data_path <- system.file("extdata", "MSQC1_xlsx", "GGPFSDSYR_QTRAP_y5.xlsx",
 #'         package = "CalibraCurve")
 #' D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
 #'         fileType = "xlsx")

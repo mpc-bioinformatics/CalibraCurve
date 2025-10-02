@@ -23,7 +23,7 @@
 #' curve.
 #'
 #' @examples
-#' file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+#' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 #'         package = "CalibraCurve")
 #' D <- readDataSE(file, concColName = "amount_fmol",
 #'         substColName = "Substance")

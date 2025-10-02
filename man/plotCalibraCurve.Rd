@@ -68,7 +68,7 @@ A ggplot2 object containing the calibration curve plot.
 Plot the calibration curve
 }
 \examples{
-file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
     package = "CalibraCurve"
 )
 D_list <- readDataSE(file,

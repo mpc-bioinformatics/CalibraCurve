@@ -174,7 +174,7 @@ Here, an example is given using a `.xlsx` file:
 ```{r "start", message=FALSE}
 library("CalibraCurve")
 
-file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QExactive_y5.xlsx", 
+file <- system.file("extdata", "MSQC1_xlsx", "GGPFSDSYR_QExactive_y5.xlsx", 
                     package = "CalibraCurve")
 
 D <- readDataTable(dataPath = file, 
@@ -237,7 +237,7 @@ Here, we will use the default options.
 ```{r "start_SE", message=FALSE}
 library("CalibraCurve")
 
-file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", 
+file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds", 
                     package = "CalibraCurve")
 
 D <- readDataSE(file, concColName = "amount_fmol", substColName = "Substance")
@@ -261,7 +261,7 @@ in R, can be read in directly by `readDataSE`:
 ```{r "start_SE2", message=FALSE}
 library("CalibraCurve")
 
-file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds", 
+file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds", 
                     package = "CalibraCurve")
 
 SE_data <- readRDS(file)

@@ -24,7 +24,7 @@ Clean data (remove 0s and NAs, remove concentration levels with insufficient
 number of replicates)
 }
 \examples{
-file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
     package = "CalibraCurve"
 )
 D_list <- readDataSE(file,

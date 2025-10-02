@@ -53,7 +53,7 @@ The rowData has to contain a column with the substance names (e.g. peptide
 sequence, name of lipid or metabolite etc).
 }
 \examples{
-file <- system.file("extdata", "MSQC1/msqc1_dil_GGPFSDSYR.rds",
+file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
     package = "CalibraCurve"
 )
 D_list <- readDataSE(file,
