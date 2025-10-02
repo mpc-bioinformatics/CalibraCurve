@@ -13,7 +13,7 @@ predictConcentration(CC_res, newdata, verbose = TRUE)
 \item{newdata}{\strong{numeric} \cr A vector of intensity values for which to
 predict concentrations.}
 
-\item{verbose}{\strong{logical(1)} \cr If TRUE, a wanring message is given if
+\item{verbose}{\strong{logical(1)} \cr If TRUE, a warning message is given if
 estimated concentrations
 are outside of the linear range.}
 }
