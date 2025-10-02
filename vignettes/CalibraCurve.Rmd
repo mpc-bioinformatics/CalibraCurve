@@ -69,8 +69,8 @@ already established as a KNIME workflow based on an R script
 `r Citep(bib[["CalibraCurve"]])` and a service in 
 [de.NBI](https://www.denbi.de/) 
 and [ELIXIR Germany](https://elixir-europe.org/). The code base was re-worked 
-into an R package without changing the underlying algorithm. Several improvements
-were made:
+into an R package without changing the underlying algorithm. Several 
+improvements were made:
 
 - allowing xlsx files and SummarizedExperiment objects as input
 - generate plots with `ggplot2` `r Citep(bib[["ggplot2"]])` for nicer, 
@@ -141,7 +141,8 @@ concentration levels have to be provided in the colData part.
 
 ## Example data set
 
-CalibraCurve contains test data from the `msqc1` R package `r Citep(bib[["msqc1"]])`. More precisely, parts of the
+CalibraCurve contains test data from the `msqc1` R package 
+`r Citep(bib[["msqc1"]])`. More precisely, parts of the
 dilution series from the `msqc1_dil` object.
 
 This data was filtered in the following way:
@@ -149,7 +150,8 @@ This data was filtered in the following way:
 - use only data on the level of y-ions, no precursors
 - use only the heavy isotope version of the peptide
 
-`SummarizedExperiment` objects with the corresponding data for each peptide sequence is given as .rds files.
+`SummarizedExperiment` objects with the corresponding data for each peptide 
+sequence is given as .rds files.
 
 Additionally, for the peptide sequence "GGPFSDSYR" the data is stored as .xlsx
 tables, separated by instrument and ion type.
@@ -158,8 +160,8 @@ tables, separated by instrument and ion type.
 
 ## Import one or more xlsx, csv or txt files
 
-A single `.xlsx`, `.csv` or `.txt` file, containing at least a "Concentration" and a "Measurement" column, 
-can be imported using the `readDataTable` function. 
+A single `.xlsx`, `.csv` or `.txt` file, containing at least a "Concentration" 
+and a "Measurement" column, can be imported using the `readDataTable` function. 
 
 The number of the column belonging to the concentration levels has 
 to be defined as `concCol`.
@@ -178,15 +180,16 @@ file <- system.file("extdata", "MSQC1_xlsx", "GGPFSDSYR_QExactive_y5.xlsx",
                     package = "CalibraCurve")
 
 D <- readDataTable(dataPath = file, 
-                   fileType = "xlsx", 
-                   concCol = 16, # column "amount" containing concentrations
-                   measCol = 12, # column "Area" containing measurements
-                   naStrings = c("NA", "NaN", "Filtered", "#NV"), 
-                   sheet = 1)
+                    fileType = "xlsx", 
+                    concCol = 16, # column "amount" containing concentrations
+                    measCol = 12, # column "Area" containing measurements
+                    naStrings = c("NA", "NaN", "Filtered", "#NV"), 
+                    sheet = 1)
 print(head(D))
 
 ```
-The resulting object is a dataframe with two columns, "Concentration" and "Measurement". 
+The resulting object is a dataframe with two columns, 
+"Concentration" and "Measurement". 
 The rows are sorted from lowest to highest concentration levels. This dataframe
 can then be directly used in the main function 
 `CalibraCurve` to generate and visualize the Calibration curve.
@@ -215,11 +218,10 @@ str(D)
 
 ```
 
-Each file in the folder is imported and the resulting dataframes are combined as 
-a list. Each list entry contains the data belonging to one of the input files, which
-here present different measurements of the same peptide that differ in their used
-fragment ion and machine.
-
+Each file in the folder is imported and the resulting dataframes are combined 
+as a list. Each list entry contains the data belonging to one of the input 
+files, which here present different measurements of the same peptide that 
+differ in their used fragment ion and machine.
 
 
 ## Import SummarizedExperiments object
