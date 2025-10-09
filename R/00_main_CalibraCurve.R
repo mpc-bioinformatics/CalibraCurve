@@ -181,7 +181,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     if (!is.null(output_path)) {
         .saveTablesAndPlots(RES, output_path, pl_CC_list, pl_RF_list,
                             summary_tab, CC_plot_width, CC_plot_height,
-                            RF_plot_width, RF_plot_height, substance,
+                            RF_plot_width, RF_plot_height,
                             plot_type, plot_dpi, device)
     }
         return(list(RES = RES, summary_tab = summary_tab,
@@ -302,9 +302,6 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 #' @param CC_plot_height **numeric(1)** \cr Plot height in cm (default is 10).
 #' @param RF_plot_width **numeric(1)** \cr Plot width in cm (default is 10).
 #' @param RF_plot_height **numeric(1)** \cr Plot height in cm (default is 10).
-#' @param substance **character(1)** \cr Name of the substance (default is
-#'      "substance1"). Will be added to the result files and may be used when
-#'      plotting multiple calibration curves in one plot.
 #' @param plot_type **character(1)** \cr Type of plot for calibration curves:
 #'      "single_plots" (default, generate a separate plot for each substance),
 #'      "multiplot" (generate a graphic with subplots for each substance) or
@@ -321,12 +318,12 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 #' @importFrom openxlsx write.xlsx
 .saveTablesAndPlots <- function(RES, output_path, pl_CC_list, pl_RF_list,
                                 summary_tab, CC_plot_width, CC_plot_height,
-                                RF_plot_width, RF_plot_height, substance,
+                                RF_plot_width, RF_plot_height,
                                 plot_type, plot_dpi, device) {
 
     for (i in seq_along(RES)) {
         .saveCCResult(CC_res = RES[[i]], output_path = output_path,
-                    suffix = paste0("_", substance))
+                    suffix = paste0("_", names(RES)[i]))
         if (plot_type == "single_plots") {
             ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve_",
                                             names(RES)[i], ".", device),

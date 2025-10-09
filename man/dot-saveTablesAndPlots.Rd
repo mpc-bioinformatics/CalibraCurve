@@ -14,7 +14,6 @@
   CC_plot_height,
   RF_plot_width,
   RF_plot_height,
-  substance,
   plot_type,
   plot_dpi,
   device
@@ -43,10 +42,6 @@ of \code{\link{plotCalibraCurve}} (annotation_dat))}
 \item{RF_plot_width}{\strong{numeric(1)} \cr Plot width in cm (default is 10).}
 
 \item{RF_plot_height}{\strong{numeric(1)} \cr Plot height in cm (default is 10).}
-
-\item{substance}{\strong{character(1)} \cr Name of the substance (default is
-"substance1"). Will be added to the result files and may be used when
-plotting multiple calibration curves in one plot.}
 
 \item{plot_type}{\strong{character(1)} \cr Type of plot for calibration curves:
 "single_plots" (default, generate a separate plot for each substance),
