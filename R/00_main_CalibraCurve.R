@@ -163,7 +163,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
             summary_tab <- rbind(summary_tab, pl_CC$annotation_dat)
         }
     } else { # plot_type == "allinone" or "multiplot"
-        pl_CC <- plotCalibraCurve(CC_RES = RES, ...)
+        pl_CC <- plotCalibraCurve(CC_RES = RES, plot_type = plot_type, ...)
         pl_CC_list <- pl_CC$CC_plot
         summary_tab <- pl_CC$annotation_dat
     }
@@ -337,7 +337,7 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
             height = RF_plot_height, units = "cm", dpi = plot_dpi)
     }
 
-    if (plot_type == "allinone" | plot_type == "multiplot") {
+    if (plot_type == "all_in_one" | plot_type == "multiplot") {
         ggplot2::ggsave(
             filename = paste0(output_path, "/CalibraCurve", ".", device),
             plot = pl_CC_list, device = device, width = CC_plot_width,
