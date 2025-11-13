@@ -5,3 +5,5 @@ dev
 *.Rproj
 vignettes/*.html
 vignettes/*.R
+.github
+
