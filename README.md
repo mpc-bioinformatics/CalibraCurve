@@ -24,7 +24,7 @@ history](https://bioconductor.org/shields/years-in-bioc/CalibraCurve.svg)](https
 [![Bioc last
 commit](https://bioconductor.org/shields/lastcommit/devel/bioc/CalibraCurve.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/CalibraCurve/)
 [![Bioc
-dependencies](https://bioconductor.org/shields/dependencies/release/CalibraCurve.svg)](https://bioconductor.org/packages/release/bioc/html/CalibraCurve.html#since)
+dependencies](https://bioconductor.org/shields/dependencies/devel/CalibraCurve.svg)](https://bioconductor.org/packages/devel/bioc/html/CalibraCurve.html#since)
 [![check-bioc](https://github.com/mpc-bioinformatics/CalibraCurve/actions/workflows/check-bioc.yml/badge.svg)](https://github.com/mpc-bioinformatics/CalibraCurve/actions/workflows/check-bioc.yml)
 [![Codecov test
 coverage](https://codecov.io/gh/mpc-bioinformatics/CalibraCurve/graph/badge.svg)](https://app.codecov.io/gh/mpc-bioinformatics/CalibraCurve)
