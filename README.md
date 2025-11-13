@@ -10,7 +10,7 @@ issues](https://img.shields.io/github/issues/mpc-bioinformatics/CalibraCurve)](h
 [![GitHub
 pulls](https://img.shields.io/github/issues-pr/mpc-bioinformatics/CalibraCurve)](https://github.com/mpc-bioinformatics/CalibraCurve/pulls)
 [![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+stable](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![Bioc release
 status](http://www.bioconductor.org/shields/build/release/bioc/CalibraCurve.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/CalibraCurve)
 [![Bioc devel
