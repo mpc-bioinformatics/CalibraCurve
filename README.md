@@ -107,8 +107,14 @@ The development and maintanence of CalibraCurve is funded by de.NBI
 other cool tools and consulting for statistics, bioninformatics and
 machine learning!
 
+<img width="400" alt="deNBI_Logo_cmyk" src="https://github.com/user-attachments/assets/eac6982f-d2ae-455e-94b4-de2b754700f6" />
+
+<img width="400" height="156" alt="CUBiMedRUB-logo-small" src="https://github.com/user-attachments/assets/1be9ab3e-825c-45b8-8bfe-5a41b8cb2f90" />
+
+
+
 ## Feedback
 
-Please fill out the following survey to give feedback:
+If you used this de.NBI service please take the time to answer our short survey to help us improve our services:
 
 <https://de.surveymonkey.com/r/denbi-service?sc=bioinfra-prot&tool=calibracurve>
