@@ -155,6 +155,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
     calculatedConc <- (x - coeff[1]) / coeff[2]
     perBias <- 100 * abs(calculatedConc - expConc) / expConc
     names(perBias) <- NULL
+
     return(perBias)
 }
 
@@ -174,6 +175,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
     concentrations <- as.numeric(names(x))
     perBiasValues <- mapply(FUN = .calcPerBias, x = x, expConc = concentrations,
                             MoreArgs = list(LMfit = LMfit))
+    if(!is.matrix(perBiasValues)) perBiasValues <-  t(as.matrix(perBiasValues))
     return(perBiasValues)
 }
 
@@ -191,6 +193,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #' @importFrom stats sd median
 #'
 .calcPerBiasAvgSDCV <- function(x, method = "mean") {
+
     if (method == "mean") {
         avgPerBias <- colMeans(x)
     }

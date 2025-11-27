@@ -97,7 +97,11 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
 #' @importFrom stats sd
 #'
 .calcCV <- function(x) {
-    SD <- stats::sd(x$Measurement)
+    if (nrow(x) == 1) { #only one raplicate
+        SD <- 0
+    } else {
+        SD <- stats::sd(x$Measurement)
+    }
     Mean <- mean(x$Measurement)
     CV <- SD / Mean * 100
     names(CV) <- NULL
