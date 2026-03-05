@@ -30,6 +30,8 @@ dependencies](https://bioconductor.org/shields/dependencies/devel/CalibraCurve.s
 coverage](https://codecov.io/gh/mpc-bioinformatics/CalibraCurve/graph/badge.svg)](https://app.codecov.io/gh/mpc-bioinformatics/CalibraCurve)
 <!-- badges: end -->
 
+<img width="259" height="300" alt="CalibraCurve_newLogo" src="https://github.com/user-attachments/assets/3273ce40-3534-48a4-b28d-3b70222f60bd" />
+
 Targeted mass-spectrometry-based techniques allow accurate quantitative
 measurements of analytes in complex matrices. They are used in different
 fields like proteomics, lipidomics or metabolomics to validate results
