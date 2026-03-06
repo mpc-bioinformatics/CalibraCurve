@@ -169,20 +169,20 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #' @param LMfit **lm object** \cr Linear model fit as calculated by
 #'      \code{\link{.calcLinearModel}}.
 #'
-#' @returns Matrix with percent bias values for each data point per
+#' @returns List with percent bias values for each data point per
 #'      concentration level
 .calcPerBiasLevels <- function(x, LMfit) {
     concentrations <- as.numeric(names(x))
     perBiasValues <- mapply(FUN = .calcPerBias, x = x, expConc = concentrations,
-                            MoreArgs = list(LMfit = LMfit))
-    if(!is.matrix(perBiasValues)) perBiasValues <-  t(as.matrix(perBiasValues))
+                            MoreArgs = list(LMfit = LMfit), SIMPLIFY = FALSE)
+    #if(!is.matrix(perBiasValues)) perBiasValues <-  t(as.matrix(perBiasValues))
     return(perBiasValues)
 }
 
 
 #' FLR: calculate average, SD and CV percent bias for each concentration level
 #'
-#' @param x **matrix** \cr Result of
+#' @param x **list** \cr Result of
 #'      \code{\link{.calcPerBiasLevels}}.
 #' @param method **character(1)** \cr Method for calculating the average
 #'      percent bias: "mean" (default) or "median".
@@ -195,16 +195,17 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 .calcPerBiasAvgSDCV <- function(x, method = "mean") {
 
     if (method == "mean") {
-        avgPerBias <- colMeans(x)
+        avgPerBias <- vapply(x, FUN = mean, FUN.VALUE = numeric(1))
     }
     if (method == "median") {
-        avgPerBias <- apply(x, 2, stats::median)
+        avgPerBias <- vapply(x, FUN = stats::median, FUN.VALUE = numeric(1))
     }
-    stdDevPerBias <- apply(x, 2, stats::sd)
+    stdDevPerBias <- vapply(x, FUN = stats::sd, FUN.VALUE = numeric(1))
     CV_PerBias <- stdDevPerBias / avgPerBias * 100
 
     result <- data.frame(avgPerBias, stdDevPerBias, CV_PerBias)
-    rownames(result) <- colnames(x)
+
+    rownames(result) <- names(x)
     return(result)
 
 }

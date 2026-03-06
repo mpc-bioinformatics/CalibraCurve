@@ -14,8 +14,9 @@ test_that("final linear range", {
     expect_equal(as.numeric(names(RES_FLR$dataFinal)), c(25,50,200,1000))
     expect_equal(class(RES_FLR$dataFinal), "list")
     expect_equal(class(RES_FLR$mod), "lm")
-    expect_equal(nrow(RES_FLR$perBias), 3)
-    expect_equal(ncol(RES_FLR$perBias), 4)
+    expect_equal(class(RES_FLR$perBias), "list")
+    expect_equal(length(RES_FLR$perBias), 4)
+    expect_equal(unname(lengths(RES_FLR$perBias)), rep(3, 4))
     expect_equal(nrow(RES_FLR$perBiasAvgSDCV), 4)
     expect_equal(ncol(RES_FLR$perBiasAvgSDCV), 3)
     expect_equal(colnames(RES_FLR$perBiasAvgSDCV),

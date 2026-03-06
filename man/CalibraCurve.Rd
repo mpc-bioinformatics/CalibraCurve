@@ -27,6 +27,8 @@ CalibraCurve(
   CC_plot_height = 10,
   RF_plot_width = 15,
   RF_plot_height = 10,
+  base_size = 11,
+  RF_legend = FALSE,
   plot_dpi = 300,
   verbose = TRUE,
   ...
@@ -106,6 +108,12 @@ details see \code{\link[ggplot2]{ggsave}}.}
 \item{RF_plot_width}{\strong{numeric(1)} \cr Plot width in cm (default is 10).}
 
 \item{RF_plot_height}{\strong{numeric(1)} \cr Plot height in cm (default is 10).}
+
+\item{base_size}{\strong{numeric(1)} \cr Base size for the plot theme,
+default is 11.}
+
+\item{RF_legend}{\strong{logical(1)} \cr If TRUE, a legend will be added to the
+response factor plots.}
 
 \item{plot_dpi}{\strong{numeric(1)} \cr Plot resolution in dpi (default is 300).}
 

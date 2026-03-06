@@ -52,6 +52,10 @@
 #' @param CC_plot_height **numeric(1)** \cr Plot height in cm (default is 10).
 #' @param RF_plot_width **numeric(1)** \cr Plot width in cm (default is 10).
 #' @param RF_plot_height **numeric(1)** \cr Plot height in cm (default is 10).
+#' @param base_size **numeric(1)** \cr Base size for the plot theme,
+#'    default is 11.
+#' @param RF_legend **logical(1)** \cr If TRUE, a legend will be added to the
+#'      response factor plots.
 #' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
 #' @param verbose **logical(1)** \cr If FALSE, no messages will be printed.
 #' @param ... additional parameters for \code{\link{plotCalibraCurve}}
@@ -104,8 +108,8 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     RfThresL = 80, RfThresU = 120, plot_type = "single_plots",
     RF_colour_threshold = "orange", RF_colour_within = "#00BFC4",
     RF_colour_outside = "#F8766D", device = "png", CC_plot_width = 15,
-    CC_plot_height = 10, RF_plot_width = 15, RF_plot_height = 10,
-    plot_dpi = 300, verbose = TRUE, ...) {
+    CC_plot_height = 10, RF_plot_width = 15, RF_plot_height = 10, base_size = 11,
+    RF_legend = FALSE, plot_dpi = 300, verbose = TRUE, ...) {
     checkmate::assert_choice(device, c("eps", "ps", "tex", "pdf", "jpeg",
         "tiff", "png", "bmp", "svg", "wmf"))
     checkmate::assert_numeric(CC_plot_width, lower = 0, len = 1)
@@ -128,7 +132,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
             message("Calculating calibration curve for ", substance, " ...")
         }
 
-        RES_tmp <- try({calc_single_curve(D = D_tmp, substance = substance,
+        RES_tmp <- calc_single_curve(D = D_tmp, substance = substance, # try({
             minReplicates = minReplicates, cvThres = cvThres,
             calcContinuousPrelimRanges = calcContinuousPrelimRanges,
             weightingMethod = weightingMethod,
@@ -136,7 +140,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
             perBiasThres = perBiasThres, considerPerBiasCV = considerPerBiasCV,
             perBiasDistThres = perBiasDistThres,
             RfThresL = RfThresL, RfThresU = RfThresU
-        )}, silent = TRUE)
+        )#}, silent = TRUE)
 
         if (inherits(RES_tmp, "try-error")) {
             message("Problem while calculating calibration curve for ",
@@ -158,12 +162,13 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
             names(RES_tmp) <- names(RES)[i]
             ## generate a the calibration curve plot
             pl_CC <- plotCalibraCurve(CC_RES = RES_tmp, plot_type = "multiplot",
-                ...)
+                    base_size = base_size, ...)
             pl_CC_list[[i]] <- pl_CC$CC_plot
             summary_tab <- rbind(summary_tab, pl_CC$annotation_dat)
         }
     } else { # plot_type == "allinone" or "multiplot"
-        pl_CC <- plotCalibraCurve(CC_RES = RES, plot_type = plot_type, ...)
+        pl_CC <- plotCalibraCurve(CC_RES = RES, plot_type = plot_type,
+                                  base_size = base_size, ...)
         pl_CC_list <- pl_CC$CC_plot
         summary_tab <- pl_CC$annotation_dat
     }
@@ -175,7 +180,8 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
         pl_RF_list[[i]] <- plotResponseFactors(RES = RES[[i]],
             RfThresL = RfThresL, RfThresU = RfThresU,
             colour_threshold = RF_colour_threshold,
-            colour_within = RF_colour_within, colour_outside = RF_colour_outside
+            colour_within = RF_colour_within, colour_outside = RF_colour_outside,
+            legend = RF_legend, base_size = base_size
         )
     }
     if (!is.null(output_path)) {

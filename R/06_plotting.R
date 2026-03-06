@@ -28,6 +28,10 @@
 #' @param multiplot_scales **character(1)** \cr Scales for the multiplot layout,
 #'    default is "free" (which means that each plot has its own scales). Other
 #'    options are "fixed", "free_x", "free_y".
+#' @param regression_info_size **numeric(1)** \cr Size of the regression
+#'    information text on the plot, default is 3.
+#' @param base_size **numeric(1)** \cr Base size for the plot theme,
+#'    default is 11.
 #'
 #'
 #' @importFrom checkmate assertCharacter assertFlag
@@ -59,7 +63,8 @@ plotCalibraCurve <- function(
         show_data_points = TRUE, plot_type = "multiplot",
         point_colour = "black", curve_colour = "red",
         linear_range_colour = "black", multiplot_nrow = NULL,
-        multiplot_ncol = NULL, multiplot_scales = "free") {
+        multiplot_ncol = NULL, multiplot_scales = "free",
+        regression_info_size = 3, base_size = 11) {
     checkmate::assertCharacter(ylab, len = 1)
     checkmate::assertCharacter(xlab, len = 1)
     checkmate::assertFlag(show_regression_info)
@@ -143,7 +148,7 @@ plotCalibraCurve <- function(
                 data = annotation_dat,
                 mapping = ggplot2::aes(y = Inf, x = 0, label = eq),
                 vjust = 1.4, hjust = -0.07, alpha = 0.6, inherit.aes = FALSE,
-                color = curve_colour, size = 3
+                color = curve_colour, size = regression_info_size
             )
         }
     }
@@ -156,7 +161,8 @@ plotCalibraCurve <- function(
             ),
             colour = ggplot2::guide_legend(title = "Substance", order = 1)
         ) +
-        ggplot2::theme_bw() + ggplot2::ylab(ylab) + ggplot2::xlab(xlab) +
+        ggplot2::theme_bw(base_size = base_size) + ggplot2::ylab(ylab) +
+        ggplot2::xlab(xlab) +
         ggplot2::theme(plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm"))
 
     return(list(CC_plot = pl, annotation_dat = annotation_dat))
@@ -287,6 +293,10 @@ plotCalibraCurve <- function(
 #'    the threshold, default is "#00BFC4" (default ggplot colour).
 #' @param colour_outside **character(1)** \cr Colour for horizontal outside of
 #'    the threshold, default is "#F8766D" (default ggplot colour).
+#' @param legend **logical(1)** \cr If TRUE, a legend is added to the plot,
+#'      default is FALSE.
+#' @param base_size **numeric(1)** \cr Base size for the plot theme,
+#'    default is 11.
 #'
 #' @returns
 #' A ggplot2 object containing the response factor plot.
@@ -314,7 +324,7 @@ plotResponseFactors <- function(
         RES, RfThresL = 80, RfThresU = 120,
         ylab = "Response Factor", xlab = "Concentration",
         colour_threshold = "orange", colour_within = "#00BFC4",
-        colour_outside = "#F8766D") {
+        colour_outside = "#F8766D", legend = FALSE, base_size = 11) {
     checkmate::assertNumeric(RfThresL, lower = 0, upper = 100, finite = TRUE)
     checkmate::assertNumeric(RfThresU, lower = 100)
     checkmate::assertCharacter(ylab, len = 1)
@@ -397,10 +407,27 @@ plotResponseFactors <- function(
         )
 
     ### theme and axis limits
-    pl <- pl + ggplot2::theme_bw() + ggplot2::ylab(ylab) + ggplot2::xlab(xlab) +
-        ggplot2::theme(
+    pl <- pl + ggplot2::theme_bw(base_size = base_size) + ggplot2::ylab(ylab) +
+        ggplot2::xlab(xlab)
+
+    if (!legend) {
+       pl <- pl + ggplot2::theme(
             legend.position = "none",
             plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm")
         )
+    } else {
+        legend_name = "RF within threshold?"
+        pl <- pl + ggplot2::theme(
+            plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm")
+        ) +
+            guides(
+                color = ggplot2::guide_legend(title = legend_name, order = 1),
+                fill = ggplot2::guide_legend(title = legend_name, order = 1),
+                alpha = ggplot2::guide_legend(title = legend_name, order = 1)
+            )
+    }
+
     return(pl)
 }
+
+

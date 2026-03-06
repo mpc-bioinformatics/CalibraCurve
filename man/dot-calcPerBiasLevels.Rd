@@ -15,7 +15,7 @@ concentration level), e.g. output "dataPrelim" from
 \code{\link{.calcLinearModel}}.}
 }
 \value{
-Matrix with percent bias values for each data point per
+List with percent bias values for each data point per
 concentration level
 }
 \description{

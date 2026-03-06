@@ -7,7 +7,7 @@
 .calcPerBiasAvgSDCV(x, method = "mean")
 }
 \arguments{
-\item{x}{\strong{matrix} \cr Result of
+\item{x}{\strong{list} \cr Result of
 \code{\link{.calcPerBiasLevels}}.}
 
 \item{method}{\strong{character(1)} \cr Method for calculating the average

@@ -17,7 +17,9 @@ plotCalibraCurve(
   linear_range_colour = "black",
   multiplot_nrow = NULL,
   multiplot_ncol = NULL,
-  multiplot_scales = "free"
+  multiplot_scales = "free",
+  regression_info_size = 3,
+  base_size = 11
 )
 }
 \arguments{
@@ -61,6 +63,12 @@ determined automatically based on the number of curves).}
 \item{multiplot_scales}{\strong{character(1)} \cr Scales for the multiplot layout,
 default is "free" (which means that each plot has its own scales). Other
 options are "fixed", "free_x", "free_y".}
+
+\item{regression_info_size}{\strong{numeric(1)} \cr Size of the regression
+information text on the plot, default is 3.}
+
+\item{base_size}{\strong{numeric(1)} \cr Base size for the plot theme,
+default is 11.}
 }
 \value{
 List of a ggplot2 object containing the calibration curve plot (CC_plot) and

@@ -12,7 +12,9 @@ plotResponseFactors(
   xlab = "Concentration",
   colour_threshold = "orange",
   colour_within = "#00BFC4",
-  colour_outside = "#F8766D"
+  colour_outside = "#F8766D",
+  legend = FALSE,
+  base_size = 11
 )
 }
 \arguments{
@@ -36,6 +38,12 @@ the threshold, default is "#00BFC4" (default ggplot colour).}
 
 \item{colour_outside}{\strong{character(1)} \cr Colour for horizontal outside of
 the threshold, default is "#F8766D" (default ggplot colour).}
+
+\item{legend}{\strong{logical(1)} \cr If TRUE, a legend is added to the plot,
+default is FALSE.}
+
+\item{base_size}{\strong{numeric(1)} \cr Base size for the plot theme,
+default is 11.}
 }
 \value{
 A ggplot2 object containing the response factor plot.
