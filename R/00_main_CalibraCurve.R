@@ -127,6 +127,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     for (i in seq_along(D_list)) {
         D_tmp <- D_list[[i]]
         substance <- names(D_list)[i]
+        D_tmp <- D_tmp[order(D_tmp$Concentration),]
 
         if (verbose) {
             message("Calculating calibration curve for ", substance, " ...")
@@ -181,7 +182,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
             RfThresL = RfThresL, RfThresU = RfThresU,
             colour_threshold = RF_colour_threshold,
             colour_within = RF_colour_within, colour_outside = RF_colour_outside,
-            legend = RF_legend, base_size = base_size
+            legend = RF_legend, base_size = base_size, substance = names(RES)[i]
         )
     }
     if (!is.null(output_path)) {
@@ -261,12 +262,12 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
     dataCleaned <- cleanData(D, minReplicates = minReplicates)
 
     ## calculate preliminary linear range
-    PLR_res <- calculate_PLR(dataCleaned = dataCleaned,
+    PLR_res <<- calculate_PLR(dataCleaned = dataCleaned,
         cvThres = cvThres,
         calcContinuousPrelimRanges = calcContinuousPrelimRanges)
 
     ## calculate final linear range
-    FLR_res <- calculate_FLR(PLR_res$dataPrelim,
+    FLR_res <<- calculate_FLR(PLR_res$dataPrelim,
         weightingMethod = weightingMethod,
         centralTendencyMeasure = centralTendencyMeasure,
         perBiasThres = perBiasThres, considerPerBiasCV = considerPerBiasCV,

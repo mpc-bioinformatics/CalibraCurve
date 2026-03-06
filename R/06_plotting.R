@@ -324,7 +324,8 @@ plotResponseFactors <- function(
         RES, RfThresL = 80, RfThresU = 120,
         ylab = "Response Factor", xlab = "Concentration",
         colour_threshold = "orange", colour_within = "#00BFC4",
-        colour_outside = "#F8766D", legend = FALSE, base_size = 11) {
+        colour_outside = "#F8766D", legend = FALSE, base_size = 11,
+        substance = NULL) {
     checkmate::assertNumeric(RfThresL, lower = 0, upper = 100, finite = TRUE)
     checkmate::assertNumeric(RfThresU, lower = 100)
     checkmate::assertCharacter(ylab, len = 1)
@@ -420,13 +421,14 @@ plotResponseFactors <- function(
         pl <- pl + ggplot2::theme(
             plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm")
         ) +
-            guides(
+            ggplot2::guides(
                 color = ggplot2::guide_legend(title = legend_name, order = 1),
                 fill = ggplot2::guide_legend(title = legend_name, order = 1),
                 alpha = ggplot2::guide_legend(title = legend_name, order = 1)
             )
     }
 
+    pl <- pl + ggplot2::ggtitle(substance)
     return(pl)
 }
 
