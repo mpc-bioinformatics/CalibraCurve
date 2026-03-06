@@ -70,11 +70,13 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) {
 BiocManager::install("CalibraCurve")
 ```
 
-And the development version from
+You can also install the current development version directly from 
 [GitHub](https://github.com/mpc-bioinformatics/CalibraCurve) with:
 
 ``` r
-BiocManager::install("mpc-bioinformatics/CalibraCurve")
+# install.packages("devtools")
+devtools::install_github("mpc-bioinformatics/CalibraCurve")
+library(CalibraCurve)
 ```
 
 ## Implementation
