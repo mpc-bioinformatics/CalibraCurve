@@ -262,12 +262,12 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
     dataCleaned <- cleanData(D, minReplicates = minReplicates)
 
     ## calculate preliminary linear range
-    PLR_res <<- calculate_PLR(dataCleaned = dataCleaned,
+    PLR_res <- calculate_PLR(dataCleaned = dataCleaned,
         cvThres = cvThres,
         calcContinuousPrelimRanges = calcContinuousPrelimRanges)
 
     ## calculate final linear range
-    FLR_res <<- calculate_FLR(PLR_res$dataPrelim,
+    FLR_res <- calculate_FLR(PLR_res$dataPrelim,
         weightingMethod = weightingMethod,
         centralTendencyMeasure = centralTendencyMeasure,
         perBiasThres = perBiasThres, considerPerBiasCV = considerPerBiasCV,
