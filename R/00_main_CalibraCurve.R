@@ -6,8 +6,8 @@
 #' @param output_path **character(1)** \cr Folder to save results (table and
 #'      plots). If NULL (default), results are not saved.
 #' @param substance **character(1)** \cr Name of the substance (default is
-#'      "substance1"). Will be added to the result files and may be used when
-#'      plotting multiple calibration curves in one plot.
+#'      "substance1"). Will be added to the result files and will be used as
+#'      labels in the plots.
 #' @param minReplicates **integer(1)** \cr Minimal number of replicates/data
 #'      points per concentration level. Concentration levels with too few data
 #'      points will be removed.
@@ -108,8 +108,8 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     RfThresL = 80, RfThresU = 120, plot_type = "single_plots",
     RF_colour_threshold = "orange", RF_colour_within = "#00BFC4",
     RF_colour_outside = "#F8766D", device = "png", CC_plot_width = 15,
-    CC_plot_height = 10, RF_plot_width = 15, RF_plot_height = 10, base_size = 11,
-    RF_legend = FALSE, plot_dpi = 300, verbose = TRUE, ...) {
+    CC_plot_height = 10, RF_plot_width = 15, RF_plot_height = 10,
+    base_size = 11, RF_legend = FALSE, plot_dpi = 300, verbose = TRUE, ...) {
     checkmate::assert_choice(device, c("eps", "ps", "tex", "pdf", "jpeg",
         "tiff", "png", "bmp", "svg", "wmf"))
     checkmate::assert_numeric(CC_plot_width, lower = 0, len = 1)
@@ -169,7 +169,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
         }
     } else { # plot_type == "allinone" or "multiplot"
         pl_CC <- plotCalibraCurve(CC_RES = RES, plot_type = plot_type,
-                                  base_size = base_size, ...)
+                                base_size = base_size, ...)
         pl_CC_list <- pl_CC$CC_plot
         summary_tab <- pl_CC$annotation_dat
     }
@@ -181,7 +181,8 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
         pl_RF_list[[i]] <- plotResponseFactors(RES = RES[[i]],
             RfThresL = RfThresL, RfThresU = RfThresU,
             colour_threshold = RF_colour_threshold,
-            colour_within = RF_colour_within, colour_outside = RF_colour_outside,
+            colour_within = RF_colour_within,
+            colour_outside = RF_colour_outside,
             legend = RF_legend, base_size = base_size, substance = names(RES)[i]
         )
     }

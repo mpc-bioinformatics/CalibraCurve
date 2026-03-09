@@ -296,7 +296,10 @@ plotCalibraCurve <- function(
 #' @param legend **logical(1)** \cr If TRUE, a legend is added to the plot,
 #'      default is FALSE.
 #' @param base_size **numeric(1)** \cr Base size for the plot theme,
-#'    default is 11.
+#'      default is 11.
+#' @param substance **character(1)** \cr Name of the substance (default is
+#'      "substance1"). Will be added to the result files and will be used as
+#'      labels in the plots.
 #'
 #' @returns
 #' A ggplot2 object containing the response factor plot.
@@ -412,12 +415,12 @@ plotResponseFactors <- function(
         ggplot2::xlab(xlab)
 
     if (!legend) {
-       pl <- pl + ggplot2::theme(
+        pl <- pl + ggplot2::theme(
             legend.position = "none",
             plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm")
         )
     } else {
-        legend_name = "RF within threshold?"
+        legend_name <- "RF within threshold?"
         pl <- pl + ggplot2::theme(
             plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm")
         ) +

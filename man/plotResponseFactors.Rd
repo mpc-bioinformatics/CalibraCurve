@@ -45,6 +45,10 @@ default is FALSE.}
 
 \item{base_size}{\strong{numeric(1)} \cr Base size for the plot theme,
 default is 11.}
+
+\item{substance}{\strong{character(1)} \cr Name of the substance (default is
+"substance1"). Will be added to the result files and will be used as
+labels in the plots.}
 }
 \value{
 A ggplot2 object containing the response factor plot.

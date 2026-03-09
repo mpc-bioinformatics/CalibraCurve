@@ -43,8 +43,8 @@ Concentration and Measurement)}
 plots). If NULL (default), results are not saved.}
 
 \item{substance}{\strong{character(1)} \cr Name of the substance (default is
-"substance1"). Will be added to the result files and may be used when
-plotting multiple calibration curves in one plot.}
+"substance1"). Will be added to the result files and will be used as
+labels in the plots.}
 
 \item{minReplicates}{\strong{integer(1)} \cr Minimal number of replicates/data
 points per concentration level. Concentration levels with too few data
