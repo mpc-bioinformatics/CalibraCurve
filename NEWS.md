@@ -15,5 +15,6 @@ Bugfixes
 - Add new Logo to readme
 - Fix bug when unequal numbers of replicates per concentration level are present
 
-
+# 1.1.3
+- small fix in documentation
 
