@@ -11,6 +11,7 @@ readDataTable(
   fileType,
   concCol,
   measCol,
+  substCol = NULL,
   sep = ",",
   dec = ".",
   header = TRUE,
@@ -27,6 +28,9 @@ readDataTable(
 \item{concCol}{\strong{integer(1)} \cr Column number of the concentration values.}
 
 \item{measCol}{\strong{integer} \cr Column number of the concentration values.}
+
+\item{substCol}{\strong{integer} \cr Column number of the substance names (optional).
+If not set, all rows will be interpreted as belonging to the same substance.}
 
 \item{sep}{\strong{character(1)} \cr The field separator, default is ",".}
 

@@ -18,3 +18,5 @@ Bugfixes
 # 1.1.3
 - small fix in documentation
 
+# 1.1.4
+- readDataTable() can now import a file containing data for multiple substances

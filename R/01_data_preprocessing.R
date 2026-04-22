@@ -7,6 +7,8 @@
 #' @param fileType **character(1)** \cr Type of file: "csv", "txt" or "xlsx".
 #' @param concCol **integer(1)** \cr Column number of the concentration values.
 #' @param measCol **integer** \cr Column number of the concentration values.
+#' @param substCol **integer** \cr Column number of the substance names (optional).
+#'  If not set, all rows will be interpreted as belonging to the same substance.
 #' @param sep **character(1)** \cr The field separator, default is ",".
 #' @param dec **character(1)** \cr Decimal separator, default is ".".
 #' @param header **logical(1)** \cr If TRUE, first line is counted as column
@@ -33,7 +35,7 @@
 #' D <- readDataTable(file, fileType = "xlsx", concCol = 16, measCol = 12)
 #'
 readDataTable <- function(
-    dataPath, fileType, concCol, measCol, sep = ",", dec = ".", header = TRUE,
+    dataPath, fileType, concCol, measCol, substCol = NULL, sep = ",", dec = ".", header = TRUE,
     naStrings = c("NA", "NaN", "Filtered", "#NV"), sheet = 1) {
     ### check input parameters
     checkmate::assert_file_exists(dataPath)
@@ -69,18 +71,26 @@ readDataTable <- function(
             columns in data set.")
     }
     ### extract relevant columns:
-    rawData <- data.frame(
+    DATA <- data.frame(
         "Concentration" = rawData[, concCol],
         "Measurement" = rawData[, measCol]
     )
     ### check if relevant columns are numeric:
-    if (!is.numeric(rawData[, 1]) | !is.numeric(rawData[, 2])) {
+    if (!is.numeric(DATA[, 1]) | !is.numeric(DATA[, 2])) {
         stop("Concentration and measurement columns must be numeric.
             Issue may come from non-fitting decimal separator or na.strings.")
     }
+
     ### sort by concentration level (from lowest to highest)
-    rawData <- rawData[order(rawData$Concentration), ]
-    return(rawData)
+    ord <- order(DATA$Concentration)
+    DATA <- DATA[ord, ]
+
+    # split into list of dataframes is substCol is given
+    if (!is.null(substCol)) {
+        DATA <- split(DATA, rawData[, substCol][ord])
+    }
+
+    return(DATA)
 }
 
 
