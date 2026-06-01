@@ -115,7 +115,11 @@ machine learning!
 
 <img width="400" height="156" alt="CUBiMedRUB-logo-small" src="https://github.com/user-attachments/assets/1be9ab3e-825c-45b8-8bfe-5a41b8cb2f90" />
 
-
+## Terms of use
+- All software, tools, and workflows provided by CUBiMed.RUB are intended exclusively for academic research and training purposes.
+- They must not be used for clinical diagnosis, medical decision-making, or any form of patient care.
+- Users are responsible for ensuring that results generated with these tools are appropriately validated before any further use.
+- CalibraCurve is published under the BSD 3-Clause License (see [LICENSE](LICENSE)).
 
 ## Feedback
 

@@ -98,9 +98,15 @@ Kohl M, Stepath M, Bracht T, Megger DA, Sitek B, Marcus K, Eisenacher M. Calibra
 The development and maintanence of CalibraCurve is funded by de.NBI (https://www.denbi.de/) and CUBiMed.RUB (https://www.cubimed.ruhr-uni-bochum.de/index.html.en).
 We offer also other cool tools and consulting for statistics, bioninformatics and machine learning!
 
+## Terms of use
+
+- All software, tools, and workflows provided by CUBiMed.RUB are intended exclusively for academic research and training purposes.
+- They must not be used for clinical diagnosis, medical decision-making, or any form of patient care.
+- Users are responsible for ensuring that results generated with these tools are appropriately validated before any further use.
+- CalibraCurve is published under the BSD 3-Clause License (see [LICENSE](LICENSE)).
+
 ## Feedback
 
 Please fill out the following survey to give feedback:
 
 https://de.surveymonkey.com/r/denbi-service?sc=bioinfra-prot&tool=calibracurve
-
