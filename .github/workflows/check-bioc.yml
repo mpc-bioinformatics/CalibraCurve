@@ -114,7 +114,7 @@ jobs:
       ## https://github.com/r-lib/actions/blob/master/examples/check-standard.yaml
       ## If they update their steps, we will also need to update ours.
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       ## R is already included in the Bioconductor docker images
       - name: Setup R from r-lib
@@ -140,7 +140,7 @@ jobs:
       ## Use cached R packages
       - name: Restore R package cache
         if: "!contains(github.event.head_commit.message, '/nocache')"
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.R_LIBS_USER }}
           key: ${{ matrix.config.os }}-${{ matrix.config.r }}-${{ matrix.config.bioc }}-${{ inputs.cache-version }}
@@ -338,7 +338,7 @@ jobs:
     steps:
       - name: Checkout Repository
         if: "!contains(github.event.head_commit.message, '/nodocker') && env.run_docker == 'true' && github.ref == 'refs/heads/devel'"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Register repo name
         if: "!contains(github.event.head_commit.message, '/nodocker') && env.run_docker == 'true' && github.ref == 'refs/heads/devel'"
