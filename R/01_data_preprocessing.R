@@ -5,9 +5,12 @@
 #' @param dataPath **character(1)** \cr Path to the data file
 #'      (.csv, .txt or .xlsx file).
 #' @param fileType **character(1)** \cr Type of file: "csv", "txt" or "xlsx".
-#' @param concCol **integer(1)** \cr Column number of the concentration values.
-#' @param measCol **integer** \cr Column number of the concentration values.
-#' @param substCol **integer** \cr Column number of the substance names (optional).
+#' @param concCol **integer(1) or character(1)** \cr Column number or column name
+#'    of the concentration values.
+#' @param measCol **integer(1) or character(1)** \cr Column number or column name
+#'    of the measurement values.
+#' @param substCol **integer(1) or character(1)** \cr Column number or column name
+#'    of the substance names (optional).
 #'  If not set, all rows will be interpreted as belonging to the same substance.
 #' @param sep **character(1)** \cr The field separator, default is ",".
 #' @param dec **character(1)** \cr Decimal separator, default is ".".
@@ -41,15 +44,12 @@ readDataTable <- function(
     checkmate::assert_file_exists(dataPath)
     checkmate::assert_character(dataPath, len = 1)
     checkmate::assert_choice(fileType, c("csv", "txt", "xlsx"))
-    checkmate::assert_int(concCol, lower = 1)
-    checkmate::assert_int(measCol)
     checkmate::assert_character(sep, len = 1)
     checkmate::assert_character(dec, len = 1)
     checkmate::assert_flag(header)
     checkmate::assert_character(naStrings)
     checkmate::assert_int(sheet)
-    if (concCol == measCol) stop("Concentration and measurement columns cannot
-                            be identical.")
+
     if (fileType == "csv" | fileType == "txt") {
         rawData <- utils::read.table(dataPath, sep = sep, header = header,
             dec = dec, na.strings = naStrings
@@ -61,15 +61,39 @@ readDataTable <- function(
             sheet = sheet, na.strings = naStrings
         )
     }
-    ### check if column numbers are valid
-    if (measCol > ncol(rawData)) {
-        stop("Number of measurement column cannot be larger than number of
-            columns in data set.")
+
+    resolve_column <- function(column, column_name, data_set, allow_name = FALSE) {
+        if (is.character(column)) {
+            if (!allow_name || is.null(colnames(data_set))) {
+                stop("Column names can only be used when header = TRUE for text files.")
+            }
+            if (length(column) != 1L || !(column %in% colnames(data_set))) {
+                stop(sprintf("%s column '%s' was not found in the data.",
+                    column_name, column))
+            }
+            return(match(column, colnames(data_set)))
+        }
+        checkmate::assert_int(column, lower = 1)
+        if (column > ncol(data_set)) {
+            stop(sprintf("Number of %s column cannot be larger than number of columns in data set.",
+                tolower(column_name)))
+        }
+        column
     }
-    if (concCol > ncol(rawData)) {
-        stop("Number of concentration column cannot be larger than number of
-            columns in data set.")
+
+    use_name_lookup <- identical(fileType, "xlsx") || header
+    concCol <- resolve_column(concCol, "Concentration", rawData,
+        allow_name = use_name_lookup)
+    measCol <- resolve_column(measCol, "Measurement", rawData,
+        allow_name = use_name_lookup)
+    if (!is.null(substCol)) {
+        substCol <- resolve_column(substCol, "Substance", rawData,
+            allow_name = use_name_lookup)
     }
+
+    if (concCol == measCol) stop("Concentration and measurement columns cannot
+                            be identical.")
+
     ### extract relevant columns:
     DATA <- data.frame(
         "Concentration" = rawData[, concCol],
@@ -99,8 +123,10 @@ readDataTable <- function(
 #' @param dataFolder **character(1)** \cr Folder containing either xlsx, csv or
 #'    txt files
 #' @param fileType **character(1)** \cr Type of file: "csv", "txt" or "xlsx".
-#' @param concCol **integer(1)** \cr Column number of the concentration values.
-#' @param measCol **integer** \cr Column number of the concentration values.
+#' @param concCol **integer(1) or character(1)** \cr Column number or column name
+#'    of the concentration values.
+#' @param measCol **integer(1) or character(1)** \cr Column number or column name
+#'    of the measurement values.
 #' @param ... additional parameters to \code{\link{readDataTable}}
 #'
 #' @returns List of data.frame, each with two numeric columns:

@@ -24,3 +24,4 @@ Bugfixes
 # 1.1.5
 - add warning if minReplicates is set to 1
 - allows turning off log10 transformation of x-axis for plots
+- allow usage of column names (as alternative to column numbers) when reading data

@@ -32,6 +32,17 @@ test_that("readData xlsx and SummarizedExperiment", {
 })
 
 
+test_that("readDataTable accepts column names", {
+    file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx", package = "CalibraCurve")
+    D_by_number <- readDataTable(file, fileType = "xlsx", concCol = 16,
+        measCol = 12)
+    D_by_name <- readDataTable(file, fileType = "xlsx", concCol = "amount",
+        measCol = "Area")
+
+    expect_equal(D_by_name, D_by_number)
+})
+
+
 test_that("cleanData", {
     file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx", package = "CalibraCurve")
     D <- readDataTable(file, fileType = "xlsx", concCol = 16,
