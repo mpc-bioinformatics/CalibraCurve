@@ -119,7 +119,9 @@ response factor plots.}
 
 \item{verbose}{\strong{logical(1)} \cr If FALSE, no messages will be printed.}
 
-\item{...}{additional parameters for \code{\link{plotCalibraCurve}}}
+\item{...}{additional parameters for \code{\link{plotCalibraCurve}}.
+If \code{log10_x_axis} is provided, the same setting is also used for
+\code{\link{plotResponseFactors}}.}
 }
 \value{
 List with the following elements:

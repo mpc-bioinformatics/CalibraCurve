@@ -8,6 +8,7 @@ plotCalibraCurve(
   CC_RES,
   ylab = "Intensity",
   xlab = "Concentration",
+  log10_x_axis = TRUE,
   show_regression_info = FALSE,
   show_linear_range = TRUE,
   show_data_points = TRUE,
@@ -29,6 +30,10 @@ element is the result of \code{\link{calc_single_curve}}}
 \item{ylab}{\strong{character(1)} \cr y-axis label.}
 
 \item{xlab}{\strong{character(1)} \cr x-axis label.}
+
+\item{log10_x_axis}{\strong{logical(1)} \cr If TRUE (default), use a log10
+transformation for the x-axis. If FALSE, keep original concentration
+values on a linear x-axis.}
 
 \item{show_regression_info}{\strong{logical(1)} \cr If TRUE, show regression
 information (R2, slope, intercept) on the plot.}

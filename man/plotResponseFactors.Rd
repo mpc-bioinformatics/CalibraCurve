@@ -10,6 +10,7 @@ plotResponseFactors(
   RfThresU = 120,
   ylab = "Response Factor",
   xlab = "Concentration",
+  log10_x_axis = TRUE,
   colour_threshold = "orange",
   colour_within = "#00BFC4",
   colour_outside = "#F8766D",
@@ -30,6 +31,10 @@ percent (default is 120).}
 \item{ylab}{\strong{character(1)} \cr y-axis label.}
 
 \item{xlab}{\strong{character(1)} \cr x-axis label.}
+
+\item{log10_x_axis}{\strong{logical(1)} \cr If TRUE (default), use a log10
+transformation for the x-axis. If FALSE, keep original concentration
+values on a linear x-axis.}
 
 \item{colour_threshold}{\strong{character(1)} \cr Colour for horizontal threshold
 lines, default is "orange".}

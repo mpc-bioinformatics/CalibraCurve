@@ -21,7 +21,7 @@
 #' @returns Data.frame with two numeric columns: Concentration and Measurement
 #'
 #' @importFrom checkmate assert_file_exists assert_character assert_choice
-#' assert_int assert_character assert_flag
+#' @importFrom checkmate assert_int assert_character assert_flag
 #' @importFrom openxlsx read.xlsx
 #' @importFrom utils read.table
 #'

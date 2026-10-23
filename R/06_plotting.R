@@ -4,6 +4,9 @@
 #'      element is the result of \code{\link{calc_single_curve}}
 #' @param ylab **character(1)** \cr y-axis label.
 #' @param xlab **character(1)** \cr x-axis label.
+#' @param log10_x_axis **logical(1)** \cr If TRUE (default), use a log10
+#'    transformation for the x-axis. If FALSE, keep original concentration
+#'    values on a linear x-axis.
 #' @param show_regression_info **logical(1)** \cr If TRUE, show regression
 #'    information (R2, slope, intercept) on the plot.
 #' @param show_linear_range **logical(1)** \cr If TRUE, show the linear range
@@ -37,8 +40,9 @@
 #' @importFrom checkmate assertCharacter assertFlag
 #' @importFrom magrittr %>%
 #' @importFrom ggplot2 ggplot aes scale_x_continuous scale_y_continuous
-#' geom_point scale_alpha_manual geom_line facet_wrap geom_rect geom_text
-#' guides guide_legend theme theme_bw xlab ylab unit
+#' @importFrom ggplot2 geom_point scale_alpha_manual geom_line facet_wrap
+#' @importFrom ggplot2 geom_rect geom_text guides guide_legend
+#' @importFrom ggplot2  theme theme_bw xlab ylab unit
 #' @importFrom scales label_comma
 #'
 #' @returns
@@ -59,6 +63,7 @@
 #' plotCalibraCurve(list(substance = CC_RES))
 plotCalibraCurve <- function(
         CC_RES, ylab = "Intensity", xlab = "Concentration",
+        log10_x_axis = TRUE,
         show_regression_info = FALSE, show_linear_range = TRUE,
         show_data_points = TRUE, plot_type = "multiplot",
         point_colour = "black", curve_colour = "red",
@@ -67,6 +72,7 @@ plotCalibraCurve <- function(
         regression_info_size = 3, base_size = 11) {
     checkmate::assertCharacter(ylab, len = 1)
     checkmate::assertCharacter(xlab, len = 1)
+    checkmate::assertFlag(log10_x_axis)
     checkmate::assertFlag(show_regression_info)
     checkmate::assertFlag(show_linear_range)
     checkmate::assertFlag(show_data_points)
@@ -84,11 +90,17 @@ plotCalibraCurve <- function(
         x = concentration,
         y = measurement, alpha = final_linear_range
     ))
-    pl <- pl + ggplot2::scale_x_continuous(
-        trans = "log10",
-        labels = scales::label_comma(drop0trailing = TRUE)
-    ) +
-        ggplot2::scale_y_continuous(trans = "log10")
+    pl <- pl + ggplot2::scale_y_continuous(trans = "log10")
+    if (log10_x_axis) {
+        pl <- pl + ggplot2::scale_x_continuous(
+            trans = "log10",
+            labels = scales::label_comma(drop0trailing = TRUE)
+        )
+    } else {
+        pl <- pl + ggplot2::scale_x_continuous(
+            labels = scales::label_comma(drop0trailing = TRUE)
+        )
+    }
 
     if (plot_type == "all_in_one") {
         if (show_data_points) {
@@ -287,6 +299,9 @@ plotCalibraCurve <- function(
 #'    percent (default is 120).
 #' @param ylab **character(1)** \cr y-axis label.
 #' @param xlab **character(1)** \cr x-axis label.
+#' @param log10_x_axis **logical(1)** \cr If TRUE (default), use a log10
+#'    transformation for the x-axis. If FALSE, keep original concentration
+#'    values on a linear x-axis.
 #' @param colour_threshold **character(1)** \cr Colour for horizontal threshold
 #'    lines, default is "orange".
 #' @param colour_within **character(1)** \cr Colour for points and lines within
@@ -306,8 +321,8 @@ plotCalibraCurve <- function(
 #'
 #' @importFrom checkmate assertNumeric assertCharacter
 #' @importFrom ggplot2 ggplot scale_x_continuous geom_point aes geom_line
-#' scale_alpha_manual scale_colour_manual scale_fill_manual geom_hline theme
-#' theme_bw xlab ylab unit
+#' @importFrom ggplot2 scale_alpha_manual scale_colour_manual scale_fill_manual
+#' @importFrom ggplot2 geom_hline theme theme_bw xlab ylab unit
 #' @importFrom scales comma
 #'
 #' @export
@@ -326,6 +341,7 @@ plotCalibraCurve <- function(
 plotResponseFactors <- function(
         RES, RfThresL = 80, RfThresU = 120,
         ylab = "Response Factor", xlab = "Concentration",
+    log10_x_axis = TRUE,
         colour_threshold = "orange", colour_within = "#00BFC4",
         colour_outside = "#F8766D", legend = FALSE, base_size = 11,
         substance = NULL) {
@@ -333,6 +349,7 @@ plotResponseFactors <- function(
     checkmate::assertNumeric(RfThresU, lower = 100)
     checkmate::assertCharacter(ylab, len = 1)
     checkmate::assertCharacter(xlab, len = 1)
+    checkmate::assertFlag(log10_x_axis)
     checkmate::assertCharacter(colour_threshold, len = 1)
     checkmate::assertCharacter(colour_within, len = 1)
     checkmate::assertCharacter(colour_outside, len = 1)
@@ -354,11 +371,14 @@ plotResponseFactors <- function(
         fill = RF_within_thres, alpha = RF_within_thres, group = 1
     ))
 
-    ### log10 transformation of x-axis
-    pl <- pl + ggplot2::scale_x_continuous(
-        trans = "log10",
-        labels = scales::comma
-    )
+    if (log10_x_axis) {
+        pl <- pl + ggplot2::scale_x_continuous(
+            trans = "log10",
+            labels = scales::comma
+        )
+    } else {
+        pl <- pl + ggplot2::scale_x_continuous(labels = scales::comma)
+    }
 
     ### add data points + mean response factors per concentration level
     pl <- pl + ggplot2::geom_point(size = 1.7, shape = 21) +

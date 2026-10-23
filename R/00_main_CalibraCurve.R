@@ -58,7 +58,9 @@
 #'      response factor plots.
 #' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
 #' @param verbose **logical(1)** \cr If FALSE, no messages will be printed.
-#' @param ... additional parameters for \code{\link{plotCalibraCurve}}
+#' @param ... additional parameters for \code{\link{plotCalibraCurve}}.
+#'      If \code{log10_x_axis} is provided, the same setting is also used for
+#'      \code{\link{plotResponseFactors}}.
 #' @returns List with the following elements:
 #' - \code{RES}: List of CalibraCurve results (one item per substance, output
 #'      from \code{\link{calc_single_curve}}).
@@ -117,6 +119,13 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     checkmate::assert_numeric(RF_plot_width, lower = 0, len = 1)
     checkmate::assert_numeric(RF_plot_height, lower = 0, len = 1)
     checkmate::assert_numeric(plot_dpi, lower = 0, len = 1)
+
+    plot_args <- list(...)
+    rf_log10_x_axis <- TRUE
+    if ("log10_x_axis" %in% names(plot_args)) {
+        rf_log10_x_axis <- plot_args$log10_x_axis
+    }
+    checkmate::assert_flag(rf_log10_x_axis)
 
     if (inherits(D_list, "data.frame")) {
         D_list <- list(D_list)
@@ -180,6 +189,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
         if (is.null(RES[[i]])) next
         pl_RF_list[[i]] <- plotResponseFactors(RES = RES[[i]],
             RfThresL = RfThresL, RfThresU = RfThresU,
+            log10_x_axis = rf_log10_x_axis,
             colour_threshold = RF_colour_threshold,
             colour_within = RF_colour_within,
             colour_outside = RF_colour_outside,
