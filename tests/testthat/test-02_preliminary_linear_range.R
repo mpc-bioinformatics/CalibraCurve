@@ -19,3 +19,20 @@ test_that("preliminary linear range", {
 
     expect_error(calculate_PLR(D_cleaned, cvThres = 1.4, calcContinuousPrelimRanges = FALSE))
 })
+
+
+test_that("preliminary linear range warns for single replicates", {
+    file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx", package = "CalibraCurve")
+    D <- readDataTable(file, fileType = "xlsx", concCol = 16,
+                       measCol = 12)
+
+    D_single <- D[!duplicated(D[, "Concentration"]), , drop = FALSE]
+    D_single <- D_single[order(D_single[, "Concentration"]), , drop = FALSE]
+
+    D_cleaned <- cleanData(D_single, minReplicates = 1)
+
+    expect_warning(
+        calculate_PLR(D_cleaned, cvThres = 20, calcContinuousPrelimRanges = FALSE),
+        "CV values are treated as 0"
+    )
+})

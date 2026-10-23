@@ -34,6 +34,18 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
                         calcContinuousPrelimRanges = TRUE) {
     checkmate::assert_numeric(cvThres, len = 1, lower = 0)
     checkmate::assert_flag(calcContinuousPrelimRanges)
+
+    # With one replicate per concentration, CV is forced to 0 and not reliable
+    # for filtering concentration levels.
+    nReplicates <- vapply(dataCleaned, nrow, integer(1))
+    if (all(nReplicates == 1L)) {
+        warning(
+            "Only one replicate per concentration level was found. CV values ",
+            "are treated as 0, so all concentration levels automatically ",
+            "pass CV threshold filtering."
+        )
+    }
+
     ### calculate CV for each concentration level and check if < threshold
     concLevelsCV <- vapply(dataCleaned, .calcCV, numeric(1))
     index <- which(concLevelsCV <= cvThres)

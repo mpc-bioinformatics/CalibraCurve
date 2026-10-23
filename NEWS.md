@@ -20,3 +20,6 @@ Bugfixes
 
 # 1.1.4
 - readDataTable() can now import a file containing data for multiple substances
+
+# 1.1.5
+- add warning if minReplicates is set to 1
