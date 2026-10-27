@@ -21,6 +21,7 @@
 ## * OS: operating system
 
 on:
+  workflow_dispatch:
   push:
     branches:
     - "devel"
@@ -28,6 +29,7 @@ on:
   pull_request:
     branches:
     - "devel"
+ 
 
 name: R-CMD-check-bioc
 
