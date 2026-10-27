@@ -312,6 +312,17 @@ plotCalibraCurve <- function(
 #'      default is FALSE.
 #' @param base_size **numeric(1)** \cr Base size for the plot theme,
 #'      default is 11.
+#' @param plot_type **character(1)** \cr Type of response factor plot:
+#'      "single_plot" (default, one plot for one substance),
+#'      "multiplot" (facetted plot for multiple substances)
+#'      or "all_in_one" (all substances in one panel).
+#' @param multiplot_nrow **integer(1)** \cr Number of rows for the multiplot
+#'      layout (default is NULL, determined automatically).
+#' @param multiplot_ncol **integer(1)** \cr Number of columns for the
+#'      multiplot layout (default is NULL, determined automatically).
+#' @param multiplot_scales **character(1)** \cr Scales for the multiplot
+#'      layout, default is "free". Other options are "fixed", "free_x",
+#'      "free_y".
 #' @param substance **character(1)** \cr Name of the substance (default is
 #'      "substance1"). Will be added to the result files and will be used as
 #'      labels in the plots.
@@ -343,7 +354,9 @@ plotResponseFactors <- function(
         ylab = "Response Factor", xlab = "Concentration",
     log10_x_axis = TRUE,
         colour_threshold = "orange", colour_within = "#00BFC4",
-        colour_outside = "#F8766D", legend = FALSE, base_size = 11,
+        colour_outside = "#F8766D", legend = TRUE, base_size = 11,
+    plot_type = "single_plot", multiplot_nrow = NULL,
+    multiplot_ncol = NULL, multiplot_scales = "free",
         substance = NULL) {
     checkmate::assertNumeric(RfThresL, lower = 0, upper = 100, finite = TRUE)
     checkmate::assertNumeric(RfThresU, lower = 100)
@@ -353,23 +366,104 @@ plotResponseFactors <- function(
     checkmate::assertCharacter(colour_threshold, len = 1)
     checkmate::assertCharacter(colour_within, len = 1)
     checkmate::assertCharacter(colour_outside, len = 1)
+    checkmate::assertChoice(plot_type,
+        choices = c("single_plot", "multiplot", "all_in_one")
+    )
+    checkmate::assertChoice(multiplot_scales,
+        choices = c("fixed", "free", "free_x", "free_y")
+    )
+    if (!is.null(multiplot_nrow)) {
+        checkmate::assertInt(multiplot_nrow, lower = 1)
+    }
+    if (!is.null(multiplot_ncol)) {
+        checkmate::assertInt(multiplot_ncol, lower = 1)
+    }
 
     # silence notes when checking the package
     concentration <- response_factor <- final_linear_range <- NULL
     mean_response_factor <- RF_within_thres <- NULL
+    substance_rf <- rf_upper <- rf_lower <- threshold_y <- threshold_type <- NULL
 
-    range_dat <- RES$result_table_obs
-    range_dat <- range_dat[!is.na(range_dat$response_factor), ]
-    sum_dat <- RES$result_table_conc_levels
-    sum_dat <- sum_dat[!is.na(sum_dat$mean_response_factor), ]
-    all_rf_mean <- mean(range_dat$response_factor[range_dat$final_linear_range])
+    if (plot_type != "single_plot") {
+        checkmate::assertList(RES, min.len = 1)
+        all_names <- names(RES)
+        if (is.null(all_names)) {
+            all_names <- rep(NA_character_, length(RES))
+        }
+
+        .rf_single <- function(X, nm, idx) {
+            dat_obs <- X$result_table_obs
+            dat_obs <- dat_obs[!is.na(dat_obs$response_factor), ]
+            dat_obs$substance_rf <- ifelse(
+                !is.na(nm) && nzchar(nm), nm, paste0("substance_", idx)
+            )
+
+            dat_sum <- X$result_table_conc_levels
+            dat_sum <- dat_sum[!is.na(dat_sum$mean_response_factor), ]
+            dat_sum$substance_rf <- ifelse(
+                !is.na(nm) && nzchar(nm), nm, paste0("substance_", idx)
+            )
+
+            list(obs = dat_obs, sum = dat_sum)
+        }
+
+        rf_parts <- mapply(.rf_single, RES, all_names, seq_along(RES),
+            SIMPLIFY = FALSE
+        )
+        range_dat <- do.call(rbind, lapply(rf_parts, `[[`, "obs"))
+        sum_dat <- do.call(rbind, lapply(rf_parts, `[[`, "sum"))
+    } else {
+        range_dat <- RES$result_table_obs
+        range_dat <- range_dat[!is.na(range_dat$response_factor), ]
+        sum_dat <- RES$result_table_conc_levels
+        sum_dat <- sum_dat[!is.na(sum_dat$mean_response_factor), ]
+        range_dat$substance_rf <- ifelse(
+            is.null(substance) || !nzchar(substance), "substance1", substance
+        )
+        sum_dat$substance_rf <- ifelse(
+            is.null(substance) || !nzchar(substance), "substance1", substance
+        )
+    }
+
+    threshold_dat <- split(range_dat, range_dat$substance_rf)
+    threshold_dat <- lapply(names(threshold_dat), function(nm) {
+        dat <- threshold_dat[[nm]]
+        data.frame(
+            substance_rf = nm,
+            rf_mean = mean(dat$response_factor[dat$final_linear_range])
+        )
+    })
+    threshold_dat <- do.call(rbind, threshold_dat)
+    threshold_dat$rf_upper <- threshold_dat$rf_mean * (RfThresU / 100)
+    threshold_dat$rf_lower <- threshold_dat$rf_mean * (RfThresL / 100)
+    threshold_dat <- threshold_dat[is.finite(threshold_dat$rf_mean), ]
+    threshold_lines <- rbind(
+        data.frame(
+            substance_rf = threshold_dat$substance_rf,
+            threshold_y = threshold_dat$rf_upper,
+            threshold_type = "Threshold range"
+        ),
+        data.frame(
+            substance_rf = threshold_dat$substance_rf,
+            threshold_y = threshold_dat$rf_lower,
+            threshold_type = "Threshold range"
+        )
+    )
 
     ### initialize plot
     pl <- ggplot2::ggplot(range_dat, mapping = ggplot2::aes(
         x = concentration,
         y = response_factor, color = RF_within_thres,
-        fill = RF_within_thres, alpha = RF_within_thres, group = 1
+        fill = RF_within_thres, alpha = RF_within_thres
     ))
+
+    if (plot_type == "single_plot") {
+        pl <- pl + ggplot2::aes(group = 1)
+    } else if (plot_type == "all_in_one") {
+        pl <- pl + ggplot2::aes(group = interaction(substance_rf, RF_within_thres))
+    } else {
+        pl <- pl + ggplot2::aes(group = 1)
+    }
 
     if (log10_x_axis) {
         pl <- pl + ggplot2::scale_x_continuous(
@@ -381,12 +475,14 @@ plotResponseFactors <- function(
     }
 
     ### add data points + mean response factors per concentration level
-    pl <- pl + ggplot2::geom_point(size = 1.7, shape = 21) +
-        ggplot2::geom_point(
-            data = sum_dat,
-            mapping = ggplot2::aes(x = concentration, y = mean_response_factor),
-            color = "black", shape = 21, size = 2.5
-        )
+    if (plot_type != "all_in_one") {
+        pl <- pl + ggplot2::geom_point(size = 1.7, shape = 21)
+    }
+    pl <- pl + ggplot2::geom_point(
+        data = sum_dat,
+        mapping = ggplot2::aes(x = concentration, y = mean_response_factor),
+        color = "black", shape = 21, size = 2.5
+    )
 
     ### adjust colour of lines (only within_colour for consecutive mean response
     ### factors within the threshold)
@@ -404,7 +500,11 @@ plotResponseFactors <- function(
     ### add line between mean response factors
     pl <- pl + ggplot2::geom_line(
         data = sum_dat2,
-        mapping = ggplot2::aes(x = concentration, y = mean_response_factor)
+        mapping = ggplot2::aes(
+            x = concentration,
+            y = mean_response_factor,
+            group = if (plot_type == "all_in_one") substance_rf else 1
+        )
     )
 
     ## scaling of alpha and colours
@@ -419,20 +519,35 @@ plotResponseFactors <- function(
             "FALSE" = colour_outside
         ))
 
+    if (plot_type != "all_in_one") {
+        pl <- pl + ggplot2::scale_linetype_manual(values = c(
+            "Threshold range" = "dashed"
+        ))
+    }
+
     ### add horizontal lines for response factor thresholds
-    pl <- pl +
-        ggplot2::geom_hline(
-            yintercept = all_rf_mean * (RfThresU / 100),
-            linetype = "dashed", color = colour_threshold
-        ) +
-        ggplot2::geom_hline(
-            yintercept = all_rf_mean * (RfThresL / 100),
-            linetype = "dashed", color = colour_threshold
-        )
+    if (plot_type != "all_in_one") {
+        pl <- pl +
+            ggplot2::geom_hline(
+                data = threshold_lines,
+                mapping = ggplot2::aes(
+                    yintercept = threshold_y,
+                    linetype = threshold_type
+                ),
+                color = colour_threshold,
+                inherit.aes = FALSE
+            )
+    }
 
     ### theme and axis limits
     pl <- pl + ggplot2::theme_bw(base_size = base_size) + ggplot2::ylab(ylab) +
         ggplot2::xlab(xlab)
+
+    if (plot_type == "multiplot") {
+        pl <- pl + ggplot2::facet_wrap(substance_rf ~ ., scales = multiplot_scales,
+            nrow = multiplot_nrow, ncol = multiplot_ncol
+        )
+    }
 
     if (!legend) {
         pl <- pl + ggplot2::theme(
@@ -447,11 +562,14 @@ plotResponseFactors <- function(
             ggplot2::guides(
                 color = ggplot2::guide_legend(title = legend_name, order = 1),
                 fill = ggplot2::guide_legend(title = legend_name, order = 1),
-                alpha = ggplot2::guide_legend(title = legend_name, order = 1)
+                alpha = ggplot2::guide_legend(title = legend_name, order = 1),
+                linetype = ggplot2::guide_legend(title = "Threshold", order = 2)
             )
     }
 
-    pl <- pl + ggplot2::ggtitle(substance)
+    if (plot_type == "single_plot") {
+        pl <- pl + ggplot2::ggtitle(substance)
+    }
     return(pl)
 }
 

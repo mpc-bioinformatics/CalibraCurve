@@ -25,3 +25,5 @@ Bugfixes
 - add warning if minReplicates is set to 1
 - allows turning off log10 transformation of x-axis for plots
 - allow usage of column names (as alternative to column numbers) when reading data
+- option "multiplot" and "all_in_one" now also available for response factor plot
+- add legend for response factor plot

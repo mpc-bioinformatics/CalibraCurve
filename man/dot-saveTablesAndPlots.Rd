@@ -15,6 +15,7 @@
   RF_plot_width,
   RF_plot_height,
   plot_type,
+  RF_plot_type,
   plot_dpi,
   device
 )
@@ -47,6 +48,11 @@ of \code{\link{plotCalibraCurve}} (annotation_dat))}
 "single_plots" (default, generate a separate plot for each substance),
 "multiplot" (generate a graphic with subplots for each substance) or
 "all_in_one" (generate a single plot with all substances).}
+
+\item{RF_plot_type}{\strong{character(1)} \cr Type of response factor plot:
+"single_plots" (default, generate a separate plot for each substance),
+"multiplot" (generate a facetted plot) or "all_in_one"
+(generate a single plot with all substances).}
 
 \item{plot_dpi}{\strong{numeric(1)} \cr Plot resolution in dpi (default is 300).}
 

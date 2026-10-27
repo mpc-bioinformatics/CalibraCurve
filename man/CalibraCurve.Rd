@@ -29,6 +29,7 @@ CalibraCurve(
   RF_plot_height = 10,
   base_size = 11,
   RF_legend = FALSE,
+  RF_plot_type = "single_plots",
   plot_dpi = 300,
   verbose = TRUE,
   ...
@@ -114,6 +115,11 @@ default is 11.}
 
 \item{RF_legend}{\strong{logical(1)} \cr If TRUE, a legend will be added to the
 response factor plots.}
+
+\item{RF_plot_type}{\strong{character(1)} \cr Type of response factor plot:
+"single_plots" (default, one response-factor plot per substance),
+"multiplot" (facetted response-factor plot for multiple substances) or
+"all_in_one" (all substances in one response-factor panel).}
 
 \item{plot_dpi}{\strong{numeric(1)} \cr Plot resolution in dpi (default is 300).}
 

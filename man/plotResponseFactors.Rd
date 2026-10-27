@@ -16,6 +16,10 @@ plotResponseFactors(
   colour_outside = "#F8766D",
   legend = FALSE,
   base_size = 11,
+  plot_type = "single_plot",
+  multiplot_nrow = NULL,
+  multiplot_ncol = NULL,
+  multiplot_scales = "free",
   substance = NULL
 )
 }
@@ -50,6 +54,21 @@ default is FALSE.}
 
 \item{base_size}{\strong{numeric(1)} \cr Base size for the plot theme,
 default is 11.}
+
+\item{plot_type}{\strong{character(1)} \cr Type of response factor plot:
+"single_plot" (default, one plot for one substance),
+"multiplot" (facetted plot for multiple substances)
+or "all_in_one" (all substances in one panel).}
+
+\item{multiplot_nrow}{\strong{integer(1)} \cr Number of rows for the multiplot
+layout (default is NULL, determined automatically).}
+
+\item{multiplot_ncol}{\strong{integer(1)} \cr Number of columns for the
+multiplot layout (default is NULL, determined automatically).}
+
+\item{multiplot_scales}{\strong{character(1)} \cr Scales for the multiplot
+layout, default is "free". Other options are "fixed", "free_x",
+"free_y".}
 
 \item{substance}{\strong{character(1)} \cr Name of the substance (default is
 "substance1"). Will be added to the result files and will be used as

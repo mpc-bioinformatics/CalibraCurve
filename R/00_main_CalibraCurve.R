@@ -56,6 +56,10 @@
 #'    default is 11.
 #' @param RF_legend **logical(1)** \cr If TRUE, a legend will be added to the
 #'      response factor plots.
+#' @param RF_plot_type **character(1)** \cr Type of response factor plot:
+#'      "single_plots" (default, one response-factor plot per substance),
+#'      "multiplot" (facetted response-factor plot for multiple substances) or
+#'      "all_in_one" (all substances in one response-factor panel).
 #' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
 #' @param verbose **logical(1)** \cr If FALSE, no messages will be printed.
 #' @param ... additional parameters for \code{\link{plotCalibraCurve}}.
@@ -111,7 +115,8 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     RF_colour_threshold = "orange", RF_colour_within = "#00BFC4",
     RF_colour_outside = "#F8766D", device = "png", CC_plot_width = 15,
     CC_plot_height = 10, RF_plot_width = 15, RF_plot_height = 10,
-    base_size = 11, RF_legend = FALSE, plot_dpi = 300, verbose = TRUE, ...) {
+    base_size = 11, RF_legend = TRUE, RF_plot_type = "single_plots",
+    plot_dpi = 300, verbose = TRUE, ...) {
     checkmate::assert_choice(device, c("eps", "ps", "tex", "pdf", "jpeg",
         "tiff", "png", "bmp", "svg", "wmf"))
     checkmate::assert_numeric(CC_plot_width, lower = 0, len = 1)
@@ -119,6 +124,9 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     checkmate::assert_numeric(RF_plot_width, lower = 0, len = 1)
     checkmate::assert_numeric(RF_plot_height, lower = 0, len = 1)
     checkmate::assert_numeric(plot_dpi, lower = 0, len = 1)
+    checkmate::assert_choice(RF_plot_type,
+        c("single_plots", "multiplot", "all_in_one")
+    )
 
     plot_args <- list(...)
     rf_log10_x_axis <- TRUE
@@ -185,22 +193,38 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
 
     ## generate response factor plots (each as a single plot)
     pl_RF_list <- list()
-    for (i in seq_along(RES)) {
-        if (is.null(RES[[i]])) next
-        pl_RF_list[[i]] <- plotResponseFactors(RES = RES[[i]],
+    if (RF_plot_type == "single_plots") {
+        for (i in seq_along(RES)) {
+            if (is.null(RES[[i]])) next
+            pl_RF_list[[i]] <- plotResponseFactors(RES = RES[[i]],
+                RfThresL = RfThresL, RfThresU = RfThresU,
+                log10_x_axis = rf_log10_x_axis,
+                colour_threshold = RF_colour_threshold,
+                colour_within = RF_colour_within,
+                colour_outside = RF_colour_outside,
+                legend = RF_legend, base_size = base_size,
+                plot_type = "single_plot", substance = names(RES)[i]
+            )
+        }
+    } else {
+        rf_plot_type_tmp <- ifelse(
+            RF_plot_type == "single_plots", "single_plot", RF_plot_type
+        )
+        pl_RF_list[[1]] <- plotResponseFactors(RES = RES,
             RfThresL = RfThresL, RfThresU = RfThresU,
             log10_x_axis = rf_log10_x_axis,
             colour_threshold = RF_colour_threshold,
             colour_within = RF_colour_within,
             colour_outside = RF_colour_outside,
-            legend = RF_legend, base_size = base_size, substance = names(RES)[i]
+            legend = RF_legend, base_size = base_size,
+            plot_type = rf_plot_type_tmp
         )
     }
     if (!is.null(output_path)) {
         .saveTablesAndPlots(RES, output_path, pl_CC_list, pl_RF_list,
                             summary_tab, CC_plot_width, CC_plot_height,
                             RF_plot_width, RF_plot_height,
-                            plot_type, plot_dpi, device)
+                            plot_type, RF_plot_type, plot_dpi, device)
     }
         return(list(RES = RES, summary_tab = summary_tab,
                     plot_CC_list = pl_CC_list, plot_RF_list = pl_RF_list))
@@ -324,6 +348,10 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 #'      "single_plots" (default, generate a separate plot for each substance),
 #'      "multiplot" (generate a graphic with subplots for each substance) or
 #'      "all_in_one" (generate a single plot with all substances).
+#' @param RF_plot_type **character(1)** \cr Type of response factor plot:
+#'      "single_plots" (default, generate a separate plot for each substance),
+#'      "multiplot" (generate a facetted plot) or "all_in_one"
+#'      (generate a single plot with all substances).
 #' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
 #' @param device **character(1)** \cr Device for saving the plot (default is
 #'      "png"). Other options include "pdf", "jpeg", "tiff", "svg" etc. For
@@ -337,7 +365,7 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 .saveTablesAndPlots <- function(RES, output_path, pl_CC_list, pl_RF_list,
                                 summary_tab, CC_plot_width, CC_plot_height,
                                 RF_plot_width, RF_plot_height,
-                                plot_type, plot_dpi, device) {
+                                plot_type, RF_plot_type, plot_dpi, device) {
 
     for (i in seq_along(RES)) {
         .saveCCResult(CC_res = RES[[i]], output_path = output_path,
@@ -348,11 +376,13 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
                 plot = pl_CC_list[[i]], device = device, width = CC_plot_width,
                 height = CC_plot_height, units = "cm", dpi = plot_dpi)
         }
-        ggplot2::ggsave(
-            filename = paste0(output_path, "/ResponseFactors_",
-                            names(RES)[i], ".", device),
-            plot = pl_RF_list[[i]], device = device, width = RF_plot_width,
-            height = RF_plot_height, units = "cm", dpi = plot_dpi)
+        if (RF_plot_type == "single_plots") {
+            ggplot2::ggsave(
+                filename = paste0(output_path, "/ResponseFactors_",
+                                names(RES)[i], ".", device),
+                plot = pl_RF_list[[i]], device = device, width = RF_plot_width,
+                height = RF_plot_height, units = "cm", dpi = plot_dpi)
+        }
     }
 
     if (plot_type == "all_in_one" | plot_type == "multiplot") {
@@ -360,6 +390,12 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
             filename = paste0(output_path, "/CalibraCurve", ".", device),
             plot = pl_CC_list, device = device, width = CC_plot_width,
             height = CC_plot_height, units = "cm", dpi = plot_dpi)
+    }
+    if (RF_plot_type == "all_in_one" | RF_plot_type == "multiplot") {
+        ggplot2::ggsave(
+            filename = paste0(output_path, "/ResponseFactors", ".", device),
+            plot = pl_RF_list[[1]], device = device, width = RF_plot_width,
+            height = RF_plot_height, units = "cm", dpi = plot_dpi)
     }
     openxlsx::write.xlsx(summary_tab,
                         file = paste0(output_path,
