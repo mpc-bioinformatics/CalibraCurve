@@ -28,7 +28,7 @@ CalibraCurve(
   RF_plot_width = 15,
   RF_plot_height = 10,
   base_size = 11,
-  RF_legend = FALSE,
+  RF_legend = TRUE,
   RF_plot_type = "single_plots",
   plot_dpi = 300,
   verbose = TRUE,

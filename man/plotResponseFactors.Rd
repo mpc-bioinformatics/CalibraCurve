@@ -14,7 +14,7 @@ plotResponseFactors(
   colour_threshold = "orange",
   colour_within = "#00BFC4",
   colour_outside = "#F8766D",
-  legend = FALSE,
+  legend = TRUE,
   base_size = 11,
   plot_type = "single_plot",
   multiplot_nrow = NULL,
