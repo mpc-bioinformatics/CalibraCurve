@@ -57,9 +57,10 @@
 #' @param RF_legend **logical(1)** \cr If TRUE, a legend will be added to the
 #'      response factor plots.
 #' @param RF_plot_type **character(1)** \cr Type of response factor plot:
-#'      "single_plots" (default, one response-factor plot per substance),
+#'      "single_plots" (one response-factor plot per substance),
 #'      "multiplot" (facetted response-factor plot for multiple substances) or
 #'      "all_in_one" (all substances in one response-factor panel).
+#'      By default, this follows \code{plot_type}.
 #' @param plot_dpi **numeric(1)** \cr Plot resolution in dpi (default is 300).
 #' @param verbose **logical(1)** \cr If FALSE, no messages will be printed.
 #' @param ... additional parameters for \code{\link{plotCalibraCurve}}.
@@ -115,7 +116,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
     RF_colour_threshold = "orange", RF_colour_within = "#00BFC4",
     RF_colour_outside = "#F8766D", device = "png", CC_plot_width = 15,
     CC_plot_height = 10, RF_plot_width = 15, RF_plot_height = 10,
-    base_size = 11, RF_legend = TRUE, RF_plot_type = "single_plots",
+    base_size = 11, RF_legend = TRUE, RF_plot_type = plot_type,
     plot_dpi = 300, verbose = TRUE, ...) {
     checkmate::assert_choice(device, c("eps", "ps", "tex", "pdf", "jpeg",
         "tiff", "png", "bmp", "svg", "wmf"))
@@ -156,28 +157,25 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
                 calcContinuousPrelimRanges = calcContinuousPrelimRanges,
                 weightingMethod = weightingMethod,
                 centralTendencyMeasure = centralTendencyMeasure,
-                perBiasThres = perBiasThres, considerPerBiasCV = considerPerBiasCV,
+                perBiasThres = perBiasThres,
+                considerPerBiasCV = considerPerBiasCV,
                 perBiasDistThres = perBiasDistThres,
-                RfThresL = RfThresL, RfThresU = RfThresU)
+                RfThresL = RfThresL, RfThresU = RfThresU
+            )
         }, silent = TRUE)
 
         if (inherits(RES_tmp, "try-error")) {
-            message("Problem while calculating calibration curve for ",
-                    substance, ": ", conditionMessage(attr(RES_tmp, "condition")))
+            if (verbose) {
+                message("Problem while calculating calibration curve for ",
+                    substance, ": ", RES_tmp
+                )
+            }
+            RES[[i]] <- NULL
             next
+        } else {
+            RES[[i]] <- RES_tmp
+            names(RES)[i] <- substance
         }
-
-        RES[[length(RES) + 1L]] <- RES_tmp
-        names(RES)[length(RES)] <- substance
-    }
-
-    if (length(RES) == 0L) {
-        empty_res <- list(RES = list(), summary_tab = data.frame(),
-            plot_CC_list = list(), plot_RF_list = list())
-        if (!is.null(output_path)) {
-            return(empty_res)
-        }
-        return(empty_res)
     }
 
     pl_CC_list <- list()
@@ -188,18 +186,16 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
             RES_tmp <- list(RES[[i]])
             names(RES_tmp) <- names(RES)[i]
             ## generate a the calibration curve plot
-            pl_CC <- plotCalibraCurve(CC_RES = RES_tmp, plot_type = "multiplot",
+            pl_CC <- plotCalibraCurve(CC_RES = RES_tmp, plot_type = "single_plot",
                     base_size = base_size, ...)
             pl_CC_list[[i]] <- pl_CC$CC_plot
             summary_tab <- rbind(summary_tab, pl_CC$annotation_dat)
         }
     } else { # plot_type == "allinone" or "multiplot"
-        if (length(RES) > 0L) {
-            pl_CC <- plotCalibraCurve(CC_RES = RES, plot_type = plot_type,
-                                    base_size = base_size, ...)
-            pl_CC_list <- pl_CC$CC_plot
-            summary_tab <- pl_CC$annotation_dat
-        }
+        pl_CC <- plotCalibraCurve(CC_RES = RES, plot_type = plot_type,
+                                base_size = base_size, ...)
+        pl_CC_list <- pl_CC$CC_plot
+        summary_tab <- pl_CC$annotation_dat
     }
 
     ## generate response factor plots (each as a single plot)
@@ -217,7 +213,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
                 plot_type = "single_plot", substance = names(RES)[i]
             )
         }
-    } else if (length(RES) > 0L) {
+    } else {
         rf_plot_type_tmp <- ifelse(
             RF_plot_type == "single_plots", "single_plot", RF_plot_type
         )
@@ -237,8 +233,8 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
                             RF_plot_width, RF_plot_height,
                             plot_type, RF_plot_type, plot_dpi, device)
     }
-    return(list(RES = RES, summary_tab = summary_tab,
-                plot_CC_list = pl_CC_list, plot_RF_list = pl_RF_list))
+        return(list(RES = RES, summary_tab = summary_tab,
+                    plot_CC_list = pl_CC_list, plot_RF_list = pl_RF_list))
 }
 
 
@@ -379,7 +375,6 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
                                 plot_type, RF_plot_type, plot_dpi, device) {
 
     for (i in seq_along(RES)) {
-        if (is.null(RES[[i]])) next
         .saveCCResult(CC_res = RES[[i]], output_path = output_path,
                     suffix = paste0("_", names(RES)[i]))
         if (plot_type == "single_plots") {
@@ -397,13 +392,13 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
         }
     }
 
-    if (length(RES) > 0L && (plot_type == "all_in_one" | plot_type == "multiplot")) {
+    if (plot_type == "all_in_one" | plot_type == "multiplot") {
         ggplot2::ggsave(
             filename = paste0(output_path, "/CalibraCurve", ".", device),
             plot = pl_CC_list, device = device, width = CC_plot_width,
             height = CC_plot_height, units = "cm", dpi = plot_dpi)
     }
-    if (length(RES) > 0L && (RF_plot_type == "all_in_one" | RF_plot_type == "multiplot")) {
+    if (RF_plot_type == "all_in_one" | RF_plot_type == "multiplot") {
         ggplot2::ggsave(
             filename = paste0(output_path, "/ResponseFactors", ".", device),
             plot = pl_RF_list[[1]], device = device, width = RF_plot_width,

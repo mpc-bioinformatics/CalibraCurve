@@ -60,3 +60,66 @@ test_that("CalibraCurve skips failed curves and omits NA-suffixed output files",
     expect_true(any(grepl("result_table_conc_levels_good\\.xlsx", files)))
     expect_false(file.exists(file.path(out_dir, "result_table_conc_levels_NA.xlsx")))
 })
+
+
+test_that("plotCalibraCurve shows zero-concentration side panel outside multiplot", {
+    D_zero <- data.frame(
+        Concentration = c(0, 0, 0, 1, 1, 1, 2, 2, 2, 5, 5, 5, 10, 10, 10),
+        Measurement = c(0.1, 0.12, 0.11, 10.0, 10.2, 9.8, 20.0, 19.9, 20.1,
+            50.0, 49.8, 50.2, 100.0, 100.2, 99.9)
+    )
+
+    res <- NULL
+    pl_single_log <- NULL
+    pl_single_linear <- NULL
+    pl_all_in_one <- NULL
+    suppressWarnings(expect_no_error({
+        res <- CalibraCurve(D_zero, verbose = FALSE)
+        pl_single_log <- plotCalibraCurve(
+            res$RES,
+            plot_type = "single_plot",
+            log10_x_axis = TRUE,
+            plot_zeros = TRUE
+        )
+        pl_single_linear <- plotCalibraCurve(
+            res$RES,
+            plot_type = "single_plot",
+            log10_x_axis = FALSE,
+            plot_zeros = TRUE,
+            blank_panel_width_factor = 0.7
+        )
+        pl_all_in_one <- plotCalibraCurve(
+            res$RES,
+            plot_type = "all_in_one",
+            log10_x_axis = FALSE,
+            plot_zeros = TRUE
+        )
+    }))
+
+    expect_error(
+        plotCalibraCurve(
+            res$RES,
+            plot_type = "multiplot",
+            log10_x_axis = TRUE,
+            plot_zeros = TRUE
+        ),
+        "plot_zeros = TRUE is not supported"
+    )
+
+    single_log_layout <- pl_single_log$CC_plot$facet$params$cols
+    expect_true("panel" %in% names(single_log_layout))
+    single_linear_layout <- pl_single_linear$CC_plot$facet$params$cols
+    expect_true("panel" %in% names(single_linear_layout))
+    all_in_one_layout <- pl_all_in_one$CC_plot$facet$params$cols
+    expect_true("panel" %in% names(all_in_one_layout))
+
+    panel_levels <- levels(pl_single_log$CC_plot$data$panel)
+    expect_equal(panel_levels, c("Blank", "Calibration"))
+
+    vdiffr::expect_doppelganger("cc_0conc_single_plot_log_x",
+        pl_single_log$CC_plot)
+    vdiffr::expect_doppelganger("cc_0conc_single_plot_linear_x",
+        pl_single_linear$CC_plot)
+    vdiffr::expect_doppelganger("cc_0conc_all_in_one_linear_x",
+        pl_all_in_one$CC_plot)
+})

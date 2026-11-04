@@ -7,14 +7,32 @@
 #' @param log10_x_axis **logical(1)** \cr If TRUE (default), use a log10
 #'    transformation for the x-axis. If FALSE, keep original concentration
 #'    values on a linear x-axis.
+#' @param log_tick_label_style **character(1)** \cr Label style for log-scale
+#'    axes. One of \code{"auto"} (default), \code{"math"}, \code{"plain"}.
+#'    \code{"math"} uses labels like \eqn{10^{-5}}. \code{"plain"} uses
+#'    numeric labels (for example, 0.00001). \code{"auto"} uses \code{"math"}
+#'    for very small/large ranges and \code{"plain"} otherwise.
 #' @param show_regression_info **logical(1)** \cr If TRUE, show regression
 #'    information (R2, slope, intercept) on the plot.
 #' @param show_linear_range **logical(1)** \cr If TRUE, show the linear range
 #'    of the calibration curve as a rectangle in the plot.
 #' @param show_data_points **logical(1)** \cr If TRUE, show the data points on
 #'    the plot.
+#' @param plot_zeros **logical(1)** \cr If TRUE, show concentration 0 values
+#'    in a separate "Blank" side panel for single-plot and all-in-one
+#'    calibration curves.
+#' @param blank_panel_ratio **numeric(1)** \cr Target width ratio of Blank
+#'    panel relative to Calibration panel in linear x-axis mode when
+#'    \code{plot_zeros = TRUE}. For example, \code{0.3} means the Blank panel
+#'    is about 30% as wide as the Calibration panel when measured on the
+#'    rendered plot (default is 0.1). Set to NULL to use automatic panel
+#'    widths.
+#' @param blank_panel_width_factor **numeric(1)** \cr Relative width of the
+#'    Blank panel for linear x-axis plots when \code{plot_zeros = TRUE}.
+#'    Interpreted as fraction of the positive calibration concentration range
+#'    used to build the Blank panel x-span (default is 0.12).
 #' @param plot_type **character(1)** \cr Type of plot for calibration curves:
-#'    "single_plots" (default, generate a separate plot for each substance),
+#'    "single_plot" (generate one plot for one substance),
 #'    "multiplot" (generate a graphic with subplots for each substance)
 #'    or "all_in_one" (generate a single plot with all substances).
 #' @param point_colour **character(1)** \cr Colour of the data points, default
@@ -41,6 +59,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom ggplot2 ggplot aes scale_x_continuous scale_y_continuous
 #' @importFrom ggplot2 geom_point scale_alpha_manual geom_line facet_wrap
+#' @importFrom ggplot2 facet_grid
 #' @importFrom ggplot2 geom_rect geom_text guides guide_legend
 #' @importFrom ggplot2  theme theme_bw xlab ylab unit
 #' @importFrom scales label_comma
@@ -63,9 +82,10 @@
 #' plotCalibraCurve(list(substance = CC_RES))
 plotCalibraCurve <- function(
         CC_RES, ylab = "Intensity", xlab = "Concentration",
-        log10_x_axis = TRUE,
+    log10_x_axis = TRUE, log_tick_label_style = "auto",
         show_regression_info = FALSE, show_linear_range = TRUE,
-        show_data_points = TRUE, plot_type = "multiplot",
+    show_data_points = TRUE, plot_zeros = FALSE, blank_panel_ratio = 0.1,
+        blank_panel_width_factor = 0.12, plot_type = "multiplot",
         point_colour = "black", curve_colour = "red",
         linear_range_colour = "black", multiplot_nrow = NULL,
         multiplot_ncol = NULL, multiplot_scales = "free",
@@ -73,9 +93,23 @@ plotCalibraCurve <- function(
     checkmate::assertCharacter(ylab, len = 1)
     checkmate::assertCharacter(xlab, len = 1)
     checkmate::assertFlag(log10_x_axis)
+    checkmate::assertChoice(log_tick_label_style,
+        choices = c("auto", "math", "plain")
+    )
     checkmate::assertFlag(show_regression_info)
     checkmate::assertFlag(show_linear_range)
     checkmate::assertFlag(show_data_points)
+    checkmate::assertFlag(plot_zeros)
+    checkmate::assertNumber(blank_panel_ratio, lower = 0, upper = 1,
+        null.ok = TRUE
+    )
+    checkmate::assertNumber(blank_panel_width_factor, lower = 0, upper = 1)
+    checkmate::assertChoice(plot_type,
+        choices = c("single_plot", "multiplot", "all_in_one")
+    )
+    if (plot_zeros && plot_type == "multiplot") {
+        stop("plot_zeros = TRUE is not supported for plot_type = 'multiplot'. Use 'single_plot' or 'all_in_one'.")
+    }
     checkmate::assertCharacter(point_colour, len = 1)
     checkmate::assertCharacter(curve_colour, len = 1)
     checkmate::assertCharacter(linear_range_colour, len = 1)
@@ -86,20 +120,243 @@ plotCalibraCurve <- function(
     annotation_dat <- .prepareAnnotationData(D_calib)
     curve_dat <- .prepareCurveData(CC_RES, D_calib)
 
-    pl <- ggplot2::ggplot(D_calib, ggplot2::aes(
+    D_plot <- D_calib
+    use_blank_panel <- FALSE
+    zero_x_display <- NA_real_
+    blank_panel_span_dat <- NULL
+    blank_panel_cutoff <- NA_real_
+    blank_panel_upper_max <- NA_real_
+
+    if (plot_zeros && plot_type != "multiplot") {
+        pos_idx <- is.finite(D_calib$concentration) & D_calib$concentration > 0
+        zero_idx <- is.finite(D_calib$concentration) & D_calib$concentration == 0 &
+            !is.na(D_calib$measurement)
+
+        if (any(pos_idx) && any(zero_idx)) {
+            use_blank_panel <- TRUE
+            zero_x_display <- min(D_calib$concentration[pos_idx], na.rm = TRUE) / 10
+            pos_min <- min(D_calib$concentration[pos_idx], na.rm = TRUE)
+            pos_max <- max(D_calib$concentration[pos_idx], na.rm = TRUE)
+            blank_panel_cutoff <- (zero_x_display + pos_min) / 2
+
+            D_plot <- D_calib[pos_idx | zero_idx, ]
+            D_plot$panel <- ifelse(D_plot$concentration == 0, "Blank", "Calibration")
+            D_plot$concentration[D_plot$panel == "Blank"] <- zero_x_display
+            D_plot$panel <- factor(D_plot$panel, levels = c("Blank", "Calibration"))
+
+            curve_dat$panel <- factor("Calibration", levels = c("Blank", "Calibration"))
+            annotation_dat$panel <- factor("Calibration", levels = c("Blank", "Calibration"))
+
+            y_ref <- min(D_plot$measurement[D_plot$measurement > 0], na.rm = TRUE)
+            blank_x_span <- if (log10_x_axis) {
+                c(zero_x_display / 1.1, zero_x_display * 1.1)
+            } else {
+                # Keep a visible Blank facet in linear-x mode with free_x spacing.
+                range_pos <- pos_max - pos_min
+                half_width <- max(zero_x_display * 0.1,
+                    range_pos * blank_panel_width_factor
+                )
+                c(zero_x_display - half_width, zero_x_display + half_width)
+            }
+
+            # Dynamic upper bound for Blank facet detection. This tracks the
+            # actual computed span and allows for ggplot panel expansion.
+            blank_panel_upper_max <- blank_x_span[2] +
+                (blank_x_span[2] - blank_x_span[1]) * 0.25
+
+            blank_panel_span_dat <- data.frame(
+                concentration = blank_x_span,
+                measurement = y_ref,
+                panel = factor("Blank", levels = c("Blank", "Calibration"))
+            )
+        }
+    }
+
+    is_blank_panel_range <- function(x_vals) {
+        if (!is.finite(blank_panel_cutoff) || !is.finite(blank_panel_upper_max) ||
+            length(x_vals) != 2) {
+            return(FALSE)
+        }
+        tol <- max(abs(c(x_vals, blank_panel_upper_max)), 1) * 1e-8
+        x_vals[2] <= (blank_panel_upper_max + tol)
+    }
+
+    format_concentration_labels <- function(x_vals) {
+        finite_vals <- x_vals[is.finite(x_vals)]
+        non_zero_vals <- finite_vals[finite_vals != 0]
+        if (length(non_zero_vals) > 0 &&
+            (min(abs(non_zero_vals)) < 1e-3 || max(abs(non_zero_vals)) >= 1e5)) {
+            return(scales::label_scientific(digits = 2)(x_vals))
+        }
+        scales::label_comma(drop0trailing = TRUE)(x_vals)
+    }
+
+    format_log10_labels_math <- function(x_vals) {
+        lab <- rep(NA_character_, length(x_vals))
+        pos_idx <- is.finite(x_vals) & x_vals > 0
+        if (any(pos_idx)) {
+            exp_vals <- log10(x_vals[pos_idx])
+            exp_chr <- ifelse(
+                abs(exp_vals - round(exp_vals)) < 1e-8,
+                as.character(as.integer(round(exp_vals))),
+                format(round(exp_vals, 2), trim = TRUE, scientific = FALSE)
+            )
+            lab[pos_idx] <- paste0("10^{", exp_chr, "}")
+        }
+        lab
+    }
+
+    use_math_log_labels <- function(x_vals) {
+        if (log_tick_label_style == "math") {
+            return(TRUE)
+        }
+        if (log_tick_label_style == "plain") {
+            return(FALSE)
+        }
+        finite_vals <- x_vals[is.finite(x_vals) & x_vals > 0]
+        if (length(finite_vals) == 0) {
+            return(FALSE)
+        }
+        min(finite_vals) < 1e-3 || max(finite_vals) >= 1e5
+    }
+
+    format_log_labels <- function(x_vals) {
+        if (use_math_log_labels(x_vals)) {
+            lab <- format_log10_labels_math(x_vals)
+            return(parse(text = ifelse(is.na(lab), "NA", lab)))
+        }
+        format_concentration_labels(x_vals)
+    }
+
+    pl <- ggplot2::ggplot(D_plot, ggplot2::aes(
         x = concentration,
         y = measurement, alpha = final_linear_range
     ))
-    pl <- pl + ggplot2::scale_y_continuous(trans = "log10")
-    if (log10_x_axis) {
-        pl <- pl + ggplot2::scale_x_continuous(
-            trans = "log10",
-            labels = scales::label_comma(drop0trailing = TRUE)
-        )
+    pl <- pl + ggplot2::scale_y_continuous(
+        trans = "log10",
+        labels = function(y) {
+            format_log_labels(y)
+        }
+    )
+    if (use_blank_panel) {
+        if (log10_x_axis) {
+            pl <- pl + ggplot2::scale_x_continuous(
+                trans = "log10",
+                breaks = function(x) {
+                    if (is_blank_panel_range(x)) {
+                        return(zero_x_display)
+                    }
+                    return(scales::log_breaks()(x))
+                },
+                labels = function(x) {
+                    tol <- max(abs(c(x, zero_x_display)), na.rm = TRUE) * 1e-8
+                    if (use_math_log_labels(x)) {
+                        lab <- format_log10_labels_math(x)
+                        lab[abs(x - zero_x_display) < tol] <- "0"
+                        return(parse(text = ifelse(is.na(lab), "NA", lab)))
+                    }
+                    zero_lab <- ifelse(abs(x - zero_x_display) < tol,
+                        "0", NA_character_
+                    )
+                    base_lab <- format_concentration_labels(x)
+                    ifelse(is.na(zero_lab), base_lab, zero_lab)
+                },
+                minor_breaks = NULL
+            )
+        } else {
+            pl <- pl + ggplot2::scale_x_continuous(
+                breaks = function(x) {
+                    if (is_blank_panel_range(x)) {
+                        return(zero_x_display)
+                    }
+                    return(scales::breaks_pretty()(x))
+                },
+                labels = function(x) {
+                    tol <- max(abs(c(x, zero_x_display)), na.rm = TRUE) * 1e-8
+                    zero_lab <- ifelse(abs(x - zero_x_display) < tol, "0", NA_character_)
+                    base_lab <- format_concentration_labels(x)
+                    ifelse(is.na(zero_lab), base_lab, zero_lab)
+                },
+                minor_breaks = NULL
+            )
+        }
     } else {
-        pl <- pl + ggplot2::scale_x_continuous(
-            labels = scales::label_comma(drop0trailing = TRUE)
+        if (log10_x_axis) {
+            pl <- pl + ggplot2::scale_x_continuous(
+                trans = "log10",
+                labels = function(x) {
+                    format_log_labels(x)
+                }
+            )
+        } else {
+            pl <- pl + ggplot2::scale_x_continuous(
+                labels = format_concentration_labels
+            )
+        }
+    }
+
+    if (plot_type == "single_plot") {
+        if (show_data_points) {
+            pl <- pl +
+                ggplot2::geom_point(
+                    size = 1.7, color = point_colour,
+                    show.legend = c(alpha = TRUE, colour = FALSE)
+                ) +
+                ggplot2::scale_alpha_manual(
+                    values = c("Yes" = 1, "No" = 0.1),
+                    name = "Linear range", drop = FALSE
+                )
+        }
+        pl <- pl + ggplot2::geom_line(
+            color = curve_colour, data = curve_dat,
+            ggplot2::aes(x = concentration, y = predicted),
+            inherit.aes = FALSE, show.legend = FALSE
         )
+
+        if (use_blank_panel) {
+            pl <- pl + ggplot2::facet_grid(
+                . ~ panel,
+                scales = "free_x",
+                space = "free_x"
+            )
+
+            if (!is.null(blank_panel_span_dat)) {
+                pl <- pl + ggplot2::geom_blank(
+                    data = blank_panel_span_dat,
+                    ggplot2::aes(x = concentration, y = measurement),
+                    inherit.aes = FALSE
+                )
+            }
+
+            pl <- pl + ggplot2::geom_vline(
+                data = data.frame(
+                    panel = factor("Blank", levels = c("Blank", "Calibration")),
+                    xintercept = zero_x_display
+                ),
+                ggplot2::aes(xintercept = xintercept),
+                inherit.aes = FALSE,
+                color = "grey80",
+                linewidth = 0.3
+            )
+        }
+
+        if (show_linear_range) {
+            pl <- pl + ggplot2::geom_rect(
+                data = annotation_dat,
+                ggplot2::aes(xmin = LLOQ, xmax = ULOQ),
+                ymin = -Inf,
+                ymax = Inf,
+                alpha = 0.1, inherit.aes = FALSE, fill = linear_range_colour
+            )
+        }
+        if (show_regression_info) {
+            pl <- pl + ggplot2::geom_text(
+                data = annotation_dat,
+                mapping = ggplot2::aes(y = Inf, x = 0, label = eq),
+                vjust = 1.4, hjust = -0.07, alpha = 0.6, inherit.aes = FALSE,
+                color = curve_colour, size = regression_info_size
+            )
+        }
     }
 
     if (plot_type == "all_in_one") {
@@ -125,6 +382,33 @@ plotCalibraCurve <- function(
                 inherit.aes = FALSE,
                 show.legend = c(colour = TRUE, alpha = FALSE)
             )
+
+        if (use_blank_panel) {
+            pl <- pl + ggplot2::facet_grid(
+                . ~ panel,
+                scales = "free_x",
+                space = "free_x"
+            )
+
+            if (!is.null(blank_panel_span_dat)) {
+                pl <- pl + ggplot2::geom_blank(
+                    data = blank_panel_span_dat,
+                    ggplot2::aes(x = concentration, y = measurement),
+                    inherit.aes = FALSE
+                )
+            }
+
+            pl <- pl + ggplot2::geom_vline(
+                data = data.frame(
+                    panel = factor("Blank", levels = c("Blank", "Calibration")),
+                    xintercept = zero_x_display
+                ),
+                ggplot2::aes(xintercept = xintercept),
+                inherit.aes = FALSE,
+                color = "grey80",
+                linewidth = 0.3
+            )
+        }
     }
 
     if (plot_type == "multiplot") {
@@ -137,10 +421,6 @@ plotCalibraCurve <- function(
                 ggplot2::scale_alpha_manual(
                     values = c("Yes" = 1, "No" = 0.1),
                     name = "Linear range", drop = FALSE
-                ) +
-                ggplot2::facet_wrap(substance ~ .,
-                    scales = multiplot_scales,
-                    nrow = multiplot_nrow, ncol = multiplot_ncol
                 )
         }
         pl <- pl + ggplot2::geom_line(
@@ -148,10 +428,16 @@ plotCalibraCurve <- function(
             ggplot2::aes(x = concentration, y = predicted),
             inherit.aes = FALSE, show.legend = FALSE
         )
+        pl <- pl + ggplot2::facet_wrap(substance ~ .,
+            scales = multiplot_scales,
+            nrow = multiplot_nrow, ncol = multiplot_ncol
+        )
         if (show_linear_range) {
             pl <- pl + ggplot2::geom_rect(
                 data = annotation_dat,
-                ggplot2::aes(xmin = LLOQ, xmax = ULOQ, ymin = 0, ymax = Inf),
+                ggplot2::aes(xmin = LLOQ, xmax = ULOQ),
+                ymin = -Inf,
+                ymax = Inf,
                 alpha = 0.1, inherit.aes = FALSE, fill = linear_range_colour
             )
         }
@@ -176,6 +462,12 @@ plotCalibraCurve <- function(
         ggplot2::theme_bw(base_size = base_size) + ggplot2::ylab(ylab) +
         ggplot2::xlab(xlab) +
         ggplot2::theme(plot.margin = ggplot2::unit(c(0.5, 0.7, 0.5, 0.5), "cm"))
+
+    if (use_blank_panel && !is.null(blank_panel_ratio)) {
+        pl <- pl + ggplot2::theme(
+            panel.widths = grid::unit(c(blank_panel_ratio, 1), "null")
+        )
+    }
 
     return(list(CC_plot = pl, annotation_dat = annotation_dat))
 }
@@ -268,7 +560,16 @@ plotCalibraCurve <- function(
 
 
     f <- function(X, Y, Z) { # X = CC_RES, Y = D_calib, Z = substances
-        grid <- seq(log10(min(Y$concentration)), log10(max(Y$concentration)),
+        conc_pos <- Y$concentration[is.finite(Y$concentration) & Y$concentration > 0]
+        if (length(conc_pos) == 0) {
+            return(data.frame(
+                substance = character(0),
+                concentration = numeric(0),
+                predicted = numeric(0)
+            ))
+        }
+
+        grid <- seq(log10(min(conc_pos)), log10(max(conc_pos)),
             length.out = 1000
         )
         pred <- stats::predict(X$mod, newdata =
@@ -391,15 +692,37 @@ plotResponseFactors <- function(
             all_names <- rep(NA_character_, length(RES))
         }
 
+        req_obs_cols <- c(
+            "concentration", "response_factor",
+            "final_linear_range", "RF_within_thres"
+        )
+        req_sum_cols <- c(
+            "concentration", "mean_response_factor", "RF_within_thres"
+        )
+
+        .norm_rf_cols <- function(dat, req_cols) {
+            if (is.null(dat)) {
+                dat <- data.frame()
+            }
+            dat <- as.data.frame(dat)
+            miss_cols <- setdiff(req_cols, names(dat))
+            if (length(miss_cols) > 0) {
+                for (col_nm in miss_cols) {
+                    dat[[col_nm]] <- NA
+                }
+            }
+            dat[, req_cols, drop = FALSE]
+        }
+
         .rf_single <- function(X, nm, idx) {
-            dat_obs <- X$result_table_obs
-            dat_obs <- dat_obs[!is.na(dat_obs$response_factor), ]
+            dat_obs <- .norm_rf_cols(X$result_table_obs, req_obs_cols)
+            dat_obs <- dat_obs[!is.na(dat_obs$response_factor), , drop = FALSE]
             dat_obs$substance_rf <- ifelse(
                 !is.na(nm) && nzchar(nm), nm, paste0("substance_", idx)
             )
 
-            dat_sum <- X$result_table_conc_levels
-            dat_sum <- dat_sum[!is.na(dat_sum$mean_response_factor), ]
+            dat_sum <- .norm_rf_cols(X$result_table_conc_levels, req_sum_cols)
+            dat_sum <- dat_sum[!is.na(dat_sum$mean_response_factor), , drop = FALSE]
             dat_sum$substance_rf <- ifelse(
                 !is.na(nm) && nzchar(nm), nm, paste0("substance_", idx)
             )

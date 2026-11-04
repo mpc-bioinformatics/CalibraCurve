@@ -9,9 +9,13 @@ plotCalibraCurve(
   ylab = "Intensity",
   xlab = "Concentration",
   log10_x_axis = TRUE,
+  log_tick_label_style = "auto",
   show_regression_info = FALSE,
   show_linear_range = TRUE,
   show_data_points = TRUE,
+  plot_zeros = FALSE,
+  blank_panel_ratio = 0.1,
+  blank_panel_width_factor = 0.12,
   plot_type = "multiplot",
   point_colour = "black",
   curve_colour = "red",
@@ -35,6 +39,12 @@ element is the result of \code{\link{calc_single_curve}}}
 transformation for the x-axis. If FALSE, keep original concentration
 values on a linear x-axis.}
 
+\item{log_tick_label_style}{\strong{character(1)} \cr Label style for log-scale
+axes. One of \code{"auto"} (default), \code{"math"}, \code{"plain"}.
+\code{"math"} uses labels like \eqn{10^{-5}}. \code{"plain"} uses
+numeric labels (for example, 0.00001). \code{"auto"} uses \code{"math"}
+for very small/large ranges and \code{"plain"} otherwise.}
+
 \item{show_regression_info}{\strong{logical(1)} \cr If TRUE, show regression
 information (R2, slope, intercept) on the plot.}
 
@@ -44,8 +54,24 @@ of the calibration curve as a rectangle in the plot.}
 \item{show_data_points}{\strong{logical(1)} \cr If TRUE, show the data points on
 the plot.}
 
+\item{plot_zeros}{\strong{logical(1)} \cr If TRUE, show concentration 0 values
+in a separate "Blank" side panel for single-plot and all-in-one
+calibration curves.}
+
+\item{blank_panel_ratio}{\strong{numeric(1)} \cr Target width ratio of Blank
+panel relative to Calibration panel in linear x-axis mode when
+\code{plot_zeros = TRUE}. For example, \code{0.3} means the Blank panel
+is about 30\% as wide as the Calibration panel when measured on the
+rendered plot (default is 0.1). Set to NULL to use automatic panel
+widths.}
+
+\item{blank_panel_width_factor}{\strong{numeric(1)} \cr Relative width of the
+Blank panel for linear x-axis plots when \code{plot_zeros = TRUE}.
+Interpreted as fraction of the positive calibration concentration range
+used to build the Blank panel x-span (default is 0.12).}
+
 \item{plot_type}{\strong{character(1)} \cr Type of plot for calibration curves:
-"single_plots" (default, generate a separate plot for each substance),
+"single_plot" (generate one plot for one substance),
 "multiplot" (generate a graphic with subplots for each substance)
 or "all_in_one" (generate a single plot with all substances).}
 

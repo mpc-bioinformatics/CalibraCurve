@@ -37,6 +37,7 @@ importFrom(dplyr,
 )
 importFrom(ggplot2,
   aes,
+  facet_grid,
   facet_wrap,
   geom_hline,
   geom_line,
