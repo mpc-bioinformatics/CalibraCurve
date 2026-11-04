@@ -2,7 +2,7 @@
 % Please edit documentation in R/00_main_CalibraCurve.R
 \name{CalibraCurve}
 \alias{CalibraCurve}
-\title{CalibraCurve}
+\title{Main function for calculation of calibration curves}
 \usage{
 CalibraCurve(
   D_list,
@@ -144,7 +144,7 @@ calibration curves, one row per substance.
 }
 }
 \description{
-CalibraCurve
+Main function for calculation of calibration curves
 }
 \examples{
 ### NOTE: as output_path is not specified here, no files will be saved.

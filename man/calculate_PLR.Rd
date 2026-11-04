@@ -32,6 +32,15 @@ preliminary linear range.
 \description{
 Calculate preliminary linear range (PLR)
 }
+\details{
+The CV is the coefficient of variation which is calculated for a specific
+concentration level as the standard deviation of the intenities of the
+replicates divided by their mean times 100.
+The default threshold for the CV is 20\%. You can lower this threshold if you
+want to be more accurate. Increasing it to over 20\% is not recommended, as
+the high variability between the replicates can distort the calculation of
+the calibration curve and can be a hint for problems with your assay.
+}
 \examples{
 
 file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
@@ -42,3 +51,4 @@ data_cleaned <- cleanData(D_list[[1]])
 
 calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 }
+\keyword{internal}

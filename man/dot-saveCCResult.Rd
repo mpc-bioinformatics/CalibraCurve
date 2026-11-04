@@ -21,3 +21,4 @@ output path.
 \description{
 Save results of CalibraCurve
 }
+\keyword{internal}

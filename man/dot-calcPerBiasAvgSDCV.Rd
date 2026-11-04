@@ -20,3 +20,4 @@ data frame with 3 columns: avgPerBias, stdDevPerBias, CV_PerBias
 \description{
 FLR: calculate average, SD and CV percent bias for each concentration level
 }
+\keyword{internal}

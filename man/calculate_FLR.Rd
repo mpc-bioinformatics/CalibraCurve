@@ -61,3 +61,4 @@ RES_PLR <- calculate_PLR(data_cleaned, calcContinuousPrelimRanges = FALSE)
 
 calculate_FLR(RES_PLR$dataPrelim)
 }
+\keyword{internal}

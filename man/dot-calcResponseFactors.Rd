@@ -25,3 +25,4 @@ Function, which calculates a response factor for a single data point
 Formula obtained from:  Green, J. M., A practical guide to analytical method
 validation. Analytical Chemistry 1996, 68, 305A-309A.
 }
+\keyword{internal}

@@ -82,9 +82,11 @@ Calculate all necessary steps for a single calibration curve
 }
 \examples{
 
+
 data_path <- system.file("extdata", "MSQC1_xlsx", "GGPFSDSYR_QTRAP_y5.xlsx",
         package = "CalibraCurve")
 D <- readDataTable(dataPath = data_path, concCol = 16, measCol = 12,
         fileType = "xlsx")
 calc_single_curve(D = D)
 }
+\keyword{internal}

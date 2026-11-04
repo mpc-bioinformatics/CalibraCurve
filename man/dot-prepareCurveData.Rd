@@ -18,3 +18,4 @@ Dataframe with data points on a grid to plot the calibration curve.
 \description{
 Prepare curve data
 }
+\keyword{internal}

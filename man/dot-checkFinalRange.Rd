@@ -22,3 +22,4 @@ check (and the final linear range is reached), FALSE otherwise
 FLR: checks if final linear range has been reached (compare average percent
 bias with threshold)
 }
+\keyword{internal}

@@ -66,3 +66,4 @@ Invisible NULL. Plots and the summary table are saved to the hard drive.
 \description{
 Save result tables and plots
 }
+\keyword{internal}

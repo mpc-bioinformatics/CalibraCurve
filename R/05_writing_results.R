@@ -31,7 +31,7 @@
 #' @importFrom stats aggregate predict
 #'
 #' @export
-#'
+#' @keywords internal
 #' @examples
 #' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 #' package = "CalibraCurve")
@@ -116,7 +116,7 @@ assemble_results <- function(X, dataCleaned,  PLR_res, resFacDataV,
 #'      output path.
 #'
 #' @importFrom openxlsx write.xlsx
-#'
+#' @keywords internal
 .saveCCResult <- function(CC_res, output_path, suffix = "") {
     if (is.null(CC_res) || is.null(CC_res$result_table_conc_levels) ||
         is.null(CC_res$result_table_obs)) {

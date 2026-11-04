@@ -33,3 +33,4 @@ D_list <- readDataSE(file,
 )
 cleanData(D_list[[1]])
 }
+\keyword{internal}

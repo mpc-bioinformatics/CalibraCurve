@@ -19,7 +19,7 @@
 #'
 #' response factor values for each concentration level.
 #' @export
-#'
+#' @keywords internal
 #' @examples
 #' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 #' package = "CalibraCurve")
@@ -61,6 +61,7 @@ calcRF <- function(x, mod) {
 #'      concentration value).
 #'
 #' @returns vector of response factors for this specific concentration level
+#' @keywords internal
 .calcResponseFactors <- function(x, intercept, expConc) {
     result <- (x$Measurement - intercept) / expConc
     return(result)

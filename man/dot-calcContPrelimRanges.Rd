@@ -17,3 +17,4 @@ Data.frame with one range in each row. Contains the columns
 \description{
 PLR: Calculate key features for the existing continuous preliminary ranges
 }
+\keyword{internal}

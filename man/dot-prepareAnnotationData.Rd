@@ -15,3 +15,4 @@ Dataframe with annotation data for the plot.
 \description{
 Prepare annotation data
 }
+\keyword{internal}

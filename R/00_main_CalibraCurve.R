@@ -1,4 +1,4 @@
-#' CalibraCurve
+#' Main function for calculation of calibration curves
 #'
 #' @param D_list **data.frame/list** \cr Data.frame or list of data.frames
 #'      (one for one specific substance, each must contain two columns:
@@ -166,7 +166,7 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
 
         if (inherits(RES_tmp, "try-error")) {
             if (verbose) {
-                message("Problem while calculating calibration curve for ",
+                message("Could not calculate calibration curve for ",
                     substance, ": ", RES_tmp
                 )
             }
@@ -302,7 +302,9 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
 #'      \code{\link{assemble_results}}).
 #'
 #' @export
+#' @keywords internal
 #' @examples
+#'
 #'
 #' data_path <- system.file("extdata", "MSQC1_xlsx", "GGPFSDSYR_QTRAP_y5.xlsx",
 #'         package = "CalibraCurve")
@@ -449,6 +451,7 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 #'
 #' @importFrom ggplot2 ggsave
 #' @importFrom openxlsx write.xlsx
+#' @keywords internal
 .saveTablesAndPlots <- function(RES, output_path, pl_CC_list, pl_RF_list,
                                 summary_tab, CC_plot_width, CC_plot_height,
                                 RF_plot_width, RF_plot_height,

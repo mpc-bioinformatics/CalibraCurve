@@ -17,3 +17,4 @@ concentration level.
 \description{
 PLR: calculate CV for one concentration level
 }
+\keyword{internal}

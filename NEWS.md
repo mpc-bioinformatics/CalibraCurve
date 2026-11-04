@@ -28,3 +28,4 @@ Bugfixes
 - option "multiplot" and "all_in_one" now also available for response factor plot
 - add legend for response factor plot
 - fix bug when multiple input files are used and at least one result cannot be computed
+- add option for "math" appearance of x- and y-axis labels

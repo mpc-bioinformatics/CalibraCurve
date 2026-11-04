@@ -1,4 +1,10 @@
 #' Plot the calibration curve
+#' @details
+#' Can be used also on pre-calculated curves, if you import the .rds file
+#' using [readRDS()]. Does not save the plot, this can be done using
+#' [ggplot2::ggsave].
+#'
+#'
 #'
 #' @param CC_RES **list** \cr Results of \code{\link{CalibraCurve}}. Each list
 #'      element is the result of \code{\link{calc_single_curve}}
@@ -135,6 +141,7 @@ plotCalibraCurve <- function(
     blank_panel_span_dat <- NULL
     blank_panel_cutoff <- NA_real_
     blank_panel_upper_max <- NA_real_
+    xintercept <- NULL
 
     if (plot_zeros && plot_type != "multiplot") {
         pos_idx <- is.finite(D_calib$concentration) & D_calib$concentration > 0
@@ -536,6 +543,7 @@ plotCalibraCurve <- function(
 #' @param CC_RES **list** Result object of \code{\link{CalibraCurve}}.
 #'
 #' @returns Dataframe with calibration data for plotting.
+#' @keywords internal
 .prepareCalibData <- function(CC_RES) {
     ## remove empty results from list (if calculation stopped)
     is_RES_null <- vapply(CC_RES, is.null, logical(1))
@@ -600,6 +608,7 @@ plotCalibraCurve <- function(
 #' @param D_calib **data.frame** \cr Result of \code{\link{.prepareCalibData}}
 #'
 #' @returns Dataframe with annotation data for the plot.
+#' @keywords internal
 .prepareAnnotationData <- function(D_calib) {
     if (nrow(D_calib) == 0) {
         return(data.frame(
@@ -655,6 +664,7 @@ plotCalibraCurve <- function(
 #' @returns Dataframe with data points on a grid to plot the calibration curve.
 #'
 #' @importFrom stats predict
+#' @keywords internal
 .prepareCurveData <- function(CC_RES, D_calib) {
     ## remove empty results from list (if calculation stopped)
     is_RES_null <- vapply(CC_RES, is.null, logical(1))

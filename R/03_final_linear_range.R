@@ -30,7 +30,7 @@
 #' @importFrom checkmate assertChoice assertNumeric assertFlag
 #'
 #' @export
-#'
+#' @keywords internal
 #' @examples
 #' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 #'         package = "CalibraCurve")
@@ -103,6 +103,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #'
 #' @returns Vector of a constant weights for each measurement in this
 #'      concentration level.
+#' @keywords internal
 .calcWeights <- function(x, weightingMethod = "1/x^2") {
     currConcLevData <- x
     if (weightingMethod == "1/x^2") {
@@ -129,7 +130,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #' @returns Fit of the linear model as an object of class "lm".
 #'
 #' @importFrom stats lm
-#'
+#' @keywords internal
 .calcLinearModel <- function(x, weights = NULL) {
     ## combine list elements to a data set
     dataSetDF <- do.call(rbind, x)
@@ -149,6 +150,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #'
 #' @returns Vector of percent bias values for each data point in this
 #'      concentration level.
+#' @keywords internal
 .calcPerBias <- function(x, LMfit, expConc) {
     x <- x$Measurement
     coeff <- LMfit$coefficients
@@ -171,6 +173,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #'
 #' @returns List with percent bias values for each data point per
 #'      concentration level
+#' @keywords internal
 .calcPerBiasLevels <- function(x, LMfit) {
     concentrations <- as.numeric(names(x))
     perBiasValues <- mapply(FUN = .calcPerBias, x = x, expConc = concentrations,
@@ -191,7 +194,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #'          \cr each row is one concentration level
 #'
 #' @importFrom stats sd median
-#'
+#' @keywords internal
 .calcPerBiasAvgSDCV <- function(x, method = "mean") {
 
     if (method == "mean") {
@@ -221,6 +224,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #'
 #' @returns  TRUE if both lowest and highest concentration level passed the
 #'      check (and the final linear range is reached), FALSE otherwise
+#' @keywords internal
 .checkFinalRange <- function(perBiasInfo, perBiasThres = 20) {
     bothLevelsPassed <- FALSE
     lowLevelPassed <- FALSE
@@ -253,6 +257,7 @@ calculate_FLR <- function(dataPrelim, weightingMethod = "1/x^2",
 #'
 #' @returns TRUE, if lowest concentration will be removed, FALSE if highest
 #'      will be removed
+#' @keywords internal
 .selctConcLevel <- function(x, perBiasT = 20, consPerBiasCV = TRUE,
                             perBiasDistT = 10) {
     removeLow <- NULL

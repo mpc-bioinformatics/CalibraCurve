@@ -109,6 +109,11 @@ a data.frame containing summary data for annotations (annotation_dat).
 \description{
 Plot the calibration curve
 }
+\details{
+Can be used also on pre-calculated curves, if you import the .rds file
+using \code{\link[=readRDS]{readRDS()}}. Does not save the plot, this can be done using
+\link[ggplot2:ggsave]{ggplot2::ggsave}.
+}
 \examples{
 file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
     package = "CalibraCurve"

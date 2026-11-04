@@ -274,7 +274,7 @@ readDataSE <- function(dataPath = NULL, rawDataSE = NULL, concColName,
 #' @importFrom checkmate assert_int
 #'
 #' @export
-#'
+#' @keywords internal
 #' @examples
 #' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
 #'     package = "CalibraCurve"
@@ -339,6 +339,7 @@ cleanData <- function(rawData, minReplicates = 3) {
 #'    (e.g., result of \code{\link{readDataTable}})
 #'
 #' @returns data.frame
+#' @keywords internal
 .filterConcentrationLevel <- function(x, data) {
     result <- data[data$Concentration == x, ]
     return(result)
@@ -356,6 +357,7 @@ cleanData <- function(rawData, minReplicates = 3) {
 #'    concentration level
 #'
 #' @returns **logical(1)** \cr TRUE if there are enough replicates, else FALSE
+#' @keywords internal
 .checkNumberReplicates <- function(x, data, minReplicates) {
     if (nrow(data[[x]]) < minReplicates) {
         result <- FALSE

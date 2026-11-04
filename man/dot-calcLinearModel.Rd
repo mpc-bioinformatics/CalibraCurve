@@ -21,3 +21,4 @@ Fit of the linear model as an object of class "lm".
 \description{
 FLR: calculate weighted or unweighted linear model
 }
+\keyword{internal}

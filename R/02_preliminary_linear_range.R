@@ -1,5 +1,15 @@
 #' Calculate preliminary linear range (PLR)
 #'
+#' @details
+#' The CV is the coefficient of variation which is calculated for a specific
+#' concentration level as the standard deviation of the intenities of the
+#' replicates divided by their mean times 100.
+#' The default threshold for the CV is 20%. You can lower this threshold if you
+#' want to be more accurate. Increasing it to over 20% is not recommended, as
+#' the high variability between the replicates can distort the calculation of
+#' the calibration curve and can be a hint for problems with your assay.
+#'
+#'
 #' @param dataCleaned **data.frame** \cr Data cleaned by
 #'      \code{\link{cleanData}}.
 #' @param cvThres **numeric(1)** \cr Threshold for CV per concentration level in
@@ -20,7 +30,7 @@
 #' @importFrom checkmate assert_numeric assert_flag
 #'
 #' @export
-#'
+#' @keywords internal
 #' @examples
 #'
 #' file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
@@ -34,6 +44,11 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
                         calcContinuousPrelimRanges = TRUE) {
     checkmate::assert_numeric(cvThres, len = 1, lower = 0)
     checkmate::assert_flag(calcContinuousPrelimRanges)
+
+    if (cvThres > 20) {
+        warning("CV threshold is set to a value over 20%, which is not
+                recommended. Please see the help page ?calculate_PLR for details.")
+    }
 
     # With one replicate per concentration, CV is forced to 0 and not reliable
     # for filtering concentration levels.
@@ -70,8 +85,9 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
         } else {
             if (longestRange$extent == 0) {
                 stop("No preliminary linear range with CV <= ", cvThres,
-                    " could be calculated. Please check your data or increase
-                    the CV threshold.")
+                    " could be calculated. Please check the individual CVs in
+                    result_table_con_levels and consider the help page
+                    ?calculate_PLR.")
             }
             dataPrelim <- dataCleaned[longestRange$start:longestRange$end]
         }
@@ -87,7 +103,8 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
     # which pass the CV value threshold
     if (length(prelimConcLevels) < 2) {
         stop("Less than two concentration levels with CV <= ", cvThres, " exist.
-            Please check your data or increase the CV threshold.")
+            Please check the individual CVs in result_table_con_levels and
+            consider the help page ?calculate_PLR.")
     }
     return(list(dataPrelim = dataPrelim, concLevelsCV = concLevelsCV,
         prelimConcLevels = prelimConcLevels))
@@ -107,7 +124,7 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
 #'      concentration level.
 #'
 #' @importFrom stats sd
-#'
+#' @keywords internal
 .calcCV <- function(x) {
     if (nrow(x) == 1) { #only one raplicate
         SD <- 0
@@ -128,6 +145,7 @@ calculate_PLR <- function(dataCleaned, cvThres = 20,
 #'
 #' @returns Data.frame with one range in each row. Contains the columns
 #'      "startPoints", "endPoints", and "extent".
+#' @keywords internal
 .calcContPrelimRanges <- function(index) {
     # Calculating the end points for all ranges
     y <- index

@@ -20,3 +20,4 @@ concentration level.
 \description{
 FLR: calculate weights for linear model for a specific concentration level
 }
+\keyword{internal}
