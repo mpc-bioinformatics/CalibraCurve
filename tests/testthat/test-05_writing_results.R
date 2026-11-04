@@ -54,3 +54,41 @@ test_that("assemble result tables", {
         )
     )
 })
+
+
+test_that("RF threshold flags match FLR-based response-factor bounds", {
+    file <- system.file("extdata", "MSQC1_xlsx/GGPFSDSYR_QTRAP_y5.xlsx",
+                        package = "CalibraCurve")
+    D <- readDataTable(file, fileType = "xlsx", concCol = 16, measCol = 12)
+
+    # Add a concentration level that will be removed during cleaning.
+    D_extra <- D[1:3, ]
+    D_extra$Concentration <- max(D$Concentration, na.rm = TRUE) * 10
+    D_extra$Measurement <- 0
+    D_mod <- rbind(D, D_extra)
+
+    cc_res <- calc_single_curve(D_mod,
+        cvThres = 20,
+        calcContinuousPrelimRanges = TRUE,
+        weightingMethod = "1/x^2",
+        perBiasThres = 20,
+        considerPerBiasCV = FALSE,
+        perBiasDistThres = 10,
+        RfThresL = 80,
+        RfThresU = 120,
+        substance = "substance1"
+    )
+
+    obs_tab <- cc_res$result_table_obs
+    obs_tab <- obs_tab[!is.na(obs_tab$response_factor), , drop = FALSE]
+    expect_true(any(obs_tab$final_linear_range))
+
+    rf_mean_flr <- mean(obs_tab$response_factor[obs_tab$final_linear_range])
+    rf_lower <- rf_mean_flr * 0.8
+    rf_upper <- rf_mean_flr * 1.2
+    expected_flag <-
+        obs_tab$response_factor >= rf_lower &
+        obs_tab$response_factor <= rf_upper
+
+    expect_identical(obs_tab$RF_within_thres, expected_flag)
+})

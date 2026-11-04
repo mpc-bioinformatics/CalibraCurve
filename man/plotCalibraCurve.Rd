@@ -43,7 +43,8 @@ values on a linear x-axis.}
 axes. One of \code{"auto"} (default), \code{"math"}, \code{"plain"}.
 \code{"math"} uses labels like \eqn{10^{-5}}. \code{"plain"} uses
 numeric labels (for example, 0.00001). \code{"auto"} uses \code{"math"}
-for very small/large ranges and \code{"plain"} otherwise.}
+for very small/large ranges and \code{"plain"} otherwise. For
+\code{"math"}, tick positions are restricted to powers of 10.}
 
 \item{show_regression_info}{\strong{logical(1)} \cr If TRUE, show regression
 information (R2, slope, intercept) on the plot.}

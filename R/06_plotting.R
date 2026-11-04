@@ -11,7 +11,8 @@
 #'    axes. One of \code{"auto"} (default), \code{"math"}, \code{"plain"}.
 #'    \code{"math"} uses labels like \eqn{10^{-5}}. \code{"plain"} uses
 #'    numeric labels (for example, 0.00001). \code{"auto"} uses \code{"math"}
-#'    for very small/large ranges and \code{"plain"} otherwise.
+#'    for very small/large ranges and \code{"plain"} otherwise. For
+#'    \code{"math"}, tick positions are restricted to powers of 10.
 #' @param show_regression_info **logical(1)** \cr If TRUE, show regression
 #'    information (R2, slope, intercept) on the plot.
 #' @param show_linear_range **logical(1)** \cr If TRUE, show the linear range
@@ -119,6 +120,14 @@ plotCalibraCurve <- function(
     D_calib <- .prepareCalibData(CC_RES)
     annotation_dat <- .prepareAnnotationData(D_calib)
     curve_dat <- .prepareCurveData(CC_RES, D_calib)
+    if (nrow(D_calib) == 0) {
+        D_calib <- data.frame(
+            substance = character(0),
+            concentration = numeric(0),
+            measurement = numeric(0),
+            final_linear_range = factor(character(0), levels = c("No", "Yes"))
+        )
+    }
 
     D_plot <- D_calib
     use_blank_panel <- FALSE
@@ -132,43 +141,49 @@ plotCalibraCurve <- function(
         zero_idx <- is.finite(D_calib$concentration) & D_calib$concentration == 0 &
             !is.na(D_calib$measurement)
 
-        if (any(pos_idx) && any(zero_idx)) {
-            use_blank_panel <- TRUE
-            zero_x_display <- min(D_calib$concentration[pos_idx], na.rm = TRUE) / 10
-            pos_min <- min(D_calib$concentration[pos_idx], na.rm = TRUE)
-            pos_max <- max(D_calib$concentration[pos_idx], na.rm = TRUE)
-            blank_panel_cutoff <- (zero_x_display + pos_min) / 2
-
+        if (nrow(D_calib) > 0 && any(pos_idx) && any(zero_idx)) {
             D_plot <- D_calib[pos_idx | zero_idx, ]
-            D_plot$panel <- ifelse(D_plot$concentration == 0, "Blank", "Calibration")
-            D_plot$concentration[D_plot$panel == "Blank"] <- zero_x_display
-            D_plot$panel <- factor(D_plot$panel, levels = c("Blank", "Calibration"))
+            if (nrow(D_plot) > 0) {
+                use_blank_panel <- TRUE
+                zero_x_display <- min(D_calib$concentration[pos_idx], na.rm = TRUE) / 10
+                pos_min <- min(D_calib$concentration[pos_idx], na.rm = TRUE)
+                pos_max <- max(D_calib$concentration[pos_idx], na.rm = TRUE)
+                blank_panel_cutoff <- (zero_x_display + pos_min) / 2
 
-            curve_dat$panel <- factor("Calibration", levels = c("Blank", "Calibration"))
-            annotation_dat$panel <- factor("Calibration", levels = c("Blank", "Calibration"))
+                D_plot$panel <- ifelse(D_plot$concentration == 0, "Blank", "Calibration")
+                D_plot$concentration[D_plot$panel == "Blank"] <- zero_x_display
+                D_plot$panel <- factor(D_plot$panel, levels = c("Blank", "Calibration"))
 
-            y_ref <- min(D_plot$measurement[D_plot$measurement > 0], na.rm = TRUE)
-            blank_x_span <- if (log10_x_axis) {
-                c(zero_x_display / 1.1, zero_x_display * 1.1)
-            } else {
-                # Keep a visible Blank facet in linear-x mode with free_x spacing.
-                range_pos <- pos_max - pos_min
-                half_width <- max(zero_x_display * 0.1,
-                    range_pos * blank_panel_width_factor
+                if (nrow(curve_dat) > 0) {
+                    curve_dat$panel <- factor("Calibration", levels = c("Blank", "Calibration"))
+                }
+                if (nrow(annotation_dat) > 0) {
+                    annotation_dat$panel <- factor("Calibration", levels = c("Blank", "Calibration"))
+                }
+
+                y_ref <- min(D_plot$measurement[D_plot$measurement > 0], na.rm = TRUE)
+                blank_x_span <- if (log10_x_axis) {
+                    c(zero_x_display / 1.1, zero_x_display * 1.1)
+                } else {
+                    # Keep a visible Blank facet in linear-x mode with free_x spacing.
+                    range_pos <- pos_max - pos_min
+                    half_width <- max(zero_x_display * 0.1,
+                        range_pos * blank_panel_width_factor
+                    )
+                    c(zero_x_display - half_width, zero_x_display + half_width)
+                }
+
+                # Dynamic upper bound for Blank facet detection. This tracks the
+                # actual computed span and allows for ggplot panel expansion.
+                blank_panel_upper_max <- blank_x_span[2] +
+                    (blank_x_span[2] - blank_x_span[1]) * 0.25
+
+                blank_panel_span_dat <- data.frame(
+                    concentration = blank_x_span,
+                    measurement = y_ref,
+                    panel = factor("Blank", levels = c("Blank", "Calibration"))
                 )
-                c(zero_x_display - half_width, zero_x_display + half_width)
             }
-
-            # Dynamic upper bound for Blank facet detection. This tracks the
-            # actual computed span and allows for ggplot panel expansion.
-            blank_panel_upper_max <- blank_x_span[2] +
-                (blank_x_span[2] - blank_x_span[1]) * 0.25
-
-            blank_panel_span_dat <- data.frame(
-                concentration = blank_x_span,
-                measurement = y_ref,
-                panel = factor("Blank", levels = c("Blank", "Calibration"))
-            )
         }
     }
 
@@ -228,12 +243,40 @@ plotCalibraCurve <- function(
         format_concentration_labels(x_vals)
     }
 
+    power10_breaks <- function(x_vals) {
+        finite_vals <- x_vals[is.finite(x_vals) & x_vals > 0]
+        if (length(finite_vals) == 0) {
+            return(numeric(0))
+        }
+        exp_seq <- seq(
+            floor(log10(min(finite_vals))),
+            ceiling(log10(max(finite_vals))),
+            by = 1
+        )
+        10^exp_seq
+    }
+
+    use_math_x_labels <- use_math_log_labels(D_plot$concentration)
+    use_math_y_labels <- use_math_log_labels(D_plot$measurement)
+
+    if (log10_x_axis && !use_blank_panel) {
+        # Non-positive x values cannot be displayed on a log10 axis.
+        D_plot <- D_plot[D_plot$concentration > 0, , drop = FALSE]
+    }
+
+    # Non-positive or missing y values cannot be displayed on a log10 y-axis.
+    D_plot <- D_plot[is.finite(D_plot$measurement) & D_plot$measurement > 0,
+        , drop = FALSE
+    ]
+
     pl <- ggplot2::ggplot(D_plot, ggplot2::aes(
         x = concentration,
         y = measurement, alpha = final_linear_range
     ))
+
     pl <- pl + ggplot2::scale_y_continuous(
         trans = "log10",
+        breaks = if (use_math_y_labels) power10_breaks else ggplot2::waiver(),
         labels = function(y) {
             format_log_labels(y)
         }
@@ -245,6 +288,9 @@ plotCalibraCurve <- function(
                 breaks = function(x) {
                     if (is_blank_panel_range(x)) {
                         return(zero_x_display)
+                    }
+                    if (use_math_x_labels) {
+                        return(power10_breaks(x))
                     }
                     return(scales::log_breaks()(x))
                 },
@@ -284,6 +330,7 @@ plotCalibraCurve <- function(
         if (log10_x_axis) {
             pl <- pl + ggplot2::scale_x_continuous(
                 trans = "log10",
+                breaks = if (use_math_x_labels) power10_breaks else ggplot2::waiver(),
                 labels = function(x) {
                     format_log_labels(x)
                 }
@@ -307,11 +354,13 @@ plotCalibraCurve <- function(
                     name = "Linear range", drop = FALSE
                 )
         }
-        pl <- pl + ggplot2::geom_line(
-            color = curve_colour, data = curve_dat,
-            ggplot2::aes(x = concentration, y = predicted),
-            inherit.aes = FALSE, show.legend = FALSE
-        )
+        if (nrow(curve_dat) > 0) {
+            pl <- pl + ggplot2::geom_line(
+                color = curve_colour, data = curve_dat,
+                ggplot2::aes(x = concentration, y = predicted),
+                inherit.aes = FALSE, show.legend = FALSE
+            )
+        }
 
         if (use_blank_panel) {
             pl <- pl + ggplot2::facet_grid(
@@ -372,16 +421,18 @@ plotCalibraCurve <- function(
                     name = "Linear range", drop = FALSE
                 )
         }
-        pl <- pl +
-            ggplot2::geom_line(
-                data = curve_dat,
-                ggplot2::aes(
-                    x = concentration, y = predicted,
-                    color = substance, group = substance
-                ),
-                inherit.aes = FALSE,
-                show.legend = c(colour = TRUE, alpha = FALSE)
-            )
+        if (nrow(curve_dat) > 0) {
+            pl <- pl +
+                ggplot2::geom_line(
+                    data = curve_dat,
+                    ggplot2::aes(
+                        x = concentration, y = predicted,
+                        color = substance, group = substance
+                    ),
+                    inherit.aes = FALSE,
+                    show.legend = c(colour = TRUE, alpha = FALSE)
+                )
+        }
 
         if (use_blank_panel) {
             pl <- pl + ggplot2::facet_grid(
@@ -423,11 +474,13 @@ plotCalibraCurve <- function(
                     name = "Linear range", drop = FALSE
                 )
         }
-        pl <- pl + ggplot2::geom_line(
-            color = curve_colour, data = curve_dat,
-            ggplot2::aes(x = concentration, y = predicted),
-            inherit.aes = FALSE, show.legend = FALSE
-        )
+        if (nrow(curve_dat) > 0) {
+            pl <- pl + ggplot2::geom_line(
+                color = curve_colour, data = curve_dat,
+                ggplot2::aes(x = concentration, y = predicted),
+                inherit.aes = FALSE, show.legend = FALSE
+            )
+        }
         pl <- pl + ggplot2::facet_wrap(substance ~ .,
             scales = multiplot_scales,
             nrow = multiplot_nrow, ncol = multiplot_ncol
@@ -489,15 +542,51 @@ plotCalibraCurve <- function(
     CC_RES <- CC_RES[!is_RES_null]
     # X: result of 1 CalibraCurveRun
     f <- function(X) {
+        if (is.null(X$result_table_obs)) {
+            return(data.frame(
+                substance = character(0),
+                concentration = numeric(0),
+                measurement = numeric(0),
+                removed_while_cleaning = logical(0),
+                percentage_bias = numeric(0),
+                response_factor = numeric(0),
+                RF_within_thres = logical(0),
+                final_linear_range = logical(0),
+                intercept = numeric(0),
+                coeff = numeric(0),
+                r2 = numeric(0),
+                weight_m = character(0)
+            ))
+        }
+        has_model <- !is.null(X$mod) && inherits(X$mod, "lm")
         tmp <- data.frame(X$result_table_obs,
-            intercept = unname(X$mod$coefficients[1]),
-            coeff = unname(X$mod$coefficients[2]),
-            r2 = summary(X$mod)$r.squared,
-            weight_m = X$weightingMethod
+            intercept = if (has_model) unname(X$mod$coefficients[1]) else NA_real_,
+            coeff = if (has_model) unname(X$mod$coefficients[2]) else NA_real_,
+            r2 = if (has_model) summary(X$mod)$r.squared else NA_real_,
+            weight_m = if (!is.null(X$weightingMethod)) X$weightingMethod else NA_character_
         )
         return(tmp)
     }
+    if (length(CC_RES) == 0) {
+        return(data.frame(
+            substance = character(0),
+            concentration = numeric(0),
+            measurement = numeric(0),
+            removed_while_cleaning = logical(0),
+            percentage_bias = numeric(0),
+            response_factor = numeric(0),
+            RF_within_thres = logical(0),
+            final_linear_range = logical(0),
+            intercept = numeric(0),
+            coeff = numeric(0),
+            r2 = numeric(0),
+            weight_m = character(0)
+        ))
+    }
     D_calib <- do.call(rbind, lapply(CC_RES, f))
+    if (nrow(D_calib) == 0) {
+        return(D_calib)
+    }
     D_calib$measurement[D_calib$measurement == 0] <- NA # avoid log10(0)
     D_calib$final_linear_range <- factor(D_calib$final_linear_range,
         levels = c(FALSE, TRUE), labels = c("No", "Yes")
@@ -512,26 +601,41 @@ plotCalibraCurve <- function(
 #'
 #' @returns Dataframe with annotation data for the plot.
 .prepareAnnotationData <- function(D_calib) {
+    if (nrow(D_calib) == 0) {
+        return(data.frame(
+            substance = character(0),
+            intercept = numeric(0),
+            coeff = numeric(0),
+            r2 = numeric(0),
+            LLOQ = numeric(0),
+            ULOQ = numeric(0),
+            eq = character(0)
+        ))
+    }
     D_calib_split <- split(D_calib, D_calib$substance)
 
     f <- function(X) {
         intercept <- X$intercept[1]
         coeff <- X$coeff[1]
         r2 <- X$r2[1]
-        eq <- paste0(
-            "y = ", format(intercept, scientific = TRUE, digits = 2),
-            " + ", format(coeff, scientific = TRUE, digits = 2), " * x",
-            " (R2 = ", round(r2, 3), ")"
-        )
+        eq <- if (is.na(intercept) || is.na(coeff) || is.na(r2)) {
+            "Calibration failed"
+        } else {
+            paste0(
+                "y = ", format(intercept, scientific = TRUE, digits = 2),
+                " + ", format(coeff, scientific = TRUE, digits = 2), " * x",
+                " (R2 = ", round(r2, 3), ")"
+            )
+        }
 
-
+        yes_idx <- X$final_linear_range == "Yes"
         tmp <- data.frame(
             substance = X$substance[1],
             intercept = intercept,
             coeff = coeff,
             r2 = r2,
-            LLOQ = min(X$concentration[X$final_linear_range == "Yes"]),
-            ULOQ = max(X$concentration[X$final_linear_range == "Yes"]),
+            LLOQ = if (any(yes_idx)) min(X$concentration[yes_idx]) else NA_real_,
+            ULOQ = if (any(yes_idx)) max(X$concentration[yes_idx]) else NA_real_,
             eq = eq
         )
         return(tmp)
@@ -555,11 +659,25 @@ plotCalibraCurve <- function(
     ## remove empty results from list (if calculation stopped)
     is_RES_null <- vapply(CC_RES, is.null, logical(1))
     CC_RES <- CC_RES[!is_RES_null]
+    if (length(CC_RES) == 0) {
+        return(data.frame(
+            substance = character(0),
+            concentration = numeric(0),
+            predicted = numeric(0)
+        ))
+    }
     D_calib_split <- split(D_calib, D_calib$substance)
     substances <- names(D_calib_split)
 
 
     f <- function(X, Y, Z) { # X = CC_RES, Y = D_calib, Z = substances
+        if (is.null(X$mod) || !inherits(X$mod, "lm")) {
+            return(data.frame(
+                substance = character(0),
+                concentration = numeric(0),
+                predicted = numeric(0)
+            ))
+        }
         conc_pos <- Y$concentration[is.finite(Y$concentration) & Y$concentration > 0]
         if (length(conc_pos) == 0) {
             return(data.frame(

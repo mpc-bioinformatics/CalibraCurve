@@ -77,7 +77,10 @@ assemble_results <- function(X, dataCleaned,  PLR_res, resFacDataV,
     concentrations_FLR <- as.numeric(rownames(FLR_res$perBiasAvgSDCV))
 
     # mean response factor for each concentration value (only within FLR)
-    mean_RF <- mean(unlist(resFacDataV[concentrations %in% concentrations_FLR]))
+    # Use names from resFacDataV to avoid positional mismatches when
+    # concentrations were removed during cleaning.
+    rf_concentrations <- as.numeric(names(resFacDataV))
+    mean_RF <- mean(unlist(resFacDataV[rf_concentrations %in% concentrations_FLR]))
     hLineLow <- mean_RF * RfThresLFactor
     hLineUpper <- mean_RF * RfThresUFactor
 
@@ -115,6 +118,14 @@ assemble_results <- function(X, dataCleaned,  PLR_res, resFacDataV,
 #' @importFrom openxlsx write.xlsx
 #'
 .saveCCResult <- function(CC_res, output_path, suffix = "") {
+    if (is.null(CC_res) || is.null(CC_res$result_table_conc_levels) ||
+        is.null(CC_res$result_table_obs)) {
+        return(invisible(NULL))
+    }
+    if (is.null(suffix) || is.na(suffix) || !nzchar(suffix) ||
+        grepl("^_?NA$", suffix, ignore.case = TRUE)) {
+        suffix <- ""
+    }
     # save result tables
     openxlsx::write.xlsx(CC_res$result_table_conc_levels,
         file = paste0(output_path, "/result_table_conc_levels", suffix,

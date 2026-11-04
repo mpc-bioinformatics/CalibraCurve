@@ -35,7 +35,7 @@ test_that("CalibraCurve drops levels below minReplicates and still computes", {
 })
 
 
-test_that("CalibraCurve skips failed curves and omits NA-suffixed output files", {
+test_that("CalibraCurve preserves failed curves in tables and skips RF exports", {
     good <- data.frame(
         Concentration = c(1, 1, 1, 2, 2, 2, 5, 5, 5, 10, 10, 10),
         Measurement = c(10.0, 10.5, 9.8, 20.0, 20.2, 19.9, 50.0, 50.1, 50.2,
@@ -46,7 +46,7 @@ test_that("CalibraCurve skips failed curves and omits NA-suffixed output files",
         Measurement = c(1.0, 1.2, 1.1, 1.3, 1.1, 1.2, 1.4, 1.1, 1.2)
     )
 
-    out_dir <- tempfile("cc_skip_failed_")
+    out_dir <- tempfile("cc_preserve_failed_")
     dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
     expect_no_error({
@@ -54,10 +54,16 @@ test_that("CalibraCurve skips failed curves and omits NA-suffixed output files",
                            verbose = FALSE)
     })
 
-    expect_equal(names(res$RES), "good")
+    expect_equal(names(res$RES), c("good", "bad"))
+    expect_true(is.data.frame(res$RES[["bad"]]$result_table_conc_levels))
+    expect_true(all(is.na(res$RES[["bad"]]$result_table_conc_levels$mean_response_factor)))
+    expect_true(all(is.na(res$RES[["bad"]]$result_table_obs$response_factor)))
+
     files <- list.files(out_dir)
     expect_false(any(grepl("_NA\\.", files)))
     expect_true(any(grepl("result_table_conc_levels_good\\.xlsx", files)))
+    expect_true(any(grepl("result_table_conc_levels_bad\\.xlsx", files)))
+    expect_false(any(grepl("ResponseFactors_bad\\.", files)))
     expect_false(file.exists(file.path(out_dir, "result_table_conc_levels_NA.xlsx")))
 })
 
@@ -122,4 +128,45 @@ test_that("plotCalibraCurve shows zero-concentration side panel outside multiplo
         pl_single_linear$CC_plot)
     vdiffr::expect_doppelganger("cc_0conc_all_in_one_linear_x",
         pl_all_in_one$CC_plot)
+})
+
+test_that("plotCalibraCurve handles failed curve data with plot_zeros = TRUE", {
+    bad <- data.frame(
+        Concentration = rep(1, 9),
+        Measurement = c(1.0, 1.2, 1.1, 1.3, 1.1, 1.2, 1.4, 1.1, 1.2)
+    )
+    failed_res <- list(substance = .makeFailedCCResult(bad, "substance", 20))
+
+    expect_no_error({
+        pl <- plotCalibraCurve(failed_res,
+            plot_type = "single_plot",
+            log10_x_axis = TRUE,
+            plot_zeros = TRUE
+        )
+    })
+    expect_false(is.null(pl$CC_plot))
+})
+
+test_that("CalibraCurve keeps plotting when one substance fails and plot_zeros = TRUE", {
+    good <- data.frame(
+        Concentration = c(0, 0, 0, 1, 1, 1, 2, 2, 2, 5, 5, 5),
+        Measurement = c(0.1, 0.12, 0.11, 10, 10.2, 9.8, 20, 20.1, 19.9,
+                        50, 49.8, 50.1)
+    )
+    bad <- data.frame(
+        Concentration = rep(1, 9),
+        Measurement = c(1.0, 1.2, 1.1, 1.3, 1.1, 1.2, 1.4, 1.1, 1.2)
+    )
+
+    expect_no_error({
+        res <- CalibraCurve(list(good = good, bad = bad),
+            verbose = FALSE,
+            plot_type = "single_plots",
+            plot_zeros = TRUE,
+            output_path = NULL)
+    })
+
+    expect_equal(names(res$RES), c("good", "bad"))
+    expect_false(is.null(res$plot_CC_list[[1]]))
+    expect_false(is.null(res$plot_CC_list[[2]]))
 })

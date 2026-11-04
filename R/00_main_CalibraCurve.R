@@ -170,12 +170,14 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
                     substance, ": ", RES_tmp
                 )
             }
-            RES[[i]] <- NULL
-            next
+            RES[[i]] <- .makeFailedCCResult(
+                D = D_tmp, substance = substance,
+                cvThres = cvThres, weightingMethod = weightingMethod
+            )
         } else {
             RES[[i]] <- RES_tmp
-            names(RES)[i] <- substance
         }
+        names(RES)[i] <- substance
     }
 
     pl_CC_list <- list()
@@ -189,20 +191,30 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
             pl_CC <- plotCalibraCurve(CC_RES = RES_tmp, plot_type = "single_plot",
                     base_size = base_size, ...)
             pl_CC_list[[i]] <- pl_CC$CC_plot
-            summary_tab <- rbind(summary_tab, pl_CC$annotation_dat)
+            annotation_dat <- pl_CC$annotation_dat
+            if (!is.null(annotation_dat) && "panel" %in% names(annotation_dat)) {
+                annotation_dat$panel <- NULL
+            }
+            summary_tab <- rbind(summary_tab, annotation_dat)
         }
     } else { # plot_type == "allinone" or "multiplot"
         pl_CC <- plotCalibraCurve(CC_RES = RES, plot_type = plot_type,
                                 base_size = base_size, ...)
         pl_CC_list <- pl_CC$CC_plot
         summary_tab <- pl_CC$annotation_dat
+        if (!is.null(summary_tab) && "panel" %in% names(summary_tab)) {
+            summary_tab$panel <- NULL
+        }
     }
 
     ## generate response factor plots (each as a single plot)
     pl_RF_list <- list()
     if (RF_plot_type == "single_plots") {
         for (i in seq_along(RES)) {
-            if (is.null(RES[[i]])) next
+            if (is.null(RES[[i]]) || is.null(RES[[i]]$mod) ||
+                !inherits(RES[[i]]$mod, "lm")) {
+                next
+            }
             pl_RF_list[[i]] <- plotResponseFactors(RES = RES[[i]],
                 RfThresL = RfThresL, RfThresU = RfThresU,
                 log10_x_axis = rf_log10_x_axis,
@@ -213,19 +225,23 @@ CalibraCurve <- function(D_list, output_path = NULL, substance = "substance",
                 plot_type = "single_plot", substance = names(RES)[i]
             )
         }
-    } else {
-        rf_plot_type_tmp <- ifelse(
-            RF_plot_type == "single_plots", "single_plot", RF_plot_type
-        )
-        pl_RF_list[[1]] <- plotResponseFactors(RES = RES,
-            RfThresL = RfThresL, RfThresU = RfThresU,
-            log10_x_axis = rf_log10_x_axis,
-            colour_threshold = RF_colour_threshold,
-            colour_within = RF_colour_within,
-            colour_outside = RF_colour_outside,
-            legend = RF_legend, base_size = base_size,
-            plot_type = rf_plot_type_tmp
-        )
+    } else if (length(RES) > 0) {
+        valid_res <- Filter(function(x) !is.null(x) && !is.null(x$mod) &&
+            inherits(x$mod, "lm"), RES)
+        if (length(valid_res) > 0) {
+            rf_plot_type_tmp <- ifelse(
+                RF_plot_type == "single_plots", "single_plot", RF_plot_type
+            )
+            pl_RF_list[[1]] <- plotResponseFactors(RES = valid_res,
+                RfThresL = RfThresL, RfThresU = RfThresU,
+                log10_x_axis = rf_log10_x_axis,
+                colour_threshold = RF_colour_threshold,
+                colour_within = RF_colour_within,
+                colour_outside = RF_colour_outside,
+                legend = RF_legend, base_size = base_size,
+                plot_type = rf_plot_type_tmp
+            )
+        }
     }
     if (!is.null(output_path)) {
         .saveTablesAndPlots(RES, output_path, pl_CC_list, pl_RF_list,
@@ -335,6 +351,70 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
 
 
 
+.makeFailedCCResult <- function(D, substance, cvThres, weightingMethod = "1/x^2") {
+    cleaned <- try(cleanData(D), silent = TRUE)
+    if (inherits(cleaned, "try-error")) {
+        cleaned <- split(D, D$Concentration)
+        names(cleaned) <- as.character(sort(unique(D$Concentration)))
+    }
+    concentrations <- sort(unique(D$Concentration))
+    concentrations_clean <- as.numeric(names(cleaned))
+    mean_measurement <- stats::aggregate(
+        D$Measurement, by = list(Conc = D$Concentration), FUN = mean
+    )$x
+    means_by_conc <- stats::setNames(mean_measurement, concentrations)
+    cv_by_conc <- vapply(cleaned, .calcCV, numeric(1))
+    cv_by_conc <- stats::setNames(as.numeric(cv_by_conc),
+        as.numeric(names(cv_by_conc)))
+
+    tab <- data.frame(
+        substance = substance,
+        concentration = concentrations,
+        mean_measurement = means_by_conc[as.character(concentrations)],
+        estimated_measurement = NA_real_,
+        removed_while_cleaning = !(concentrations %in% concentrations_clean),
+        CV = NA_real_,
+        CV_within_thres = NA,
+        preliminary_linear_range = FALSE,
+        mean_percentage_bias = NA_real_,
+        SD_percentage_bias = NA_real_,
+        CV_percentage_bias = NA_real_,
+        mean_response_factor = NA_real_,
+        RF_within_thres = NA,
+        final_linear_range = FALSE
+    )
+
+    for (i in seq_along(concentrations)) {
+        conc <- concentrations[i]
+        if (conc %in% as.numeric(names(cv_by_conc))) {
+            tab$CV[i] <- cv_by_conc[as.character(conc)]
+        }
+    }
+    tab$CV_within_thres <- tab$CV <= cvThres
+
+    result_table_obs <- data.frame(
+        substance = rep(substance, nrow(D)),
+        concentration = D$Concentration,
+        measurement = D$Measurement,
+        removed_while_cleaning = !(D$Concentration %in% concentrations_clean) |
+            is.na(D$Measurement) | D$Measurement == 0 | D$Concentration == 0,
+        percentage_bias = NA_real_,
+        response_factor = NA_real_,
+        RF_within_thres = NA,
+        final_linear_range = FALSE
+    )
+    rownames(result_table_obs) <- NULL
+
+    return(list(
+        mod = NULL,
+        final_linear_range = numeric(0),
+        weightingMethod = weightingMethod,
+        result_table_conc_levels = tab,
+        result_table_obs = result_table_obs,
+        failed = TRUE
+    ))
+}
+
 #' Save result tables and plots
 #'
 #' @param RES **list** \cr Results of \code{\link{CalibraCurve}}. Each list
@@ -375,18 +455,24 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
                                 plot_type, RF_plot_type, plot_dpi, device) {
 
     for (i in seq_along(RES)) {
+        nm <- names(RES)[i]
+        if (is.null(nm) || is.na(nm) || !nzchar(nm)) {
+            nm <- paste0("substance_", i)
+        }
         .saveCCResult(CC_res = RES[[i]], output_path = output_path,
-                    suffix = paste0("_", names(RES)[i]))
+                    suffix = paste0("_", nm))
         if (plot_type == "single_plots") {
             ggplot2::ggsave(filename = paste0(output_path, "/CalibraCurve_",
-                                            names(RES)[i], ".", device),
+                                            nm, ".", device),
                 plot = pl_CC_list[[i]], device = device, width = CC_plot_width,
                 height = CC_plot_height, units = "cm", dpi = plot_dpi)
         }
-        if (RF_plot_type == "single_plots") {
+        if (RF_plot_type == "single_plots" &&
+            !is.null(RES[[i]]) && !is.null(RES[[i]]$mod) &&
+            inherits(RES[[i]]$mod, "lm") && !is.null(pl_RF_list[[i]])) {
             ggplot2::ggsave(
                 filename = paste0(output_path, "/ResponseFactors_",
-                                names(RES)[i], ".", device),
+                                nm, ".", device),
                 plot = pl_RF_list[[i]], device = device, width = RF_plot_width,
                 height = RF_plot_height, units = "cm", dpi = plot_dpi)
         }
@@ -398,15 +484,18 @@ calc_single_curve <- function(D, substance = "substance", minReplicates = 3,
             plot = pl_CC_list, device = device, width = CC_plot_width,
             height = CC_plot_height, units = "cm", dpi = plot_dpi)
     }
-    if (RF_plot_type == "all_in_one" | RF_plot_type == "multiplot") {
+    if ((RF_plot_type == "all_in_one" | RF_plot_type == "multiplot") &&
+        !is.null(pl_RF_list[[1]])) {
         ggplot2::ggsave(
             filename = paste0(output_path, "/ResponseFactors", ".", device),
             plot = pl_RF_list[[1]], device = device, width = RF_plot_width,
             height = RF_plot_height, units = "cm", dpi = plot_dpi)
     }
-    openxlsx::write.xlsx(summary_tab,
-                        file = paste0(output_path,
-                                    "/summarytable_calibration_models.xlsx"))
+    if (!is.null(summary_tab)) {
+        openxlsx::write.xlsx(summary_tab,
+                            file = paste0(output_path,
+                                        "/summarytable_calibration_models.xlsx"))
+    }
     return(invisible(NULL))
 }
 
