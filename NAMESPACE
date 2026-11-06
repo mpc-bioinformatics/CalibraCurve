@@ -13,6 +13,8 @@ export(predictConcentration)
 export(readDataSE)
 export(readDataTable)
 export(readMultipleTables)
+export(runCalibraCurveApp)
+export(run_app)
 importFrom(SummarizedExperiment,
   assays,
   colData,
