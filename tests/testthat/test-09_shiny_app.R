@@ -1,7 +1,7 @@
 test_that("package exposes a Shiny app launcher", {
   skip_if_not_installed("shiny")
 
-  app_obj <- runCalibraCurveApp()
+  app_obj <- CalibraCurveApp()
   expect_s3_class(app_obj, "shiny.appobj")
 })
 
