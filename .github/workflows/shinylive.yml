@@ -2,43 +2,42 @@ name: Deploy Shinylive app
 
 on:
   push:
-    branches: [shiny, devel]
+    branches: [shiny]      # change to the branch(es) you deploy from
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-r@v2
-
-      - name: Install shinylive
-        run: Rscript -e 'install.packages("shinylive")'
-
-      - name: Export Shinylive app
-        run: Rscript -e 'shinylive::export("inst/shinyapp", "site")'
-
-      - name: Disable Jekyll
-        run: touch site/.nojekyll
-
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
         with:
-          path: ./site
+          use-public-rspm: true
 
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::shinylive
+            any::webr
+            local::.
+
+      - name: Export app
+        run: Rscript -e 'shinylive::export("inst/shinyapp", "shinylive-site")'
+
+      - name: Add .nojekyll
+        run: touch shinylive-site/.nojekyll
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: shinylive-site
+          publish_branch: gh-pages
