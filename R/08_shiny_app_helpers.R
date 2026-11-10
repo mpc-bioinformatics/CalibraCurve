@@ -1,6 +1,9 @@
 #' Upload tab module UI
 #'
 #' @keywords internal
+#' @importFrom tools file_ext
+#' @importFrom utils read.table
+#' @importFrom openxlsx read.xlsx
 .read_uploaded_columns <- function(path) {
     ext <- tolower(tools::file_ext(path))
 
@@ -29,6 +32,8 @@
     character(0)
 }
 
+#' @importFrom tools file_ext
+#' @importFrom stats setNames
 .import_single_file <- function(path, conc_col, meas_col, subst_col = NULL,
                                substance_name = NULL,
                                text_separator = "auto",
@@ -76,7 +81,7 @@
         if (is.null(substance_name)) {
             substance_name <- "substance"
         }
-        return(setNames(list(result), substance_name))
+        return(stats::setNames(list(result), substance_name))
     }
     if (is.list(result) && length(result) > 0L) {
         return(result)
@@ -84,6 +89,8 @@
     stop("The uploaded data did not contain any usable calibration rows.")
 }
 
+#' @importFrom tools file_ext file_path_sans_ext
+#' @importFrom stats setNames
 .import_multiple_files <- function(paths, file_names, conc_col, meas_col,
                                  text_separator = "auto", decimal_separator = ".",
                                  header = TRUE) {
@@ -128,7 +135,7 @@
         if (!is.data.frame(dat)) {
             stop("The uploaded file '", file_name, "' did not yield a valid calibration table.")
         }
-        setNames(list(dat), file_name)
+        stats::setNames(list(dat), file_name)
     })
 
     unlist(result_list, recursive = FALSE)
@@ -230,6 +237,10 @@
     tables
 }
 
+
+#' @importFrom openxlsx write.xlsx
+#' @importFrom utils write.csv zip
+#' @importFrom grDevices pdf png dev.off
 .export_calibration_results_zip <- function(calibration_result,
     zip_path = tempfile(fileext = ".zip"),
     table_format = c("xlsx", "csv"),
@@ -253,7 +264,7 @@
         if (table_format == "xlsx") {
             openxlsx::write.xlsx(summary_tab, file = file.path(tmp_dir, "summary_tab.xlsx"))
         } else {
-            write.csv(summary_tab, file = file.path(tmp_dir, "summary_tab.csv"), row.names = FALSE)
+            utils::write.csv(summary_tab, file = file.path(tmp_dir, "summary_tab.csv"), row.names = FALSE)
         }
     }
 
@@ -380,6 +391,10 @@ normalize_uploaded_dataset <- function(x) {
     stop("Uploaded data did not match the expected CalibraCurve table format.")
 }
 
+
+#' @importFrom shiny NS tagList fluidRow column radioButtons conditionalPanel
+#' @importFrom shiny fileInput helpText checkboxInput uiOutput actionButton
+#' @importFrom shiny wellPanel div textOutput tableOutput strong
 mod_data_upload_ui <- function(id) {
     ns <- shiny::NS(id)
 
@@ -594,7 +609,7 @@ mod_data_upload_server <- function(id) {
 
             tryCatch({
                 if (mode == "single_single") {
-                    req(input$data_file)
+                    shiny::req(input$data_file)
                     file_type <- tolower(tools::file_ext(input$data_file$name))
                     text_sep <- if (is.null(input$text_separator)) "auto" else input$text_separator
                     dec_sep <- if (is.null(input$decimal_separator)) "." else input$decimal_separator
@@ -615,7 +630,7 @@ mod_data_upload_server <- function(id) {
                 }
 
                 if (mode == "single_multiple") {
-                    req(input$data_file)
+                    shiny::req(input$data_file)
                     file_type <- tolower(tools::file_ext(input$data_file$name))
                     text_sep <- if (is.null(input$text_separator)) "auto" else input$text_separator
                     dec_sep <- if (is.null(input$decimal_separator)) "." else input$decimal_separator
@@ -635,7 +650,7 @@ mod_data_upload_server <- function(id) {
                     return(result)
                 }
 
-                req(input$data_files)
+                shiny::req(input$data_files)
                 file_type <- tolower(tools::file_ext(input$data_files$name[1]))
                 text_sep <- if (is.null(input$text_separator)) "auto" else input$text_separator
                 dec_sep <- if (is.null(input$decimal_separator)) "." else input$decimal_separator
@@ -939,7 +954,7 @@ mod_calibration_server <- function(id, data_input) {
         })
 
         calibration_result <- shiny::eventReactive(input$run_calibration, {
-            req(data_input())
+            shiny::req(data_input())
 
             calibration_input <- data_input()
             if (is.data.frame(calibration_input)) {
@@ -1020,17 +1035,17 @@ mod_calibration_server <- function(id, data_input) {
         })
 
         selected_calibration_result <- shiny::reactive({
-            req(calibration_result())
+            shiny::req(calibration_result())
             .select_calibration_dataset(calibration_result(), input$selected_dataset)
         })
 
         output$summary_tab <- shiny::renderTable({
-            req(selected_calibration_result())
+            shiny::req(selected_calibration_result())
             selected_calibration_result()$summary_tab
         }, rownames = FALSE, bordered = TRUE, hover = TRUE, striped = TRUE)
 
         output$curve_plot <- shiny::renderPlot({
-            req(selected_calibration_result())
+            shiny::req(selected_calibration_result())
             plot_obj <- .extract_first_ggplot(selected_calibration_result()$plot_CC_list)
             if (is.null(plot_obj)) {
                 return(NULL)
@@ -1039,7 +1054,7 @@ mod_calibration_server <- function(id, data_input) {
         })
 
         output$rf_plot <- shiny::renderPlot({
-            req(selected_calibration_result())
+            shiny::req(selected_calibration_result())
             plot_obj <- .extract_first_ggplot(selected_calibration_result()$plot_RF_list)
             if (is.null(plot_obj)) {
                 return(NULL)
@@ -1048,7 +1063,7 @@ mod_calibration_server <- function(id, data_input) {
         })
 
         output$detail_tables <- shiny::renderUI({
-            req(selected_calibration_result())
+            shiny::req(selected_calibration_result())
             tables <- .calibration_selection_tables(selected_calibration_result())
             if (length(tables) == 0L) {
                 return(shiny::p("No additional tables are available for the selected dataset."))
@@ -1073,7 +1088,7 @@ mod_calibration_server <- function(id, data_input) {
                 "calibration_results.zip"
             },
             content = function(file) {
-                req(calibration_result())
+                shiny::req(calibration_result())
                 .export_calibration_results_zip(
                     calibration_result = calibration_result(),
                     zip_path = file,
@@ -1114,7 +1129,7 @@ mod_prediction_ui <- function(id) {
 mod_prediction_server <- function(id, calibration_result) {
     shiny::moduleServer(id, function(input, output, session) {
         prediction_result <- shiny::eventReactive(input$predict_btn, {
-            req(calibration_result())
+            shiny::req(calibration_result())
             vals <- scan(text = input$new_values, sep = ",", quiet = TRUE)
             if (length(vals) == 0L) {
                 return(NULL)
@@ -1133,7 +1148,7 @@ mod_prediction_server <- function(id, calibration_result) {
         })
 
         output$prediction_table <- shiny::renderTable({
-            req(prediction_result())
+            shiny::req(prediction_result())
             prediction_result()
         }, rownames = FALSE, bordered = TRUE, hover = TRUE, striped = TRUE)
 
@@ -1199,7 +1214,7 @@ calibra_curve_app_server <- function(input, output, session) {
 #'
 #' @examples
 #' \dontrun{
-#' runCalibraCurveApp()
+#' CalibraCurveApp()
 #' }
 CalibraCurveApp <- function() {
     shiny::shinyApp(
@@ -1209,9 +1224,10 @@ CalibraCurveApp <- function() {
 }
 
 #' Run the CalibraCurve Shiny app locally
+#' @param ... further parameters
 #' @export
 runCalibraCurveApp <- function(...) {
-    shiny::runApp(calibraCurveApp(), ...)
+    shiny::runApp(CalibraCurveApp(), ...)
 }
 
 #' #' Alias for the app launcher

@@ -6,6 +6,9 @@
 \usage{
 runCalibraCurveApp(...)
 }
+\arguments{
+\item{...}{further parameters}
+}
 \description{
 Run the CalibraCurve Shiny app locally
 }

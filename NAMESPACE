@@ -61,6 +61,11 @@ importFrom(ggplot2,
   xlab,
   ylab
 )
+importFrom(grDevices,
+  dev.off,
+  pdf,
+  png
+)
 importFrom(magrittr,"%>%")
 importFrom(openxlsx,
   read.xlsx,
@@ -70,17 +75,43 @@ importFrom(scales,
   comma,
   label_comma
 )
+importFrom(shiny,
+  NS,
+  actionButton,
+  checkboxInput,
+  column,
+  conditionalPanel,
+  div,
+  fileInput,
+  fluidRow,
+  helpText,
+  radioButtons,
+  strong,
+  tableOutput,
+  tagList,
+  textOutput,
+  uiOutput,
+  wellPanel
+)
 importFrom(stats,
   aggregate,
   coefficients,
   lm,
   median,
   predict,
-  sd
+  sd,
+  setNames
 )
 importFrom(tidyr,
   last_col,
   pivot_longer
 )
-importFrom(tools,file_ext)
-importFrom(utils,read.table)
+importFrom(tools,
+  file_ext,
+  file_path_sans_ext
+)
+importFrom(utils,
+  read.table,
+  write.csv,
+  zip
+)

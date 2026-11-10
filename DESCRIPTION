@@ -23,6 +23,7 @@ Imports:
     magrittr,
     openxlsx,
     scales,
+    shiny,
     SummarizedExperiment,
     tidyr
 Suggests: 
@@ -32,7 +33,6 @@ Suggests:
     RefManageR,
     rmarkdown,
     sessioninfo,
-    shiny,
     testthat,
     vdiffr
 biocViews: Proteomics, Lipidomics, Metabolomics, Regression, MassSpectrometry, Visualization

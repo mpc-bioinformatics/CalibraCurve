@@ -12,6 +12,6 @@ This starts a small app that wraps the package's public
 }
 \examples{
 \dontrun{
-runCalibraCurveApp()
+CalibraCurveApp()
 }
 }
