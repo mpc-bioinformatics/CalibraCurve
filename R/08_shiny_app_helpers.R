@@ -1192,7 +1192,7 @@ calibra_curve_app_server <- function(input, output, session) {
 
 #' Launch the CalibraCurve Shiny app
 #'
-#' This starts a small app that wraps the package's public 
+#' This starts a small app that wraps the package's public
 #' \code{\link{CalibraCurve}} workflow with a 3-tab UI.
 #'
 #' @export
@@ -1201,14 +1201,21 @@ calibra_curve_app_server <- function(input, output, session) {
 #' \dontrun{
 #' runCalibraCurveApp()
 #' }
-runCalibraCurveApp <- function() {
+CalibraCurveApp <- function() {
     shiny::shinyApp(
         ui = calibra_curve_app_ui(),
         server = calibra_curve_app_server
     )
 }
 
-#' Alias for the app launcher
-#'
+#' Run the CalibraCurve Shiny app locally
 #' @export
-run_app <- runCalibraCurveApp
+runCalibraCurveApp <- function(...) {
+    shiny::runApp(calibraCurveApp(), ...)
+}
+
+#' #' Alias for the app launcher
+#' #'
+#' #' @export
+#' run_app <- runCalibraCurveApp
+
