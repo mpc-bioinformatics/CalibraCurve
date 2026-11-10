@@ -2,7 +2,7 @@ name: Deploy Shinylive app
 
 on:
   push:
-    branches: [shiny]
+    branches: [shiny, devel]
   workflow_dispatch:
 
 permissions:
