@@ -1,5 +1,6 @@
 test_that("package exposes a Shiny app launcher", {
   skip_if_not_installed("shiny")
+  skip_if_not_installed("colourpicker")
 
   app_obj <- CalibraCurveApp()
   expect_s3_class(app_obj, "shiny.appobj")
@@ -18,6 +19,7 @@ test_that("import errors highlight wrong columns before file parsing issues", {
 
 test_that("multi-substance calibration results can be subset by substance", {
   skip_if_not_installed("shiny")
+  skip_if_not_installed("colourpicker")
 
   file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
     package = "CalibraCurve"

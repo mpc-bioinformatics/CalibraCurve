@@ -23,16 +23,17 @@ Imports:
     magrittr,
     openxlsx,
     scales,
-    shiny,
     SummarizedExperiment,
     tidyr
 Suggests: 
     BiocStyle,
+    colourpicker,
     knitr,
     msqc1,
     RefManageR,
     rmarkdown,
     sessioninfo,
+    shiny,
     testthat,
     vdiffr
 biocViews: Proteomics, Lipidomics, Metabolomics, Regression, MassSpectrometry, Visualization

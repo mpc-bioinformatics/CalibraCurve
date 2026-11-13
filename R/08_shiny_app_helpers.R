@@ -635,9 +635,6 @@ normalize_uploaded_dataset <- function(x) {
 }
 
 
-#' @importFrom shiny NS tagList fluidRow column radioButtons conditionalPanel
-#' @importFrom shiny fileInput helpText checkboxInput uiOutput actionButton
-#' @importFrom shiny wellPanel div textOutput tableOutput strong
 mod_data_upload_ui <- function(id) {
     ns <- shiny::NS(id)
 
@@ -1137,23 +1134,23 @@ mod_calibration_ui <- function(id) {
                                     selected = "free"
                                 )
                             ),
-                            shiny::selectInput(
+                            colourpicker::colourInput(
                                 ns("curve_colour"),
                                 "Curve colour",
-                                choices = c("red" = "red", "blue" = "blue", "black" = "black", "green" = "green"),
-                                selected = "red"
+                                value = "red",
+                                allowTransparent = FALSE
                             ),
-                            shiny::selectInput(
+                            colourpicker::colourInput(
                                 ns("point_colour"),
                                 "Point colour",
-                                choices = c("black" = "black", "red" = "red", "blue" = "blue", "green" = "green"),
-                                selected = "black"
+                                value = "black",
+                                allowTransparent = FALSE
                             ),
-                            shiny::selectInput(
+                            colourpicker::colourInput(
                                 ns("linear_range_colour"),
                                 "Linear range colour",
-                                choices = c("black" = "black", "grey" = "grey", "blue" = "blue", "red" = "red"),
-                                selected = "black"
+                                value = "black",
+                                allowTransparent = FALSE
                             ),
                             shiny::checkboxInput(ns("log10_x_axis"), "Use log10 x-axis", TRUE),
                             shiny::selectInput(
@@ -1165,24 +1162,27 @@ mod_calibration_ui <- function(id) {
                             shiny::numericInput(
                                 ns("base_size"),
                                 "Base font size",
-                                value = 11,
+                                value = 20,
                                 min = 1,
                                 step = 1
                             ),
-                            shiny::textInput(
+                            colourpicker::colourInput(
                                 ns("RF_colour_threshold"),
                                 "RF threshold line colour",
-                                value = "orange"
+                                value = "orange",
+                                allowTransparent = FALSE
                             ),
-                            shiny::textInput(
+                            colourpicker::colourInput(
                                 ns("RF_colour_within"),
                                 "RF colour within thresholds",
-                                value = "#00BFC4"
+                                value = "#00BFC4",
+                                allowTransparent = FALSE
                             ),
-                            shiny::textInput(
+                            colourpicker::colourInput(
                                 ns("RF_colour_outside"),
                                 "RF colour outside thresholds",
-                                value = "#F8766D"
+                                value = "#F8766D",
+                                allowTransparent = FALSE
                             )
                         )
                     ),
@@ -1383,7 +1383,7 @@ mod_calibration_server <- function(id, data_input) {
                 curve_colour = if (!is.null(input$curve_colour)) input$curve_colour else "red",
                 linear_range_colour = if (!is.null(input$linear_range_colour)) input$linear_range_colour else "black",
                 multiplot_scales = if (!is.null(input$multiplot_scales) && nzchar(input$multiplot_scales)) input$multiplot_scales else "free",
-                base_size = if (!is.null(input$base_size)) input$base_size else 11,
+                base_size = if (!is.null(input$base_size)) input$base_size else 20,
                 log10_x_axis = isTRUE(input$log10_x_axis),
                 log_tick_label_style = if (!is.null(input$log_tick_label_style) && nzchar(input$log_tick_label_style)) input$log_tick_label_style else "auto",
                 show_regression_info = isTRUE(input$show_regression_info),
@@ -1628,7 +1628,27 @@ calibra_curve_app_server <- function(input, output, session) {
 #' \dontrun{
 #' CalibraCurveApp()
 #' }
+.assert_shiny_app_dependencies <- function() {
+    required_pkgs <- c("shiny", "colourpicker")
+    missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, quietly = TRUE, FUN.VALUE = logical(1))]
+
+    if (length(missing_pkgs) > 0L) {
+        install_hint <- paste(sprintf('"%s"', missing_pkgs), collapse = ", ")
+        stop(
+            "CalibraCurveApp requires suggested package(s): ",
+            paste(missing_pkgs, collapse = ", "),
+            ". Install them with install.packages(c(",
+            install_hint,
+            ")).",
+            call. = FALSE
+        )
+    }
+
+    invisible(TRUE)
+}
+
 CalibraCurveApp <- function() {
+    .assert_shiny_app_dependencies()
     shiny::shinyApp(
         ui = calibra_curve_app_ui(),
         server = calibra_curve_app_server
