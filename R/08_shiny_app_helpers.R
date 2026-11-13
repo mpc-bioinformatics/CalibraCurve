@@ -1154,6 +1154,35 @@ mod_calibration_ui <- function(id) {
                                 "Linear range colour",
                                 choices = c("black" = "black", "grey" = "grey", "blue" = "blue", "red" = "red"),
                                 selected = "black"
+                            ),
+                            shiny::checkboxInput(ns("log10_x_axis"), "Use log10 x-axis", TRUE),
+                            shiny::selectInput(
+                                ns("log_tick_label_style"),
+                                "Log10 tick label style",
+                                choices = c("Auto" = "auto", "Math" = "math", "Plain" = "plain"),
+                                selected = "auto"
+                            ),
+                            shiny::numericInput(
+                                ns("base_size"),
+                                "Base font size",
+                                value = 11,
+                                min = 1,
+                                step = 1
+                            ),
+                            shiny::textInput(
+                                ns("RF_colour_threshold"),
+                                "RF threshold line colour",
+                                value = "orange"
+                            ),
+                            shiny::textInput(
+                                ns("RF_colour_within"),
+                                "RF colour within thresholds",
+                                value = "#00BFC4"
+                            ),
+                            shiny::textInput(
+                                ns("RF_colour_outside"),
+                                "RF colour outside thresholds",
+                                value = "#F8766D"
                             )
                         )
                     ),
@@ -1175,6 +1204,11 @@ mod_calibration_ui <- function(id) {
                                 value = 20,
                                 min = 0,
                                 step = 1
+                            ),
+                            shiny::checkboxInput(
+                                ns("calcContinuousPrelimRanges"),
+                                "Require continuous preliminary range",
+                                FALSE
                             ),
                             shiny::selectInput(
                                 ns("weightingMethod"),
@@ -1333,6 +1367,7 @@ mod_calibration_server <- function(id, data_input) {
                 substance = substance_name,
                 minReplicates = input$minReplicates,
                 cvThres = input$cvThres,
+                calcContinuousPrelimRanges = isTRUE(input$calcContinuousPrelimRanges),
                 weightingMethod = input$weightingMethod,
                 centralTendencyMeasure = input$centralTendencyMeasure,
                 perBiasThres = input$perBiasThres,
@@ -1340,11 +1375,17 @@ mod_calibration_server <- function(id, data_input) {
                 perBiasDistThres = input$perBiasDistThres,
                 RfThresL = input$RfThresL,
                 RfThresU = input$RfThresU,
+                RF_colour_threshold = if (!is.null(input$RF_colour_threshold) && nzchar(input$RF_colour_threshold)) input$RF_colour_threshold else "orange",
+                RF_colour_within = if (!is.null(input$RF_colour_within) && nzchar(input$RF_colour_within)) input$RF_colour_within else "#00BFC4",
+                RF_colour_outside = if (!is.null(input$RF_colour_outside) && nzchar(input$RF_colour_outside)) input$RF_colour_outside else "#F8766D",
                 plot_type = plot_type_value,
                 point_colour = if (!is.null(input$point_colour)) input$point_colour else "black",
                 curve_colour = if (!is.null(input$curve_colour)) input$curve_colour else "red",
                 linear_range_colour = if (!is.null(input$linear_range_colour)) input$linear_range_colour else "black",
                 multiplot_scales = if (!is.null(input$multiplot_scales) && nzchar(input$multiplot_scales)) input$multiplot_scales else "free",
+                base_size = if (!is.null(input$base_size)) input$base_size else 11,
+                log10_x_axis = isTRUE(input$log10_x_axis),
+                log_tick_label_style = if (!is.null(input$log_tick_label_style) && nzchar(input$log_tick_label_style)) input$log_tick_label_style else "auto",
                 show_regression_info = isTRUE(input$show_regression_info),
                 show_linear_range = isTRUE(input$show_linear_range),
                 show_data_points = isTRUE(input$show_data_points),
