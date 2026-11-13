@@ -4,7 +4,12 @@
 \alias{.read_uploaded_columns}
 \title{Upload tab module UI}
 \usage{
-.read_uploaded_columns(path)
+.read_uploaded_columns(
+  path,
+  text_separator = "auto",
+  header = TRUE,
+  file_ext = NULL
+)
 }
 \description{
 Upload tab module UI

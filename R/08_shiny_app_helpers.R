@@ -4,14 +4,18 @@
 #' @importFrom tools file_ext
 #' @importFrom utils read.table
 #' @importFrom openxlsx read.xlsx
-.read_uploaded_columns <- function(path) {
-    ext <- tolower(tools::file_ext(path))
+.read_uploaded_columns <- function(path, text_separator = "auto", header = TRUE, file_ext = NULL) {
+    ext <- if (is.null(file_ext)) tolower(tools::file_ext(path)) else tolower(file_ext)
 
     if (ext %in% c("csv", "txt", "tsv")) {
-        sep_value <- if (ext == "csv") "," else "\t"
+        sep_value <- .resolve_effective_separator(path, ext, text_separator, header = header)
+        header_cols <- .extract_header_columns(path, sep_value)
+        if (length(header_cols) > 1L) {
+            return(header_cols)
+        }
         tmp <- utils::read.table(
             path,
-            header = TRUE,
+            header = isTRUE(header),
             sep = sep_value,
             check.names = FALSE,
             stringsAsFactors = FALSE,
@@ -32,14 +36,111 @@
     character(0)
 }
 
+.detect_text_separator <- function(path, fallback = ",") {
+    first_lines <- tryCatch(
+        readLines(path, n = 5L, warn = FALSE),
+        error = function(e) character(0)
+    )
+    if (length(first_lines) == 0L) {
+        return(fallback)
+    }
+
+    candidates <- c(",", ";", "\t", "|")
+    split_scores <- vapply(candidates, function(sep) {
+        sum(vapply(strsplit(first_lines, sep, fixed = TRUE), length, integer(1)))
+    }, numeric(1))
+
+    best_idx <- which.max(split_scores)
+    best <- candidates[[best_idx]]
+    if (length(best) == 0L || is.na(best) || max(split_scores) <= length(first_lines)) {
+        return(fallback)
+    }
+    best
+}
+
+.default_text_separator <- function(ext) {
+    if (identical(ext, "tsv")) {
+        return("\t")
+    }
+    ","
+}
+
+.extract_header_columns <- function(path, separator) {
+    header_line <- tryCatch(readLines(path, n = 1L, warn = FALSE), error = function(e) character(0))
+    if (length(header_line) == 0L) {
+        return(character(0))
+    }
+
+    # Remove UTF-8 BOM if present.
+    header_line <- sub("^\\ufeff", "", header_line[1])
+    parts <- strsplit(header_line, separator, fixed = TRUE)[[1]]
+    parts <- trimws(parts)
+    parts <- gsub('^"|"$', "", parts)
+    parts <- gsub("^'|'$", "", parts)
+    parts
+}
+
+.select_best_text_separator <- function(path, ext, preferred_separator = NULL, header = TRUE) {
+    candidates <- unique(c(preferred_separator, .default_text_separator(ext), ",", ";", "\t", "|"))
+    candidates <- candidates[!is.na(candidates) & nzchar(candidates)]
+
+    if (length(candidates) == 0L) {
+        return(.default_text_separator(ext))
+    }
+
+    scores <- vapply(candidates, function(sep) {
+        ncols <- tryCatch({
+            tmp <- utils::read.table(
+                path,
+                header = isTRUE(header),
+                sep = sep,
+                check.names = FALSE,
+                stringsAsFactors = FALSE,
+                fill = TRUE,
+                quote = "\"'",
+                nrows = 10
+            )
+            ncol(tmp)
+        }, error = function(e) 0L)
+        as.integer(ncols)
+    }, integer(1))
+
+    if (length(scores) == 0L || all(scores <= 0L)) {
+        return(.default_text_separator(ext))
+    }
+
+    best_idx <- which(scores == max(scores))[1]
+    candidates[[best_idx]]
+}
+
+.resolve_text_separator <- function(path, ext, text_separator = "auto") {
+    if (!identical(text_separator, "auto")) {
+        return(text_separator)
+    }
+
+    fallback <- .default_text_separator(ext)
+    .detect_text_separator(path, fallback = fallback)
+}
+
+.resolve_effective_separator <- function(path, ext, text_separator = "auto", header = TRUE) {
+    preferred_separator <- .resolve_text_separator(path, ext, text_separator)
+    .select_best_text_separator(
+        path = path,
+        ext = ext,
+        preferred_separator = preferred_separator,
+        header = header
+    )
+}
+
 #' @importFrom tools file_ext
 #' @importFrom stats setNames
 .import_single_file <- function(path, conc_col, meas_col, subst_col = NULL,
                                substance_name = NULL,
+                               file_ext = NULL,
                                text_separator = "auto",
                                decimal_separator = ".",
                                header = TRUE) {
-    ext <- tolower(tools::file_ext(path))
+    ext <- if (is.null(file_ext)) tolower(tools::file_ext(path)) else tolower(file_ext)
     if (ext == "xlsx") {
         result <- readDataTable(
             dataPath = path,
@@ -49,11 +150,7 @@
             substCol = subst_col
         )
     } else if (ext %in% c("csv", "txt", "tsv")) {
-        sep_value <- if (identical(text_separator, "auto")) {
-            if (ext == "csv") "," else "\t"
-        } else {
-            text_separator
-        }
+        sep_value <- .resolve_effective_separator(path, ext, text_separator, header = header)
         dec_value <- if (identical(decimal_separator, "auto")) "." else decimal_separator
         file_type <- if (ext == "csv") "csv" else "txt"
         result <- readDataTable(
@@ -98,7 +195,7 @@
         stop("Please select at least one file.")
     }
 
-    exts <- unique(tolower(tools::file_ext(paths)))
+    exts <- unique(tolower(tools::file_ext(file_names)))
     if (length(exts) != 1L) {
         stop("Please upload files with the same format only.")
     }
@@ -116,11 +213,8 @@
                 measCol = meas_col
             )
         } else {
-            sep_value <- if (identical(text_separator, "auto")) {
-                if (file_type == "csv") "," else "\t"
-            } else {
-                text_separator
-            }
+            current_ext <- tolower(tools::file_ext(file_names[[i]]))
+            sep_value <- .resolve_effective_separator(path, current_ext, text_separator, header = header)
             dec_value <- if (identical(decimal_separator, "auto")) "." else decimal_separator
             dat <- readDataTable(
                 dataPath = path,
@@ -144,7 +238,7 @@
 .format_import_error_message <- function(error, file_type = NULL) {
     paste0(
         "Import failed: Please check if the correct concentration and measurement columns are selected, adjust if needed and press 'Import data' again. ",
-        "For .tsv, .txt and .csv files only, a wrong decimal separator, text separator, or header setting can also cause this problem. ",
+        "For .tsv, .txt and .csv files only, a wrong decimal separator or text separator can also cause this problem. ",
         "Please adjust the advanced upload settings if necessary."
     )
 }
@@ -247,7 +341,8 @@
     plot_format = c("png", "pdf"),
     plot_width = 10,
     plot_height = 7,
-    plot_dpi = 300) {
+    plot_dpi = 300,
+    quiet_zip = FALSE) {
     table_format <- match.arg(table_format)
     plot_format <- match.arg(plot_format)
 
@@ -353,7 +448,8 @@
     old_wd <- getwd()
     on.exit(setwd(old_wd), add = TRUE)
     setwd(tmp_dir)
-    utils::zip(zipfile = zip_path, files = files_to_zip)
+    zip_flags <- if (isTRUE(quiet_zip)) "-rq9X" else "-r9X"
+    utils::zip(zipfile = zip_path, files = files_to_zip, flags = zip_flags)
     invisible(zip_path)
 }
 
@@ -472,11 +568,19 @@ mod_data_upload_server <- function(id) {
                 return(character(0))
             }
 
+            file_type <- file_type_for_selected_upload()
+            text_sep <- if (is.null(input$text_separator)) .default_text_separator(file_type) else input$text_separator
+
             if (mode %in% c("single_single", "single_multiple")) {
                 if (is.null(input$data_file)) {
                     return(character(0))
                 }
-                return(.read_uploaded_columns(input$data_file$datapath))
+                return(.read_uploaded_columns(
+                    path = input$data_file$datapath,
+                    text_separator = text_sep,
+                    header = TRUE,
+                    file_ext = tools::file_ext(input$data_file$name)
+                ))
             }
 
             if (is.null(input$data_files)) {
@@ -485,7 +589,12 @@ mod_data_upload_server <- function(id) {
             if (length(input$data_files$datapath) == 0L) {
                 return(character(0))
             }
-            .read_uploaded_columns(input$data_files$datapath[1])
+            .read_uploaded_columns(
+                path = input$data_files$datapath[1],
+                text_separator = text_sep,
+                header = TRUE,
+                file_ext = tools::file_ext(input$data_files$name[1])
+            )
         })
 
         file_type_for_selected_upload <- shiny::reactive({
@@ -514,23 +623,19 @@ mod_data_upload_server <- function(id) {
 
             file_type <- file_type_for_selected_upload()
             if (file_type %in% c("csv", "txt", "tsv")) {
+                default_text_separator <- .default_text_separator(file_type)
                 return(shiny::tagList(
                     shiny::selectInput(
                         session$ns("decimal_separator"),
                         "Decimal separator",
-                        choices = c("Point (.)" = ".", "Comma (, )" = ",", "Auto" = "auto"),
+                        choices = c("Point (.)" = ".", "Comma (, )" = ","),
                         selected = "."
                     ),
                     shiny::selectInput(
                         session$ns("text_separator"),
                         "Text separator",
-                        choices = c("Auto" = "auto", "Comma" = ",", "Tab" = "\t"),
-                        selected = "auto"
-                    ),
-                    shiny::checkboxInput(
-                        session$ns("header_present"),
-                        "First row contains column names",
-                        value = TRUE
+                        choices = c("Comma" = ",", "Semicolon" = ";", "Tab" = "\t", "Pipe" = "|"),
+                        selected = default_text_separator
                     )
                 ))
             }
@@ -611,18 +716,18 @@ mod_data_upload_server <- function(id) {
                 if (mode == "single_single") {
                     shiny::req(input$data_file)
                     file_type <- tolower(tools::file_ext(input$data_file$name))
-                    text_sep <- if (is.null(input$text_separator)) "auto" else input$text_separator
+                    text_sep <- if (is.null(input$text_separator)) .default_text_separator(file_type) else input$text_separator
                     dec_sep <- if (is.null(input$decimal_separator)) "." else input$decimal_separator
-                    has_header <- if (is.null(input$header_present)) TRUE else isTRUE(input$header_present)
                     result <- .import_single_file(
                         path = input$data_file$datapath,
                         conc_col = input$conc_col,
                         meas_col = input$meas_col,
                         subst_col = NULL,
                         substance_name = tools::file_path_sans_ext(basename(input$data_file$name)),
-                        text_separator = if (file_type %in% c("csv", "txt", "tsv")) text_sep else "auto",
+                        file_ext = tools::file_ext(input$data_file$name),
+                        text_separator = if (file_type %in% c("csv", "txt", "tsv")) text_sep else ",",
                         decimal_separator = if (file_type %in% c("csv", "txt", "tsv")) dec_sep else ".",
-                        header = if (file_type %in% c("csv", "txt", "tsv")) has_header else TRUE
+                        header = TRUE
                     )
                     preview_page(1L)
                     import_status("Import successful.")
@@ -632,18 +737,18 @@ mod_data_upload_server <- function(id) {
                 if (mode == "single_multiple") {
                     shiny::req(input$data_file)
                     file_type <- tolower(tools::file_ext(input$data_file$name))
-                    text_sep <- if (is.null(input$text_separator)) "auto" else input$text_separator
+                    text_sep <- if (is.null(input$text_separator)) .default_text_separator(file_type) else input$text_separator
                     dec_sep <- if (is.null(input$decimal_separator)) "." else input$decimal_separator
-                    has_header <- if (is.null(input$header_present)) TRUE else isTRUE(input$header_present)
                     result <- .import_single_file(
                         path = input$data_file$datapath,
                         conc_col = input$conc_col,
                         meas_col = input$meas_col,
                         subst_col = input$subst_col,
                         substance_name = tools::file_path_sans_ext(basename(input$data_file$name)),
-                        text_separator = if (file_type %in% c("csv", "txt", "tsv")) text_sep else "auto",
+                        file_ext = tools::file_ext(input$data_file$name),
+                        text_separator = if (file_type %in% c("csv", "txt", "tsv")) text_sep else ",",
                         decimal_separator = if (file_type %in% c("csv", "txt", "tsv")) dec_sep else ".",
-                        header = if (file_type %in% c("csv", "txt", "tsv")) has_header else TRUE
+                        header = TRUE
                     )
                     preview_page(1L)
                     import_status("Import successful.")
@@ -652,17 +757,16 @@ mod_data_upload_server <- function(id) {
 
                 shiny::req(input$data_files)
                 file_type <- tolower(tools::file_ext(input$data_files$name[1]))
-                text_sep <- if (is.null(input$text_separator)) "auto" else input$text_separator
+                text_sep <- if (is.null(input$text_separator)) .default_text_separator(file_type) else input$text_separator
                 dec_sep <- if (is.null(input$decimal_separator)) "." else input$decimal_separator
-                has_header <- if (is.null(input$header_present)) TRUE else isTRUE(input$header_present)
                 result <- .import_multiple_files(
                     paths = input$data_files$datapath,
                     file_names = input$data_files$name,
                     conc_col = input$conc_col_multi,
                     meas_col = input$meas_col_multi,
-                    text_separator = if (file_type %in% c("csv", "txt", "tsv")) text_sep else "auto",
+                    text_separator = if (file_type %in% c("csv", "txt", "tsv")) text_sep else ",",
                     decimal_separator = if (file_type %in% c("csv", "txt", "tsv")) dec_sep else ".",
-                    header = if (file_type %in% c("csv", "txt", "tsv")) has_header else TRUE
+                    header = TRUE
                 )
                 preview_page(1L)
                 import_status("Import successful.")

@@ -52,7 +52,7 @@ readDataTable <- function(
 
     if (fileType == "csv" | fileType == "txt") {
         rawData <- utils::read.table(dataPath, sep = sep, header = header,
-            dec = dec, na.strings = naStrings
+            dec = dec, na.strings = naStrings, check.names = FALSE
         )
     }
     if (fileType == "xlsx") {
@@ -62,16 +62,32 @@ readDataTable <- function(
         )
     }
 
+    normalize_colname <- function(x) {
+        x <- as.character(x)
+        x <- sub("^\\ufeff", "", x)
+        x <- trimws(x)
+        x
+    }
+
     resolve_column <- function(column, column_name, data_set, allow_name = FALSE) {
         if (is.character(column)) {
             if (!allow_name || is.null(colnames(data_set))) {
                 stop("Column names can only be used when header = TRUE for text files.")
             }
-            if (length(column) != 1L || !(column %in% colnames(data_set))) {
+            if (length(column) != 1L) {
+                stop(sprintf("%s column '%s' was not found in the data.",
+                    column_name, paste(column, collapse = ", ")))
+            }
+
+            raw_names <- colnames(data_set)
+            normalized_target <- normalize_colname(column)
+            normalized_names <- normalize_colname(raw_names)
+            matched <- which(raw_names == column | normalized_names == normalized_target)
+            if (length(matched) == 0L) {
                 stop(sprintf("%s column '%s' was not found in the data.",
                     column_name, column))
             }
-            return(match(column, colnames(data_set)))
+            return(matched[1L])
         }
         checkmate::assert_int(column, lower = 1)
         if (column > ncol(data_set)) {

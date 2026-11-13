@@ -73,7 +73,8 @@ test_that("calibration exports to a zip bundle with all plots and tables", {
     plot_format = "png",
     plot_width = 6,
     plot_height = 4,
-    plot_dpi = 72
+    plot_dpi = 72,
+    quiet_zip = TRUE
   )
 
   entries <- utils::unzip(zip_path, list = TRUE)$Name
