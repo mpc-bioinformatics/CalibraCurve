@@ -85,3 +85,47 @@ test_that("calibration exports to a zip bundle with all plots and tables", {
   expect_true(any(grepl("calibration_curve_.*substance_A", entries)))
   expect_true(any(grepl("response_factor_plot_.*substance_B", entries)))
 })
+
+test_that("calibration export works for combined plot modes", {
+  file <- system.file("extdata", "MSQC1", "msqc1_dil_GGPFSDSYR.rds",
+    package = "CalibraCurve"
+  )
+  D_single <- readDataSE(
+    dataPath = file,
+    concColName = "amount_fmol",
+    substColName = "Substance",
+    assayNumber = 1
+  )
+
+  for (plot_mode in c("multiplot", "all_in_one")) {
+    result <- CalibraCurve(
+      D_list = list(substance_A = D_single[[1]], substance_B = D_single[[1]]),
+      plot_type = plot_mode,
+      verbose = FALSE,
+      output_path = NULL
+    )
+
+    zip_path <- tempfile(fileext = ".zip")
+    expect_no_error(
+      .export_calibration_results_zip(
+        result,
+        zip_path = zip_path,
+        table_format = "csv",
+        plot_format = "png",
+        plot_type = plot_mode,
+        plot_width = 6,
+        plot_height = 4,
+        plot_dpi = 72,
+        quiet_zip = TRUE
+      )
+    )
+
+    entries <- utils::unzip(zip_path, list = TRUE)$Name
+    expect_true(file.exists(zip_path))
+    expect_true(file.size(zip_path) > 0)
+    expect_true("calibration_curve.png" %in% entries)
+    expect_true("response_factor_plot.png" %in% entries)
+    expect_false(any(grepl("^calibration_curve_", entries)))
+    expect_false(any(grepl("^response_factor_plot_", entries)))
+  }
+})

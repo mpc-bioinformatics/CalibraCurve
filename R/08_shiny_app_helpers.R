@@ -132,6 +132,91 @@
     )
 }
 
+.find_matching_column <- function(choices, target) {
+    if (length(choices) == 0L || is.null(target) || !nzchar(target)) {
+        return(NULL)
+    }
+    idx_exact <- which(choices == target)
+    if (length(idx_exact) > 0L) {
+        return(choices[idx_exact[1L]])
+    }
+    idx_ci <- which(tolower(choices) == tolower(target))
+    if (length(idx_ci) > 0L) {
+        return(choices[idx_ci[1L]])
+    }
+    NULL
+}
+
+.locate_example_data_dir <- function(example_dataset) {
+    folder_name <- switch(example_dataset,
+        "lipidomics" = "SCFA",
+        "proteomics" = "MSQC1_xlsx",
+        NULL
+    )
+    if (is.null(folder_name)) {
+        stop("Please choose an example dataset.")
+    }
+
+    pkg_path <- system.file("extdata", folder_name, package = "CalibraCurve")
+    if (nzchar(pkg_path) && dir.exists(pkg_path)) {
+        return(pkg_path)
+    }
+
+    dev_path <- file.path("inst", "extdata", folder_name)
+    if (dir.exists(dev_path)) {
+        return(dev_path)
+    }
+
+    stop("Could not locate the selected example data folder.")
+}
+
+.default_example_columns <- function(example_dataset, choices) {
+    conc_target <- if (identical(example_dataset, "proteomics")) "amount" else "Concentration"
+    meas_target <- if (identical(example_dataset, "proteomics")) "Area" else "Total_area"
+
+    conc_sel <- .find_matching_column(choices, conc_target)
+    meas_sel <- .find_matching_column(choices, meas_target)
+
+    if (is.null(conc_sel) && length(choices) > 0L) {
+        conc_sel <- choices[1L]
+    }
+    if (is.null(meas_sel)) {
+        if (length(choices) > 1L) {
+            meas_sel <- choices[2L]
+        } else if (length(choices) > 0L) {
+            meas_sel <- choices[1L]
+        }
+    }
+
+    list(conc = conc_sel, meas = meas_sel)
+}
+
+.import_example_dataset <- function(example_dataset, conc_col, meas_col) {
+    example_dir <- .locate_example_data_dir(example_dataset)
+    file_type <- if (identical(example_dataset, "proteomics")) "xlsx" else "csv"
+
+    all_files <- list.files(example_dir, full.names = TRUE)
+    if (length(all_files) == 0L) {
+        stop("The selected example folder does not contain any files.")
+    }
+
+    file_paths <- all_files[tolower(tools::file_ext(all_files)) == file_type]
+    if (length(file_paths) == 0L) {
+        stop("No matching example files were found for the selected dataset.")
+    }
+
+    file_names <- basename(file_paths)
+    .import_multiple_files(
+        paths = file_paths,
+        file_names = file_names,
+        conc_col = conc_col,
+        meas_col = meas_col,
+        text_separator = if (identical(file_type, "csv")) "," else "auto",
+        decimal_separator = ".",
+        header = TRUE
+    )
+}
+
 #' @importFrom tools file_ext
 #' @importFrom stats setNames
 .import_single_file <- function(path, conc_col, meas_col, subst_col = NULL,
@@ -307,6 +392,32 @@
     )
 }
 
+.default_export_plot_dimensions <- function(plot_type = "single_plots") {
+    if (!is.null(plot_type) && plot_type %in% c("multiplot", "all_in_one")) {
+        return(list(width = 25, height = 15))
+    }
+    list(width = 20, height = 10)
+}
+
+.plot_for_export <- function(plot_list, idx) {
+    if (is.null(plot_list) || length(plot_list) == 0L) {
+        return(NULL)
+    }
+    if (inherits(plot_list, "ggplot")) {
+        return(plot_list)
+    }
+    if (!is.list(plot_list)) {
+        return(plot_list)
+    }
+    if (length(plot_list) == 1L) {
+        return(plot_list[[1L]])
+    }
+    if (idx > length(plot_list)) {
+        return(NULL)
+    }
+    plot_list[[idx]]
+}
+
 .calibration_dataset_names <- function(calibration_result) {
     if (is.null(calibration_result) || is.null(calibration_result$RES)) {
         return(character(0))
@@ -339,8 +450,9 @@
     zip_path = tempfile(fileext = ".zip"),
     table_format = c("xlsx", "csv"),
     plot_format = c("png", "pdf"),
-    plot_width = 10,
-    plot_height = 7,
+    plot_type = NULL,
+    plot_width = 14,
+    plot_height = 10,
     plot_dpi = 300,
     quiet_zip = FALSE) {
     table_format <- match.arg(table_format)
@@ -369,6 +481,7 @@
     }
     substance_names[!nzchar(substance_names)] <- paste0("substance_", which(!nzchar(substance_names)))
     substance_export_names <- make.unique(vapply(substance_names, .sanitize_export_name, character(1)))
+    combined_plot_mode <- !is.null(plot_type) && plot_type %in% c("multiplot", "all_in_one")
 
     for (i in seq_along(calibration_result$RES)) {
         substance_suffix <- substance_export_names[i]
@@ -403,8 +516,8 @@
             }
         }
 
-        if (!is.null(calibration_result$plot_CC_list)) {
-            CC_plot <- calibration_result$plot_CC_list[[i]]
+        if (!combined_plot_mode && !is.null(calibration_result$plot_CC_list)) {
+            CC_plot <- .plot_for_export(calibration_result$plot_CC_list, i)
             if (!is.null(CC_plot)) {
                 plot_file <- file.path(tmp_dir, paste0("calibration_curve_", substance_suffix, ".", plot_format))
                 if (plot_format == "pdf") {
@@ -421,8 +534,8 @@
             }
         }
 
-        if (!is.null(calibration_result$plot_RF_list)) {
-            RF_plot <- calibration_result$plot_RF_list[[i]]
+        if (!combined_plot_mode && !is.null(calibration_result$plot_RF_list)) {
+            RF_plot <- .plot_for_export(calibration_result$plot_RF_list, i)
             if (!is.null(RF_plot)) {
                 plot_file <- file.path(tmp_dir, paste0("response_factor_plot_", substance_suffix, ".", plot_format))
                 if (plot_format == "pdf") {
@@ -436,6 +549,40 @@
                     print(RF_plot)
                     grDevices::dev.off()
                 }
+            }
+        }
+    }
+
+    if (combined_plot_mode) {
+        CC_plot <- .plot_for_export(calibration_result$plot_CC_list, 1L)
+        if (!is.null(CC_plot)) {
+            plot_file <- file.path(tmp_dir, paste0("calibration_curve.", plot_format))
+            if (plot_format == "pdf") {
+                grDevices::pdf(file = plot_file, width = plot_width, height = plot_height)
+                print(CC_plot)
+                grDevices::dev.off()
+            } else {
+                grDevices::png(file = plot_file, width = plot_width * plot_dpi / 2.54,
+                    height = plot_height * plot_dpi / 2.54, units = "px",
+                    res = plot_dpi)
+                print(CC_plot)
+                grDevices::dev.off()
+            }
+        }
+
+        RF_plot <- .plot_for_export(calibration_result$plot_RF_list, 1L)
+        if (!is.null(RF_plot)) {
+            plot_file <- file.path(tmp_dir, paste0("response_factor_plot.", plot_format))
+            if (plot_format == "pdf") {
+                grDevices::pdf(file = plot_file, width = plot_width, height = plot_height)
+                print(RF_plot)
+                grDevices::dev.off()
+            } else {
+                grDevices::png(file = plot_file, width = plot_width * plot_dpi / 2.54,
+                    height = plot_height * plot_dpi / 2.54, units = "px",
+                    res = plot_dpi)
+                print(RF_plot)
+                grDevices::dev.off()
             }
         }
     }
@@ -499,6 +646,31 @@ mod_data_upload_ui <- function(id) {
             shiny::column(
                 width = 4,
                 shiny::radioButtons(
+                    ns("data_source"),
+                    "Data source",
+                    choices = c(
+                        "Upload your own file(s)" = "upload",
+                        "Use example data" = "example"
+                    ),
+                    selected = "upload"
+                ),
+                shiny::conditionalPanel(
+                    condition = "input.data_source == 'example'",
+                    ns = ns,
+                    shiny::selectInput(
+                        ns("example_dataset"),
+                        "Example dataset",
+                        choices = c(
+                            "Lipidomics (SCFA)" = "lipidomics",
+                            "Proteomics (MSQC1_xlsx)" = "proteomics"
+                        ),
+                        selected = "lipidomics"
+                    )
+                ),
+                shiny::conditionalPanel(
+                    condition = "input.data_source == 'upload'",
+                    ns = ns,
+                    shiny::radioButtons(
                     ns("upload_mode"),
                     "Choose upload type",
                     choices = c(
@@ -507,9 +679,10 @@ mod_data_upload_ui <- function(id) {
                         "Multiple files" = "multiple_files"
                     ),
                     selected = "single_single"
+                )
                 ),
                 shiny::conditionalPanel(
-                    condition = "input.upload_mode == 'single_single' || input.upload_mode == 'single_multiple'",
+                    condition = "input.data_source == 'upload' && (input.upload_mode == 'single_single' || input.upload_mode == 'single_multiple')",
                     ns = ns,
                     shiny::fileInput(
                         ns("data_file"),
@@ -519,7 +692,7 @@ mod_data_upload_ui <- function(id) {
                     )
                 ),
                 shiny::conditionalPanel(
-                    condition = "input.upload_mode == 'multiple_files'",
+                    condition = "input.data_source == 'upload' && input.upload_mode == 'multiple_files'",
                     ns = ns,
                     shiny::fileInput(
                         ns("data_files"),
@@ -528,7 +701,7 @@ mod_data_upload_ui <- function(id) {
                         multiple = TRUE
                     )
                 ),
-                shiny::helpText("Supported file types: .csv, .tsv, .txt, .xlsx, .rds."),
+                shiny::helpText("Supported upload file types: .csv, .tsv, .txt, .xlsx, .rds."),
                 shiny::checkboxInput(ns("show_advanced_settings"), "Advanced upload settings", value = FALSE),
                 shiny::uiOutput(ns("advanced_upload_controls")),
                 shiny::uiOutput(ns("upload_controls")),
@@ -563,6 +736,23 @@ mod_data_upload_server <- function(id) {
         import_status <- shiny::reactiveVal("No data imported yet.")
 
         column_choices <- shiny::reactive({
+            if (identical(input$data_source, "example")) {
+                example_dataset <- if (is.null(input$example_dataset)) "lipidomics" else input$example_dataset
+                example_dir <- .locate_example_data_dir(example_dataset)
+                file_type <- if (identical(example_dataset, "proteomics")) "xlsx" else "csv"
+                paths <- list.files(example_dir, full.names = TRUE)
+                paths <- paths[tolower(tools::file_ext(paths)) == file_type]
+                if (length(paths) == 0L) {
+                    return(character(0))
+                }
+                return(.read_uploaded_columns(
+                    path = paths[1],
+                    text_separator = if (identical(file_type, "csv")) "," else "auto",
+                    header = TRUE,
+                    file_ext = file_type
+                ))
+            }
+
             mode <- input$upload_mode
             if (is.null(mode)) {
                 return(character(0))
@@ -598,6 +788,13 @@ mod_data_upload_server <- function(id) {
         })
 
         file_type_for_selected_upload <- shiny::reactive({
+            if (identical(input$data_source, "example")) {
+                if (identical(input$example_dataset, "proteomics")) {
+                    return("xlsx")
+                }
+                return("csv")
+            }
+
             mode <- input$upload_mode
             if (is.null(mode)) {
                 return("unknown")
@@ -644,6 +841,27 @@ mod_data_upload_server <- function(id) {
         })
 
         output$upload_controls <- shiny::renderUI({
+            if (identical(input$data_source, "example")) {
+                choices <- column_choices()
+                example_dataset <- if (is.null(input$example_dataset)) "lipidomics" else input$example_dataset
+                defaults <- .default_example_columns(example_dataset, choices)
+
+                return(shiny::tagList(
+                    shiny::selectInput(
+                        session$ns("conc_col_example"),
+                        "Concentration column",
+                        choices = choices,
+                        selected = defaults$conc
+                    ),
+                    shiny::selectInput(
+                        session$ns("meas_col_example"),
+                        "Measurement column",
+                        choices = choices,
+                        selected = defaults$meas
+                    )
+                ))
+            }
+
             mode <- input$upload_mode
             if (is.null(mode)) {
                 mode <- "single_single"
@@ -707,6 +925,26 @@ mod_data_upload_server <- function(id) {
         })
 
         uploaded_data <- shiny::eventReactive(input$import_data, {
+            if (identical(input$data_source, "example")) {
+                return(tryCatch({
+                    shiny::req(input$example_dataset)
+                    shiny::req(input$conc_col_example)
+                    shiny::req(input$meas_col_example)
+                    result <- .import_example_dataset(
+                        example_dataset = input$example_dataset,
+                        conc_col = input$conc_col_example,
+                        meas_col = input$meas_col_example
+                    )
+                    preview_page(1L)
+                    import_status("Example data import successful.")
+                    result
+                }, error = function(e) {
+                    preview_page(1L)
+                    import_status(.format_import_error_message(e))
+                    NULL
+                }))
+            }
+
             mode <- input$upload_mode
             if (is.null(mode)) {
                 stop("Please choose an upload mode first.")
@@ -880,10 +1118,25 @@ mod_calibration_ui <- function(id) {
                         condition = "input.show_advanced_plotting == true",
                         ns = ns,
                         shiny::tagList(
-                            shiny::checkboxInput(ns("show_regression_info"), "Show regression info", TRUE),
+                            shiny::checkboxInput(ns("show_regression_info"), "Show regression info", FALSE),
                             shiny::checkboxInput(ns("show_linear_range"), "Show linear range", TRUE),
                             shiny::checkboxInput(ns("show_data_points"), "Show data points", TRUE),
                             shiny::checkboxInput(ns("plot_zeros"), "Show blank panel", FALSE),
+                            shiny::conditionalPanel(
+                                condition = "input.plot_type == 'multiplot'",
+                                ns = ns,
+                                shiny::selectInput(
+                                    ns("multiplot_scales"),
+                                    "Multiplot axis scaling",
+                                    choices = c(
+                                        "Fix x and y axis" = "fixed",
+                                        "Fix x axis only" = "free_y",
+                                        "Fix y axis only" = "free_x",
+                                        "Free x and y axis" = "free"
+                                    ),
+                                    selected = "free"
+                                )
+                            ),
                             shiny::selectInput(
                                 ns("curve_colour"),
                                 "Curve colour",
@@ -1004,14 +1257,14 @@ mod_calibration_ui <- function(id) {
                             shiny::numericInput(
                                 ns("export_plot_width"),
                                 "Plot width (cm)",
-                                value = 10,
+                                value = 14,
                                 min = 1,
                                 step = 1
                             ),
                             shiny::numericInput(
                                 ns("export_plot_height"),
                                 "Plot height (cm)",
-                                value = 7,
+                                value = 10,
                                 min = 1,
                                 step = 1
                             ),
@@ -1091,6 +1344,7 @@ mod_calibration_server <- function(id, data_input) {
                 point_colour = if (!is.null(input$point_colour)) input$point_colour else "black",
                 curve_colour = if (!is.null(input$curve_colour)) input$curve_colour else "red",
                 linear_range_colour = if (!is.null(input$linear_range_colour)) input$linear_range_colour else "black",
+                multiplot_scales = if (!is.null(input$multiplot_scales) && nzchar(input$multiplot_scales)) input$multiplot_scales else "free",
                 show_regression_info = isTRUE(input$show_regression_info),
                 show_linear_range = isTRUE(input$show_linear_range),
                 show_data_points = isTRUE(input$show_data_points),
@@ -1193,13 +1447,26 @@ mod_calibration_server <- function(id, data_input) {
             },
             content = function(file) {
                 shiny::req(calibration_result())
+
+                plot_type_for_export <- if (!is.null(input$plot_type) && nzchar(input$plot_type)) {
+                    input$plot_type
+                } else {
+                    "single_plots"
+                }
+
+                default_dims <- .default_export_plot_dimensions(plot_type_for_export)
+                use_advanced_size <- isTRUE(input$show_advanced_export_settings)
+                export_plot_width <- if (use_advanced_size) input$export_plot_width else default_dims$width
+                export_plot_height <- if (use_advanced_size) input$export_plot_height else default_dims$height
+
                 .export_calibration_results_zip(
                     calibration_result = calibration_result(),
                     zip_path = file,
                     table_format = input$table_export_format,
                     plot_format = input$plot_export_format,
-                    plot_width = input$export_plot_width,
-                    plot_height = input$export_plot_height,
+                    plot_type = plot_type_for_export,
+                    plot_width = export_plot_width,
+                    plot_height = export_plot_height,
                     plot_dpi = input$export_plot_dpi
                 )
             },
