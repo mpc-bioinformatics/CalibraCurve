@@ -1586,12 +1586,6 @@ calibra_curve_app_ui <- function() {
             shiny::fluidPage(
                 mod_calibration_ui("calibration")
             )
-        ),
-        shiny::tabPanel(
-            "3. Prediction",
-            shiny::fluidPage(
-                mod_prediction_ui("prediction")
-            )
         )
     )
 }
@@ -1614,13 +1608,12 @@ calibra_curve_app_server <- function(input, output, session) {
         id = "calibration",
         data_input = upload_data
     )
-    mod_prediction_server("prediction", calibration_result = calibration_results)
 }
 
 #' Launch the CalibraCurve Shiny app
 #'
 #' This starts a small app that wraps the package's public
-#' \code{\link{CalibraCurve}} workflow with a 3-tab UI.
+#' \code{\link{CalibraCurve}} workflow with a 2-tab UI.
 #'
 #' @export
 #'

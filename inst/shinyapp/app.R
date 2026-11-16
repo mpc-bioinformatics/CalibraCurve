@@ -22,7 +22,7 @@ install_error <- NULL
 
 if (identical(R.version$os, "emscripten")) {
     install_error <- tryCatch({
-        webr::install("CalibraCurve",
+        webr::install(c("CalibraCurve", "colourpicker"),
                       repos = c("https://mpc-bioinformatics.r-universe.dev",
                                 "https://bioc.r-universe.dev",
                                 "https://repo.r-wasm.org"))
