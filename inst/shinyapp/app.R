@@ -34,7 +34,7 @@ library(shiny)
 
 msg <- tryCatch({
     webr::install("CalibraCurve",
-                  repos = c("https://YOURNAME.r-universe.dev",
+                  repos = c("https://mpc-bioinformatics.r-universe.dev",
                             "https://bioc.r-universe.dev",
                             "https://repo.r-wasm.org"))
     pkg <- system.file(package = "CalibraCurve")
