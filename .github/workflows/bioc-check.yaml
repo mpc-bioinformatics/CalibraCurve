@@ -1,0 +1,67 @@
+- name: BiocCheck action
+  # You may pin to the exact commit or the version.
+  # uses: insightsengineering/bioc-check-action@92656b0b2f6ca56d364d60882cb245dcac59b479
+  uses: insightsengineering/bioc-check-action@v1.2.1
+  with:
+    # Path to package's root
+    path: # optional, default is .
+    # enable checks specific to new packages
+    new-package: # optional
+    # post the check result as a PR comment
+    post-result-as-comment: # optional, default is true
+    # disable check for bad dependencies
+    no-check-dependencies: # optional
+    # disable check for usage of deprecated packages
+    no-check-deprecated: # optional
+    # disable check for usage of remote packages other than those hosted on CRAN or Bioconductor
+    no-check-remotes: # optional
+    # disable check for valid version number
+    no-check-version-num: # optional
+    # disable check for valid R version
+    no-check-R-ver: # optional
+    # disable check for package tarball size
+    no-check-pkg-size: # optional
+    # disable check for individual file size
+    no-check-file-size: # optional
+    # disable biocViews-specific checks (for non-BioC packages)
+    no-check-bioc-views: # optional
+    # disable BBS-specific checks (for non-BioC packages). Valid DESCRIPTION
+    no-check-bbs: # optional
+    # disable DESCRIPTION file checks
+    no-check-description: # optional
+    # disable namespace checks
+    no-check-namespace: # optional
+    # disable vignette checks
+    no-check-vignettes: # optional
+    # disable check usage of functions that install or update packages
+    no-check-library-calls: # optional
+    # disable check for require or library of itself
+    no-check-install-self: # optional
+    # disable check for some common best coding practices
+    no-check-coding-practices: # optional
+    # disable check for function length
+    no-check-function-len: # optional
+    # disable checks for man page documentation
+    no-check-man-doc: # optional
+    # disable checks for NEWS file
+    no-check-news: # optional
+    # disable checks for unit tests
+    no-check-unit-tests: # optional
+    # disable check for tests that skip when on bioc
+    no-check-skip-bioc-tests: # optional
+    # disable checks for file formatting
+    no-check-formatting: # optional
+    # disable check for if package exists in CRAN
+    no-check-CRAN: # optional
+    # disable check for registration on Bioconductor mailing list and support site
+    no-check-bioc-help: # optional
+    # file containing R CMD build output, for additional analysis
+    build-output-file: # optional
+    # enable exit code option when performing check
+    quit-with-status: # optional
+    # disable github action R dependency caching
+    no-cache: # optional
+    # version of cache. To clean cache bump this version.
+    cache-version: # optional, default is cache-v1
+    # BiocCheck errors will not fail, but will give a warning.
+    allow-failure: # optional
