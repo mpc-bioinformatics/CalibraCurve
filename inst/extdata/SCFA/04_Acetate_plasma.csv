@@ -1,0 +1,22 @@
+Sample No,Protein,Peptide Sequence,Fragment Ion,Amount on Column [fmol],Concentration,Total_area
+QQQ_6535,Acetate,heavy,dH2O,1,0.1,10291
+QQQ_6559,Acetate,heavy,dH2O,1,0.1,228918
+QQQ_6583,Acetate,heavy,dH2O,1,0.1,827181
+QQQ_6607,Acetate,heavy,dH2O,1,0.5,7982822
+QQQ_6631,Acetate,heavy,dH2O,1,0.5,8472900
+QQQ_6537,Acetate,heavy,dH2O,1,0.5,5832919
+QQQ_6561,Acetate,heavy,dH2O,1,1.0,9869438
+QQQ_6585,Acetate,heavy,dH2O,1,1.0,9284827
+QQQ_6535,Acetate,heavy,dH2O,1,1.0,9472892
+QQQ_6559,Acetate,heavy,dH2O,1,5.0,45837277
+QQQ_6583,Acetate,heavy,dH2O,1,5.0,44449298
+QQQ_6607,Acetate,heavy,dH2O,1,5.0,49001923
+QQQ_6631,Acetate,heavy,dH2O,1,10.0,93718189
+QQQ_6537,Acetate,heavy,dH2O,1,10.0,88783718
+QQQ_6561,Acetate,heavy,dH2O,1,10.0,99282782
+QQQ_6585,Acetate,heavy,dH2O,1,50.0,406827168
+QQQ_6535,Acetate,heavy,dH2O,1,50.0,492728187
+QQQ_6559,Acetate,heavy,dH2O,1,50.0,479594388
+QQQ_6583,Acetate,heavy,dH2O,1,100.0,958372790
+QQQ_6607,Acetate,heavy,dH2O,1,100.0,991838877
+QQQ_6631,Acetate,heavy,dH2O,1,100.0,899291823
