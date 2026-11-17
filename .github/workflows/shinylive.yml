@@ -1,12 +1,12 @@
 name: Deploy Shinylive app
-
 on:
   push:
-    branches: [shiny]      # change to the branch(es) you deploy from
+    branches: [main, shiny, devel]
   workflow_dispatch:
 
 permissions:
   contents: write
+
 
 
 jobs:
@@ -36,6 +36,7 @@ jobs:
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
+
 
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
