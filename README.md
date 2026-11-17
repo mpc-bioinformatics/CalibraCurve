@@ -74,10 +74,36 @@ You can also install the current development version directly from
 [GitHub](https://github.com/mpc-bioinformatics/CalibraCurve) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("mpc-bioinformatics/CalibraCurve")
+# install.packages("pak")
+pak::pak("mpc-bioinformatics/CalibraCurve")
 library(CalibraCurve)
 ```
+
+## Shiny App (beta)
+
+If you want to use the CalibraCurve Shiny app (graphical user interface), 
+you can install the shiny branch of this repository via
+
+``` r
+# install.packages("pak")
+pak::pak("mpc-bioinformatics/CalibraCurve@shiny")
+```
+
+and start the shiny app with
+
+``` r
+library(CalibraCurve)
+runCalibraCurveApp()
+```
+This will open the app in the browser.
+
+Alternatively, you can use the following link to access the shiny app via a browser:
+
+<https://mpc-bioinformatics.github.io/CalibraCurve/>
+
+Important: The shiny app runs locally in your browser, it will NOT upload data to a server.
+
+
 
 ## Implementation
 
